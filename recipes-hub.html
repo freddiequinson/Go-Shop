@@ -563,6 +563,26 @@ input:-webkit-autofill:active {
   .c-matter {
   	pointer-events: none;
   }
+
+  /* Mobile sidebar auth actions */
+  .c-mobile-auth {
+    margin-top: 1.5em;
+    padding: 1em 0 0;
+    border-top: 1px solid currentColor;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75em;
+  }
+  .c-mobile-auth .c-btn {
+    width: auto;
+    justify-content: flex-start;
+  }
+  .c-mobile-auth .c-btn.is-secondary {
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+  }
 }
 
 @media only screen and (max-width: 479px) {
@@ -1128,6 +1148,25 @@ input:-webkit-autofill:active {
 </div>
 </div>
 </div>
+<div class="c-mobile-auth">
+  <a href="#" class="c-btn is-large w-inline-block">
+    <div class="c-btn-bg"></div>
+    <div class="c-btn-inner">
+      <div class="c-btn-txt">
+        <div class="c-btn-label line-1">Sign in</div>
+        <div class="c-btn-label line-2">Sign in</div>
+      </div>
+    </div>
+  </a>
+  <a href="#" class="c-btn is-large is-secondary w-inline-block">
+    <div class="c-btn-inner">
+      <div class="c-btn-txt">
+        <div class="c-btn-label line-1">Create account</div>
+        <div class="c-btn-label line-2">Create account</div>
+      </div>
+    </div>
+  </a>
+</div>
 <div class="c-dd-link-mobile">
   <div class="c-dd-link-mobile-inner">
   <div class="t-display-2 nav-mobile">About</div>
@@ -1207,7 +1246,7 @@ input:-webkit-autofill:active {
   <div sticky-el="" fs-cmsfilter-element="filters" class="c-filter-form-block w-form">
   <form id="email-form" name="email-form" data-name="Email Form" method="get" class="c-filter-wrap" data-wf-page-id="67d46f1ca88fba5bdcfe8939" data-wf-element-id="16c5a9ef-e097-fc12-eaff-bde1aa254875">
   <div class="c-filter-title margin-32">
-  <h2 class="t-display-6 font-noka">All recipes</h2>
+  <h2 class="t-display-6 font-noka">All Vendors</h2>
   <div class="c-filter-title_rt">
   <a role="button" fs-cmsfilter-element="reset" href="#" class="c-filter-reset w-inline-block">
   <div class="t-body-3">Reset</div>
