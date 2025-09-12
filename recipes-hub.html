@@ -2162,9 +2162,10 @@ input:not(#downshift-0-input):-internal-autofill-selected {
 
 /* Close Button */
 .close-sidebar {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: sticky;
+  top: 12px;
+  right: auto;
+  margin: 12px 12px 0 auto;
   background-color: var(--base--blurple-01, #303A4D);
   border: 2px solid var(--base--blurple-01, #303A4D);
   color: var(--base--white-01, #FFFFFF);
@@ -2178,7 +2179,7 @@ input:not(#downshift-0-input):-internal-autofill-selected {
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s ease;
-  z-index: 2;
+  z-index: 5;
 }
 
 .close-sidebar:hover {
