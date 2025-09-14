@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Icon Demo - Go-Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f4f2e6;
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2em;
+            border-radius: 1em;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1em 2em;
+            background: #303A4D;
+            color: white;
+            border-radius: 0.5em;
+            margin-bottom: 2em;
+        }
+
+        .demo-nav {
+            display: flex;
+            gap: 2em;
+            align-items: center;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 1em;
+            margin-bottom: 2em;
+        }
+
+        .btn {
+            padding: 0.75em 1.5em;
+            border: none;
+            border-radius: 0.5em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #FED141;
+            color: #303A4D;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #303A4D;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .status {
+            padding: 1em;
+            border-radius: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .status.signed-in {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.signed-out {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .demo-nav-link {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 0.5em;
+            border-radius: 0.25em;
+            transition: all 0.2s ease;
+        }
+
+        .demo-nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-icon {
+            margin-right: 0.5em;
+        }
+
+        .explanation {
+            background: #f8f9fa;
+            padding: 1.5em;
+            border-radius: 0.5em;
+            border-left: 4px solid #FED141;
+            margin-top: 2em;
+        }
+
+        /* Mobile Auth Button Styles */
+        .c-btn {
+            background: #FED141;
+            color: #303A4D;
+            text-decoration: none;
+            border-radius: 0.5em;
+            padding: 1em 1.5em;
+            display: inline-block;
+            margin: 0.5em;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .c-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .c-btn.is-secondary {
+            background: #e9ecef;
+            color: #303A4D;
+        }
+
+        .c-btn-label {
+            font-size: 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1>Profile Icon Demo - Authentication State Indicator</h1>
+
+        <!-- Demo Header with Profile Icon -->
+        <div class="demo-header">
+            <div class="demo-logo">Go-Shop</div>
+            <div class="demo-nav">
+                <a href="#" class="demo-nav-link">Shop</a>
+                <a href="#" class="demo-nav-link">About</a>
+                <a aria-label="Profile" href="auth.html" class="demo-nav-link">
+                    <div class="c-icon demo-icon">
+                        <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17.3333 20V18.6666C17.3333 17.9594 17.0524 17.2811 16.5523 16.781C16.0522 16.281 15.3739 16 14.6667 16H9.3334C8.62616 16 7.94788 16.281 7.44779 16.781C6.9477 17.2811 6.66675 17.9594 6.66675 18.6666V20"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M12 13.3333C13.4728 13.3333 14.6667 12.1394 14.6667 10.6666C14.6667 9.1939 13.4728 8 12 8C10.5273 8 9.33337 9.1939 9.33337 10.6666C9.33337 12.1394 10.5273 13.3333 12 13.3333Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M11.973 22.2441C17.4959 22.2441 21.973 17.767 21.973 12.2441C21.973 6.72129 17.4959 2.24414 11.973 2.24414C6.45017 2.24414 1.97302 6.72129 1.97302 12.2441C1.97302 17.767 6.45017 22.2441 11.973 22.2441Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Current Status -->
+        <div id="auth-status" class="status signed-out">
+            <strong>Status:</strong> <span id="status-text">Not signed in</span>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button class="btn btn-primary" onclick="demoSignIn()">
+                Demo Sign In (as John Doe)
+            </button>
+            <button class="btn btn-secondary" onclick="demoSignOut()">
+                Demo Sign Out
+            </button>
+        </div>
+
+        <!-- Mobile Auth Demo -->
+        <div class="c-mobile-auth" style="margin: 2em 0; padding: 1em; border: 2px dashed #ddd; border-radius: 0.5em;">
+            <h4 style="margin-top: 0; color: #666; font-size: 0.9em;">Mobile Navigation Demo:</h4>
+            <a href="auth.html" class="c-btn is-large w-inline-block">
+                <div class="c-btn-bg"></div>
+                <div class="c-btn-inner">
+                    <div class="c-btn-txt">
+                        <div class="c-btn-label line-1">Sign in</div>
+                        <div class="c-btn-label line-2">Sign in</div>
+                    </div>
+                </div>
+            </a>
+            <a href="auth.html" class="c-btn is-large is-secondary w-inline-block">
+                <div class="c-btn-inner">
+                    <div class="c-btn-txt">
+                        <div class="c-btn-label line-1">Create account</div>
+                        <div class="c-btn-label line-2">Create account</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explanation">
+            <h3>How it works:</h3>
+            <ol>
+                <li><strong>Sign Out State:</strong> Profile icon shows normal appearance, links to auth.html</li>
+                <li><strong>Sign In State:</strong> Profile icon shows green indicator dot, links to profile.html,
+                    displays user's name on hover</li>
+                <li><strong>Mobile Sign-In Buttons:</strong> Transform into user info card with logout button when
+                    signed in</li>
+                <li><strong>Real-time Updates:</strong> Icons and buttons update automatically when authentication state
+                    changes</li>
+                <li><strong>Cross-Tab Sync:</strong> Updates sync across all open browser tabs</li>
+            </ol>
+
+            <h4>Profile Icon Features:</h4>
+            <ul>
+                <li>✅ Green indicator dot when signed in</li>
+                <li>✅ Hover tooltip shows user name</li>
+                <li>✅ Dynamic href updates (auth.html vs profile.html)</li>
+                <li>✅ Accessible aria-labels</li>
+                <li>✅ Works across all site pages</li>
+            </ul>
+
+            <h4>Mobile Auth Features:</h4>
+            <ul>
+                <li>✅ User info card with avatar and details</li>
+                <li>✅ "View Profile" and "Logout" buttons</li>
+                <li>✅ Beautiful gradient styling when signed in</li>
+                <li>✅ Automatic logout and redirect functionality</li>
+                <li>✅ Restores original sign-in buttons when signed out</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Authentication System -->
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/profile-icon-updater.js"></script>
+
+    <script>
+        // Demo functions
+        function demoSignIn() {
+            // Create a demo user
+            try {
+                // Try to register demo user (will fail if already exists)
+                window.GoShopAuth.register({
+                    fullname: "John Doe",
+                    username: "johndoe",
+                    email: "john@demo.com",
+                    location: "Accra, Ghana",
+                    password: "demo123",
+                    confirmPassword: "demo123"
+                });
+            } catch (error) {
+                // User already exists, just log in
+                window.GoShopAuth.login({
+                    identifier: "johndoe",
+                    password: "demo123"
+                });
+            }
+            updateStatus();
+        }
+
+        function demoSignOut() {
+            window.GoShopAuth.logout();
+            updateStatus();
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('auth-status');
+            const statusText = document.getElementById('status-text');
+            const isLoggedIn = window.GoShopAuth.isLoggedIn();
+
+            if (isLoggedIn) {
+                const user = window.GoShopAuth.getProfile();
+                statusDiv.className = 'status signed-in';
+                statusText.textContent = `Signed in as ${user.fullname} (${user.email})`;
+            } else {
+                statusDiv.className = 'status signed-out';
+                statusText.textContent = 'Not signed in';
+            }
+        }
+
+        // Update status on page load
+        document.addEventListener('DOMContentLoaded', updateStatus);
+
+        // Listen for auth state changes
+        window.addEventListener('authStateChanged', updateStatus);
+    </script>
+</body>
+
+</html>
