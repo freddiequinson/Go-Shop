@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-button {
+            background: #FED141;
+            color: #303A4D;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 600;
+        }
+
+        .test-button:hover {
+            background: #e6c236;
+        }
+
+        .add-to-cart {
+            background: #303A4D;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 5px;
+        }
+
+        .add-to-cart:hover {
+            background: #3B4559;
+        }
+
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            background: #eee;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            margin-right: 15px;
+            vertical-align: top;
+        }
+
+        .product-info {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .product-price {
+            font-weight: bold;
+            color: #303A4D;
+        }
+
+        .product-description {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .log-output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        h1 {
+            color: #303A4D;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛒 Cart System Test Page</h1>
+
+    <div class="test-section">
+        <h2>Manual Cart Tests</h2>
+        <button class="test-button" onclick="testCartManager()">Test Cart Manager</button>
+        <button class="test-button" onclick="addTestItem()">Add Test Item</button>
+        <button class="test-button" onclick="showCart()">Show Cart</button>
+        <button class="test-button" onclick="clearTestCart()">Clear Cart</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Products (click Add to Cart)</h2>
+        <div id="sidebarTitle" style="display: none;">Test Market</div>
+
+        <div class="product-item">
+            <div class="product-image">🍌</div>
+            <div class="product-info">
+                <h4>Test Bananas</h4>
+                <div class="product-price">₵15.00 per bunch</div>
+                <div class="product-description">Test bananas for cart system</div>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="product-item">
+            <div class="product-image">🍅</div>
+            <div class="product-info">
+                <h4>Test Tomatoes</h4>
+                <div class="product-price">₵12.00 per kg</div>
+                <div class="product-description">Test tomatoes for cart system</div>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="log-output" class="log-output">Waiting for cart manager to load...</div>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <!-- Include cart manager -->
+    <script src="src/js/cart-manager.js"></script>
+
+    <script>
+        let logOutput = document.getElementById('log-output');
+
+        // Override console.log to display in the page
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        function addToLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '[ERROR]' : '[LOG]';
+            logOutput.textContent += `${timestamp} ${prefix} ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '), 'log');
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            addToLog(args.join(' '), 'error');
+        };
+
+        // Test functions
+        function testCartManager() {
+            console.log('Testing cart manager...');
+            console.log('Cart manager exists:', !!window.cartManager);
+            console.log('Cart manager type:', typeof window.cartManager);
+
+            if (window.cartManager) {
+                console.log('Cart manager methods:', Object.getOwnPropertyNames(window.cartManager.__proto__));
+                console.log('Current cart items:', window.cartManager.cart.items.length);
+            } else {
+                console.error('Cart manager not available!');
+            }
+        }
+
+        function addTestItem() {
+            console.log('Adding test item...');
+
+            if (window.cartManager) {
+                const item = {
+                    id: 'test-item-' + Date.now(),
+                    name: 'Test Product',
+                    price: 10.00,
+                    image: '🧪',
+                    market: 'Test Market',
+                    description: 'A test product',
+                    category: 'Test Category'
+                };
+
+                const success = window.cartManager.addToCart(item);
+                console.log('Add to cart result:', success);
+            } else {
+                console.error('Cart manager not available');
+            }
+        }
+
+        function showCart() {
+            console.log('Current cart contents:');
+
+            if (window.cartManager) {
+                const summary = window.cartManager.getCartSummary();
+                console.log('Items:', summary.items.length);
+                console.log('Total items:', summary.itemCount);
+                console.log('Cart data:', JSON.stringify(summary, null, 2));
+            } else {
+                console.error('Cart manager not available');
+            }
+        }
+
+        function clearTestCart() {
+            console.log('Clearing cart...');
+
+            if (window.cartManager) {
+                window.cartManager.clearCart();
+                console.log('Cart cleared');
+            } else {
+                console.error('Cart manager not available');
+            }
+        }
+
+        function clearLog() {
+            logOutput.textContent = '';
+        }
+
+        // Wait for cart manager to load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM Content Loaded');
+
+            setTimeout(() => {
+                testCartManager();
+            }, 500);
+        });
+
+        // Add to cart click handler (same as in recipes-hub.html)
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.classList.contains('add-to-cart')) {
+                console.log('Add to cart button clicked!', e.target);
+                e.preventDefault();
+
+                const button = e.target;
+                const productItem = button.closest('.product-item');
+
+                if (!productItem) {
+                    console.error('Product item not found');
+                    return;
+                }
+
+                const productName = productItem.querySelector('h4')?.textContent;
+                const productImage = productItem.querySelector('.product-image')?.textContent;
+                const priceText = productItem.querySelector('.product-price')?.textContent;
+                const productDescription = productItem.querySelector('.product-description')?.textContent;
+
+                console.log('Product data:', { productName, productImage, priceText, productDescription });
+
+                if (!productName || !productImage || !priceText || !productDescription) {
+                    console.error('Missing product information');
+                    return;
+                }
+
+                const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+                const marketName = document.getElementById('sidebarTitle')?.textContent || 'Test Market';
+                const productId = `${marketName.toLowerCase().replace(/\s+/g, '-')}-${productName.toLowerCase().replace(/\s+/g, '-')}`;
+
+                const item = {
+                    id: productId,
+                    name: productName,
+                    price: price,
+                    image: productImage,
+                    market: marketName,
+                    description: productDescription,
+                    category: 'Test Product'
+                };
+
+                console.log('Attempting to add item to cart:', item);
+
+                if (window.cartManager && typeof window.cartManager.addToCart === 'function') {
+                    try {
+                        const success = window.cartManager.addToCart(item);
+
+                        if (success) {
+                            console.log('Item successfully added to cart');
+                            button.textContent = '✓ Added!';
+                            button.style.background = '#4caf50';
+
+                            setTimeout(() => {
+                                button.textContent = 'Add to Cart';
+                                button.style.background = '';
+                            }, 2000);
+                        } else {
+                            console.error('Failed to add item to cart');
+                        }
+                    } catch (error) {
+                        console.error('Error adding item to cart:', error);
+                    }
+                } else {
+                    console.error('Cart manager not available or missing addToCart method');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

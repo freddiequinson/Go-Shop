@@ -3327,7 +3327,13 @@ www.papertiger.com${'     '}
           var flavorMatchToProduct = document.querySelector(`[data-filter-item="flavor"] [data-filter-product="${filterValue}"]`);
           var flavorWrapperElement = findFlavorWrapper(flavorMatchToProduct);
 
-          if (element?.checked) {
+          // Check if any checkbox with this filter value is checked
+          var isChecked = Array.from(filterProductElements).some((element) => {
+            const checkbox = element?.parentNode?.querySelector?.('input[type="checkbox"]');
+            return checkbox?.getAttribute?.('data-filter-value') === filterValue && checkbox?.checked;
+          });
+
+          if (isChecked) {
             flavorWrapperElement?.classList?.remove?.('hide');
           } else {
             flavorWrapperElement?.classList?.add?.('hide');
@@ -3490,6 +3496,10 @@ www.papertiger.com${'     '}
 
       // Start countdown timer
       startCountdown();
+
+      // Debug: Add a test button to verify click events work
+      console.log('Sidebar opened for market:', marketId);
+      console.log('Add to cart buttons found:', document.querySelectorAll('.add-to-cart').length);
     }
 
     function closeSidebar() {
@@ -3554,51 +3564,85 @@ www.papertiger.com${'     '}
       const countdownInterval = setInterval(updateCountdown, 1000);
     }
 
-    // Add to Cart functionality
-    document.addEventListener('DOMContentLoaded', function () {
-      const addToCartButtons = document.querySelectorAll('.add-to-cart');
-      addToCartButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const productItem = this.closest('.product-item');
-          const productName = productItem.querySelector('h4').textContent;
-          const productImage = productItem.querySelector('.product-image').src;
-          const priceText = productItem.querySelector('.product-price').textContent;
-          const productDescription = productItem.querySelector('.product-description').textContent;
+    // Add to Cart functionality - Using event delegation to handle dynamically shown products
+    document.addEventListener('click', function (e) {
+      // Debug: Log all clicks to verify event delegation is working
+      if (e.target.classList.contains('add-to-cart')) {
+        console.log('Add to cart button clicked!', e.target);
+      }
 
-          // Extract price from text (remove currency symbol and parse)
-          const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+      // Check if the clicked element is an add-to-cart button
+      if (e.target && e.target.classList.contains('add-to-cart')) {
+        e.preventDefault();
 
-          // Get market name from sidebar title
-          const marketName = document.getElementById('sidebarTitle').textContent;
+        const button = e.target;
+        const productItem = button.closest('.product-item');
 
-          // Generate unique product ID
-          const productId = `${marketName.toLowerCase().replace(/\s+/g, '-')}-${productName.toLowerCase().replace(/\s+/g, '-')}`;
+        if (!productItem) {
+          console.error('Product item not found');
+          return;
+        }
 
-          // Create item object for cart
-          const item = {
-            id: productId,
-            name: productName,
-            price: price,
-            image: productImage,
-            market: marketName,
-            description: productDescription,
-            category: 'Fresh Produce'
-          };
+        const productName = productItem.querySelector('h4')?.textContent;
+        const productImage = productItem.querySelector('.product-image')?.src;
+        const priceText = productItem.querySelector('.product-price')?.textContent;
+        const productDescription = productItem.querySelector('.product-description')?.textContent;
 
-          // Add to cart using cart manager
-          if (window.cartManager) {
+        if (!productName || !productImage || !priceText || !productDescription) {
+          console.error('Missing product information');
+          return;
+        }
+
+        // Extract price from text (remove currency symbol and parse)
+        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+
+        if (isNaN(price)) {
+          console.error('Invalid price format:', priceText);
+          return;
+        }
+
+        // Get market name from sidebar title
+        const marketName = document.getElementById('sidebarTitle')?.textContent || 'Unknown Market';
+
+        // Generate unique product ID
+        const productId = `${marketName.toLowerCase().replace(/\s+/g, '-')}-${productName.toLowerCase().replace(/\s+/g, '-')}`;
+
+        // Create item object for cart
+        const item = {
+          id: productId,
+          name: productName,
+          price: price,
+          image: productImage,
+          market: marketName,
+          description: productDescription,
+          category: 'Fresh Produce'
+        };
+
+        console.log('Attempting to add item to cart:', item);
+
+        // Debug: Check if cart manager exists and has the addToCart method
+        console.log('Cart manager exists:', !!window.cartManager);
+        console.log('Cart manager type:', typeof window.cartManager);
+        if (window.cartManager) {
+          console.log('addToCart method exists:', typeof window.cartManager.addToCart);
+        }
+
+        // Add to cart using cart manager
+        if (window.cartManager && typeof window.cartManager.addToCart === 'function') {
+          try {
             const success = window.cartManager.addToCart(item);
 
             if (success) {
+              console.log('Item successfully added to cart');
+
               // Store original styles
-              const originalText = this.textContent;
-              const originalBg = this.style.background;
+              const originalText = button.textContent;
+              const originalBg = button.style.background;
 
               // Animation feedback
-              this.textContent = '✓ Added to Cart';
-              this.style.background = 'linear-gradient(135deg, #4caf50, #45a049)';
-              this.style.transform = 'scale(1.05)';
+              button.textContent = '✓ Added to Cart';
+              button.style.background = 'linear-gradient(135deg, #4caf50, #45a049)';
+              button.style.transform = 'scale(1.05)';
 
               // Add ripple effect
               const ripple = document.createElement('span');
@@ -3611,26 +3655,36 @@ www.papertiger.com${'     '}
                     pointer-events: none;
                 `;
 
-              const rect = this.getBoundingClientRect();
+              const rect = button.getBoundingClientRect();
               const size = Math.max(rect.width, rect.height);
               ripple.style.width = ripple.style.height = size + 'px';
               ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
               ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
 
-              this.appendChild(ripple);
+              button.appendChild(ripple);
 
               setTimeout(() => {
-                this.textContent = originalText;
-                this.style.background = originalBg;
-                this.style.transform = 'scale(1)';
-                ripple.remove();
+                button.textContent = originalText;
+                button.style.background = originalBg;
+                button.style.transform = 'scale(1)';
+                if (ripple.parentNode) {
+                  ripple.remove();
+                }
               }, 2000);
+            } else {
+              console.error('Failed to add item to cart');
+              alert('Failed to add item to cart. Please try again.');
             }
-          } else {
-            console.error('Cart manager not available');
+          } catch (error) {
+            console.error('Error adding item to cart:', error);
+            alert('An error occurred while adding item to cart. Please try again.');
           }
-        });
-      });
+        } else {
+          console.error('Cart manager not available or missing addToCart method');
+          console.log('Available cart manager methods:', window.cartManager ? Object.getOwnPropertyNames(window.cartManager) : 'Cart manager is null');
+          alert('Cart system is not ready. Please wait a moment and try again.');
+        }
+      }
     });
 
     // Add ripple animation CSS
@@ -3807,7 +3861,7 @@ www.papertiger.com${'     '}
           </div>
         </div>
         <div class="product-item">
-          <img src="src/images/herbs.png" alt="Kontomire Leaves" class="product-image">
+          <img src="src/images/products/herbs.png" alt="Kontomire Leaves" class="product-image">
           <div class="product-info">
             <div class="product-header">
               <h4>Kontomire Leaves</h4>
@@ -3930,6 +3984,23 @@ www.papertiger.com${'     '}
 
   <!-- Cart Management System -->
   <script src="src/js/cart-manager.js"></script>
+
+  <!-- Initialize cart system with debug info -->
+  <script>
+    // Ensure cart manager is properly initialized
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('DOM Content Loaded - checking cart manager...');
+
+      // Wait a bit for cart manager to initialize
+      setTimeout(() => {
+        if (window.cartManager) {
+          console.log('Cart manager is available!', window.cartManager);
+        } else {
+          console.error('Cart manager is not available!');
+        }
+      }, 100);
+    });
+  </script>
 
 </body>
 
