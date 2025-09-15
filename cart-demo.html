@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-Shop Cart Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-button {
+            background: #FED141;
+            color: #303A4D;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            background: #e6c236;
+            transform: translateY(-2px);
+        }
+
+        .cart-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #FED141;
+        }
+
+        .product-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .product-img {
+            width: 60px;
+            height: 60px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        h1 {
+            color: #303A4D;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #303A4D;
+            border-bottom: 2px solid #FED141;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛒 Go-Shop Cart System Demo</h1>
+
+    <div class="demo-section">
+        <h2>Add Products to Cart</h2>
+        <p>Click the buttons below to add sample products to your cart:</p>
+
+        <div class="product-demo">
+            <div class="product-card">
+                <div class="product-img">🍌</div>
+                <h3>Fresh Bananas</h3>
+                <p>₵15.00 per bunch</p>
+                <button class="demo-button"
+                    onclick="addProduct('bananas', 'Fresh Bananas', 15.00, '🍌', 'Kaneshie Market')">
+                    Add to Cart
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-img">🍅</div>
+                <h3>Fresh Tomatoes</h3>
+                <p>₵12.00 per kg</p>
+                <button class="demo-button"
+                    onclick="addProduct('tomatoes', 'Fresh Tomatoes', 12.00, '🍅', 'Accra Central Market')">
+                    Add to Cart
+                </button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-img">🌿</div>
+                <h3>Fresh Herbs</h3>
+                <p>₵8.00 per bundle</p>
+                <button class="demo-button"
+                    onclick="addProduct('herbs', 'Fresh Herbs', 8.00, '🌿', 'Kumasi Central Market')">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Cart Management</h2>
+        <button class="demo-button" onclick="showCartSummary()">Show Cart Summary</button>
+        <button class="demo-button" onclick="applyCoupon()">Apply Coupon (FRESH15)</button>
+        <button class="demo-button" onclick="toggleGiftWrap()">Toggle Gift Wrap</button>
+        <button class="demo-button" onclick="clearCart()">Clear Cart</button>
+
+        <div id="cart-display" class="cart-info">
+            <p><strong>Cart is empty</strong></p>
+            <p>Add some products to see cart functionality!</p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Navigation</h2>
+        <p>The cart badge in navigation will update automatically. Try adding items and check:</p>
+        <ul>
+            <li><a href="recipes-hub.html">🛍️ Visit Recipes Hub</a> - Add items from sidebar</li>
+            <li><a href="cart.html">🛒 Visit Cart Page</a> - Manage your cart</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Available Coupons</h2>
+        <div class="cart-info">
+            <p><strong>Try these coupon codes:</strong></p>
+            <ul>
+                <li><code>FRESH15</code> - 15% off orders over ₵50</li>
+                <li><code>MAX500</code> - ₵5 off orders over ₵30</li>
+                <li><code>NEWUSER</code> - 20% off orders over ₵25</li>
+                <li><code>SAVE10</code> - ₵10 off orders over ₵60</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Include cart manager -->
+    <script src="src/js/cart-manager.js"></script>
+
+    <script>
+        // Demo functions
+        function addProduct(id, name, price, emoji, market) {
+            const item = {
+                id: `demo-${id}`,
+                name: name,
+                price: price,
+                image: emoji,
+                market: market,
+                description: `Fresh ${name.toLowerCase()} from local farmers`,
+                category: 'Fresh Produce'
+            };
+
+            if (window.cartManager) {
+                window.cartManager.addToCart(item);
+                showCartSummary();
+            } else {
+                alert('Cart manager not loaded yet. Please wait a moment and try again.');
+            }
+        }
+
+        function showCartSummary() {
+            if (!window.cartManager) {
+                document.getElementById('cart-display').innerHTML = '<p>Cart manager not loaded yet...</p>';
+                return;
+            }
+
+            const summary = window.cartManager.getCartSummary();
+            const displayDiv = document.getElementById('cart-display');
+
+            if (summary.items.length === 0) {
+                displayDiv.innerHTML = `
+                    <p><strong>Cart is empty</strong></p>
+                    <p>Add some products to see cart functionality!</p>
+                `;
+                return;
+            }
+
+            const totals = summary.totals;
+
+            displayDiv.innerHTML = `
+                <h3>Cart Summary</h3>
+                <p><strong>Items:</strong> ${summary.itemCount} total (${totals.selectedItemsCount} selected)</p>
+                
+                <div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 6px;">
+                    ${summary.items.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                            <span>${item.quantity}x ${item.name}</span>
+                            <span>₵${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
+                    <p><strong>Subtotal:</strong> ₵${totals.subtotal.toFixed(2)}</p>
+                    ${totals.discount > 0 ? `<p style="color: #2f9b57;"><strong>Discount:</strong> -₵${totals.discount.toFixed(2)}</p>` : ''}
+                    <p><strong>Delivery:</strong> ${totals.deliveryFee === 0 ? 'FREE' : '₵' + totals.deliveryFee.toFixed(2)}</p>
+                    ${totals.giftWrapFee > 0 ? `<p><strong>Gift Wrap:</strong> ₵${totals.giftWrapFee.toFixed(2)}</p>` : ''}
+                    <p><strong>Tax (12.5%):</strong> ₵${totals.tax.toFixed(2)}</p>
+                    <p style="font-size: 1.2em; font-weight: bold; color: #303A4D;"><strong>Total:</strong> ₵${totals.total.toFixed(2)}</p>
+                </div>
+                
+                ${summary.coupons.length > 0 ? `
+                    <div style="margin-top: 10px;">
+                        <p><strong>Active Coupons:</strong></p>
+                        ${summary.coupons.map(c => `<span style="background: #FED141; padding: 2px 8px; border-radius: 12px; margin: 2px; display: inline-block;">${c.code}</span>`).join('')}
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function applyCoupon() {
+            if (window.cartManager) {
+                const success = window.cartManager.addCoupon('FRESH15');
+                if (success) {
+                    alert('Coupon FRESH15 applied successfully!');
+                    showCartSummary();
+                } else {
+                    alert('Coupon could not be applied. Make sure you have items in cart and coupon is valid.');
+                }
+            }
+        }
+
+        function toggleGiftWrap() {
+            if (window.cartManager) {
+                window.cartManager.toggleGiftWrap();
+                const isEnabled = window.cartManager.cart.giftWrap;
+                alert(`Gift wrap ${isEnabled ? 'enabled' : 'disabled'}!`);
+                showCartSummary();
+            }
+        }
+
+        function clearCart() {
+            if (window.cartManager) {
+                window.cartManager.clearCart();
+                alert('Cart cleared!');
+                showCartSummary();
+            }
+        }
+
+        // Auto-refresh cart display when loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                showCartSummary();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

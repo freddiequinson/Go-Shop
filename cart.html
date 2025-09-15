@@ -1433,8 +1433,12 @@
           <div class="cs-card cs-coupon">
             <div class="cs-row">
               <div class="cs-title">Coupons</div>
-              <button type="button" class="link-btn">MAX500 ×</button>
+              <div class="coupon-input-container">
+                <input type="text" id="coupon-input" placeholder="Enter coupon code" class="coupon-input" />
+                <button type="button" id="apply-coupon" class="link-btn">Apply</button>
+              </div>
             </div>
+            <div id="active-coupons" class="active-coupons"></div>
           </div>
 
           <div class="cs-card cs-gift">
@@ -1442,10 +1446,14 @@
             <div class="cs-gift-row">
               <div class="cs-gift-text">
                 <div class="cs-gift-title">Buying for a loved one?</div>
-                <div class="cs-gift-sub">Send personalized message at $20</div>
-                <button type="button" class="link-btn">Add gift wrap</button>
+                <div class="cs-gift-sub">Send personalized message at ₵20</div>
+                <button type="button" id="toggle-gift-wrap" class="link-btn">Add gift wrap</button>
               </div>
               <div class="cs-gift-art" aria-hidden="true">🎁</div>
+            </div>
+            <div id="gift-message-container" class="gift-message-container" style="display: none;">
+              <textarea id="gift-message" placeholder="Enter your gift message..." maxlength="200"></textarea>
+              <div class="char-count"><span id="char-count">0</span>/200</div>
             </div>
           </div>
 
@@ -1807,6 +1815,8 @@ www.papertiger.com${'     '}
   <script src="src/js/auth.js"></script>
   <script src="src/js/profile-icon-updater.js"></script>
 
+  <!-- Cart Management System -->
+  <script src="src/js/cart-manager.js"></script>
 
   <script>
     window.Scroll.start();
@@ -1814,7 +1824,161 @@ www.papertiger.com${'     '}
     // PAGE LOAD
     window.addEventListener("DOMContentLoaded", (event) => {
       recipesMarquee();
+
+      // Initialize cart page functionality
+      initializeCartPage();
     });
+
+    // Cart page specific functionality
+    function initializeCartPage() {
+      // Coupon functionality
+      const couponInput = document.getElementById('coupon-input');
+      const applyCouponBtn = document.getElementById('apply-coupon');
+
+      if (applyCouponBtn && couponInput) {
+        applyCouponBtn.addEventListener('click', () => {
+          const couponCode = couponInput.value.trim().toUpperCase();
+
+          if (couponCode && window.cartManager) {
+            const success = window.cartManager.addCoupon(couponCode);
+
+            if (success) {
+              couponInput.value = '';
+              showCartMessage('Coupon applied successfully!', 'success');
+            } else {
+              showCartMessage('Invalid coupon code or coupon already applied', 'error');
+            }
+          }
+        });
+
+        // Apply coupon on Enter key
+        couponInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            applyCouponBtn.click();
+          }
+        });
+      }
+
+      // Gift wrap functionality
+      const giftWrapBtn = document.getElementById('toggle-gift-wrap');
+      const giftMessageContainer = document.getElementById('gift-message-container');
+      const giftMessage = document.getElementById('gift-message');
+      const charCount = document.getElementById('char-count');
+
+      if (giftWrapBtn) {
+        giftWrapBtn.addEventListener('click', () => {
+          if (window.cartManager) {
+            window.cartManager.toggleGiftWrap();
+
+            // Update UI
+            const isEnabled = window.cartManager.cart.giftWrap;
+            giftWrapBtn.textContent = isEnabled ? 'Remove gift wrap' : 'Add gift wrap';
+
+            if (giftMessageContainer) {
+              giftMessageContainer.style.display = isEnabled ? 'block' : 'none';
+            }
+          }
+        });
+      }
+
+      // Gift message character counter
+      if (giftMessage && charCount) {
+        giftMessage.addEventListener('input', () => {
+          const length = giftMessage.value.length;
+          charCount.textContent = length;
+
+          // Save gift message to cart
+          if (window.cartManager) {
+            window.cartManager.cart.giftMessage = giftMessage.value;
+            window.cartManager.saveCart();
+          }
+        });
+      }
+
+      // Load existing cart state
+      if (window.cartManager) {
+        const cart = window.cartManager.cart;
+
+        // Update gift wrap UI
+        if (cart.giftWrap && giftWrapBtn) {
+          giftWrapBtn.textContent = 'Remove gift wrap';
+          if (giftMessageContainer) {
+            giftMessageContainer.style.display = 'block';
+          }
+        }
+
+        // Update gift message
+        if (cart.giftMessage && giftMessage) {
+          giftMessage.value = cart.giftMessage;
+          if (charCount) {
+            charCount.textContent = cart.giftMessage.length;
+          }
+        }
+
+        // Update active coupons display
+        updateActiveCouponsDisplay();
+      }
+    }
+
+    // Show cart messages
+    function showCartMessage(message, type = 'info') {
+      const messageEl = document.createElement('div');
+      messageEl.className = `cart-message cart-message-${type}`;
+      messageEl.textContent = message;
+
+      document.body.appendChild(messageEl);
+
+      setTimeout(() => messageEl.classList.add('show'), 100);
+
+      setTimeout(() => {
+        messageEl.classList.remove('show');
+        setTimeout(() => {
+          if (messageEl.parentNode) {
+            messageEl.parentNode.removeChild(messageEl);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Update active coupons display
+    function updateActiveCouponsDisplay() {
+      const activeCouponsContainer = document.getElementById('active-coupons');
+      if (!activeCouponsContainer || !window.cartManager) return;
+
+      const coupons = window.cartManager.cart.coupons;
+
+      if (coupons.length === 0) {
+        activeCouponsContainer.innerHTML = '';
+        return;
+      }
+
+      activeCouponsContainer.innerHTML = coupons.map(coupon => `
+        <div class="coupon-tag">
+          <span>${coupon.code}</span>
+          <button type="button" class="coupon-remove" data-coupon="${coupon.code}" title="Remove coupon">×</button>
+        </div>
+      `).join('');
+
+      // Add remove coupon functionality
+      activeCouponsContainer.querySelectorAll('.coupon-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const couponCode = btn.getAttribute('data-coupon');
+          if (window.cartManager) {
+            window.cartManager.removeCoupon(couponCode);
+            updateActiveCouponsDisplay();
+          }
+        });
+      });
+    }
+
+    // Override cart manager's updateCartDisplay to also update coupons
+    if (window.cartManager) {
+      const originalUpdateDisplay = window.cartManager.updateCartDisplay;
+      window.cartManager.updateCartDisplay = function () {
+        originalUpdateDisplay.call(this);
+        updateActiveCouponsDisplay();
+      };
+    }
   </script>
 
   <!-- SWIPER -->
