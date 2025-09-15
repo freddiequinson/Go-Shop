@@ -1718,49 +1718,33 @@
                 <div fs-cmsfilter-duration="0" fs-cmsnest-element="list" fs-cmsfilter-element="list"
                   fs-cmsfilter-showquery="true" fs-cmsload-element="list" fs-cmsload-mode="pagination" role="list"
                   class="recipes-list w-dyn-items">
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
-                        <img loading="lazy" alt="Kaneshie Market" src="src/images/farmers/f1.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Wholesaler</div>
+                      <div class="market-card-image">
+                        <img loading="lazy" alt="Kaneshie Market" src="src/images/farmers/f1.jpg" class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Kaneshie Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Accra (Makola)
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Kaneshie Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.5 (120+)</span>
+                          <span class="market-distance">• 2.1 km</span>
+                          <span class="market-type">• Wholesalers</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Processed Foods</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+                            <div fs-cmsfilter-field="meal">Wholesalers</div>
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+                            <div fs-cmsfilter-field="dietary">Accra (Makola)</div>
+                            <div fs-cmsfilter-field="dietary">Accra (Others)</div>
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Roasted Spices</div>
+                          <div fs-cmsfilter-field="product">Processed</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.2 (124 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('kaneshie')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-                          <div fs-cmsfilter-field="meal">Wholesalers</div>
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-                          <div fs-cmsfilter-field="dietary">Accra (Makola)</div>
-                          <div fs-cmsfilter-field="dietary">Accra (Others)</div>
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Roasted Spices</div>
-                        <div fs-cmsfilter-field="product">Processed</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('kaneshie')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -1782,49 +1766,34 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Accra Central Market" src="src/images/farmers/f2.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Vendor</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Accra Central Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Kumasi (Adum)
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Accra Central Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.2 (85+)</span>
+                          <span class="market-distance">• 3.4 km</span>
+                          <span class="market-type">• Vendors</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Processed Foods</span>
-                          <span class="specialty-tag">Bulk Items</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+                            <div fs-cmsfilter-field="meal">Vendors</div>
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+                            <div fs-cmsfilter-field="dietary">Kumasi (Adum)</div>
+                            <div fs-cmsfilter-field="dietary">Kumasi (Others)</div>
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Plain</div>
+                          <div fs-cmsfilter-field="product">Processed</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★★</div>
-                          <span class="rating-text">4.5 (89 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('accra')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-                          <div fs-cmsfilter-field="meal">Vendors</div>
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-                          <div fs-cmsfilter-field="dietary">Kumasi (Adum)</div>
-                          <div fs-cmsfilter-field="dietary">Kumasi (Others)</div>
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Plain</div>
-                        <div fs-cmsfilter-field="product">Processed</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('accra')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -1853,49 +1822,34 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Kumasi Central Market" src="src/images/farmers/f3.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Farmer</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Kumasi Central Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Accra (Others)
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Kumasi Central Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.7 (200+)</span>
+                          <span class="market-distance">• 1.8 km</span>
+                          <span class="market-type">• Farmers</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Ginger & Garlic</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+                            <div fs-cmsfilter-field="meal">Farmers</div>
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+                            <div fs-cmsfilter-field="dietary">Accra (Others)</div>
+                            <div fs-cmsfilter-field="dietary">Nsawam</div>
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Ginger & Garlic</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.3 (67 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('kumasi')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-                          <div fs-cmsfilter-field="meal">Farmers</div>
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-                          <div fs-cmsfilter-field="dietary">Accra (Others)</div>
-                          <div fs-cmsfilter-field="dietary">Nsawam</div>
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Ginger & Garlic</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('kumasi')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -1911,49 +1865,33 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
-                        <img loading="lazy" alt="Tamale Market" src="src/images/farmers/shop1.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Market</div>
+                      <div class="market-card-image">
+                        <img loading="lazy" alt="Tamale Market" src="src/images/farmers/shop1.jpg" class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Tamale Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Nsawam
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Tamale Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.3 (75+)</span>
+                          <span class="market-distance">• 5.2 km</span>
+                          <span class="market-type">• Markets</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Sesame & Seeds</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+                            <div fs-cmsfilter-field="meal">Markets</div>
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+                            <div fs-cmsfilter-field="dietary">Keto-Friendly</div>
+                            <div fs-cmsfilter-field="dietary">Nsawam</div>
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Sesame & Seeds</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.1 (45 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('tamale')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-                          <div fs-cmsfilter-field="meal">Markets</div>
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-                          <div fs-cmsfilter-field="dietary">Keto-Friendly</div>
-                          <div fs-cmsfilter-field="dietary">Nsawam</div>
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Sesame & Seeds</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('tamale')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -1965,48 +1903,33 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Cape Coast Market" src="src/images/farmers/shop2.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Market</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Cape Coast Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Cape Coast
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Cape Coast Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.1 (60+)</span>
+                          <span class="market-distance">• 4.3 km</span>
+                          <span class="market-type">• Coastal Market</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Seafood</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Plain</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★★</div>
-                          <span class="rating-text">4.6 (98 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('cape')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Plain</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('cape')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -2020,48 +1943,33 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Takoradi Market" src="src/images/farmers/farmer1.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Market</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Takoradi Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Takoradi
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Takoradi Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.4 (95+)</span>
+                          <span class="market-distance">• 3.7 km</span>
+                          <span class="market-type">• Western Region</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Cinnamon & Nutmeg</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Cinnamon & Nutmeg</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.0 (56 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('takoradi')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Cinnamon & Nutmeg</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('takoradi')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -2072,48 +1980,33 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Sunyani Market" src="src/images/farmers/farmer2.webp"
-                          class="market-image" />
-                        <div class="market-category-badge">Market</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Sunyani Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Sunyani
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Sunyani Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.6 (150+)</span>
+                          <span class="market-distance">• 2.9 km</span>
+                          <span class="market-type">• Regional Market</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Pepper Mix</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Pepper Mix</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.4 (72 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('sunyani')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Pepper Mix</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('sunyani')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -2127,48 +2020,33 @@
                       </div>
                     </div>
                   </div>
-                  <div role="listitem" class="c-recipe-item w-dyn-item">
+                  <div role="listitem" class="market-card-item w-dyn-item">
                     <div class="market-card">
-                      <div class="market-image-container">
+                      <div class="market-card-image">
                         <img loading="lazy" alt="Koforidua Market" src="src/images/farmers/farmer3.jpg"
-                          class="market-image" />
-                        <div class="market-category-badge">Market</div>
+                          class="market-img" />
                       </div>
-                      <div class="market-content">
-                        <h3 class="market-name">Koforidua Market</h3>
-                        <div class="market-location">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          Koforidua
+                      <div class="market-card-content">
+                        <h3 fs-cmsfilter-field="name" class="market-name">Koforidua Market</h3>
+                        <div class="market-meta">
+                          <span class="market-rating">★ 4.3 (110+)</span>
+                          <span class="market-distance">• 4.1 km</span>
+                          <span class="market-type">• Eastern Region</span>
                         </div>
-                        <div class="market-specialties">
-                          <span class="specialty-tag">Fresh Produce</span>
-                          <span class="specialty-tag">Ginger & Garlic</span>
+                        <div class="market-delivery">$0 delivery fee</div>
+                        <div class="hide">
+                          <div fs-cmsnest-collection="meal" class="meals-content">
+
+                          </div>
+                          <div fs-cmsnest-collection="dietary" class="dietary-content">
+
+                          </div>
+                          <div fs-cmsfilter-field="flavor">Ginger & Garlic</div>
+                          <div fs-cmsfilter-field="product">Fresh Produce</div>
                         </div>
-                        <div class="market-rating">
-                          <div class="stars">★★★★☆</div>
-                          <span class="rating-text">4.2 (34 reviews)</span>
-                        </div>
-                        <button class="view-products-btn-new" onclick="toggleSidebar('koforidua')">
-                          <span>View Products</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </button>
                       </div>
-                      <div class="hide">
-                        <div fs-cmsnest-collection="meal" class="meals-content">
-
-                        </div>
-                        <div fs-cmsnest-collection="dietary" class="dietary-content">
-
-                        </div>
-                        <div fs-cmsfilter-field="flavor">Ginger & Garlic</div>
-                        <div fs-cmsfilter-field="product">Fresh Produce</div>
+                      <div class="market-action">
+                        <button class="market-explore-btn" onclick="toggleSidebar('koforidua')">View Products</button>
                       </div>
                     </div>
                     <div class="hide">
@@ -2427,13 +2305,13 @@
                               left: -450px;
                               width: 450px;
                               height: 100vh;
-                              /* Match mobile navbar palette */
-                              background-color: var(--base--white-01, #FFFFFF);
-                              box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+                              background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 30%, #f5f6f7 100%);
+                              box-shadow: 4px 0 24px rgba(48, 58, 77, 0.15), 2px 0 8px rgba(48, 58, 77, 0.08);
                               z-index: 1000;
-                              transition: left 0.3s ease;
+                              transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                               overflow-y: auto;
-                              font-family: Sofiapro, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+                              font-family: Sofiapro, sans-serif;
+                              border-right: 1px solid rgba(48, 58, 77, 0.08);
                             }
 
                             .products-sidebar.open {
@@ -2466,58 +2344,68 @@
                             /* Close Button */
                             .close-sidebar {
                               position: sticky;
-                              top: 12px;
+                              top: 16px;
                               right: auto;
-                              margin: 12px 12px 0 auto;
-                              background-color: var(--base--blurple-01, #303A4D);
-                              border: 2px solid var(--base--blurple-01, #303A4D);
-                              color: var(--base--white-01, #FFFFFF);
-                              font-size: 16px;
-                              font-weight: 700;
+                              margin: 16px 16px 0 auto;
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
+                              border: 1px solid rgba(48, 58, 77, 0.1);
+                              color: var(--base--blurple-01, #303A4D);
+                              font-size: 20px;
+                              font-weight: 600;
                               cursor: pointer;
-                              width: 32px;
-                              height: 32px;
+                              width: 40px;
+                              height: 40px;
                               display: flex;
                               align-items: center;
                               justify-content: center;
-                              border-radius: 50%;
-                              transition: all 0.2s ease;
+                              border-radius: 12px;
+                              box-shadow: 0 4px 12px rgba(48, 58, 77, 0.08), 0 2px 4px rgba(48, 58, 77, 0.04);
+                              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                               z-index: 5;
+                              backdrop-filter: blur(10px);
                             }
 
                             .close-sidebar:hover {
-                              background-color: #3B4559;
-                              border-color: #3B4559;
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(248, 249, 250, 1) 100%);
+                              border-color: rgba(48, 58, 77, 0.15);
+                              transform: translateY(-2px);
+                              box-shadow: 0 8px 20px rgba(48, 58, 77, 0.12), 0 4px 8px rgba(48, 58, 77, 0.06);
+                              color: #2a3344;
                             }
 
                             .close-sidebar:active {
-                              background-color: #2a3344;
-                              border-color: #2a3344;
+                              transform: translateY(0);
+                              box-shadow: 0 2px 8px rgba(48, 58, 77, 0.1);
                             }
 
                             /* Welcome Section */
                             .welcome-section {
-                              padding: 20px;
-                              background-color: var(--base--white-01, #FFFFFF);
+                              padding: 24px;
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.9) 100%);
                               margin-top: -50px;
                               position: relative;
                               border-radius: 20px 20px 0 0;
+                              backdrop-filter: blur(10px);
+                              border: 1px solid rgba(255, 255, 255, 0.2);
+                              box-shadow: 0 8px 32px rgba(48, 58, 77, 0.12);
                               z-index: 1;
                             }
 
                             .welcome-section h2 {
                               margin: 0;
-                              font-size: 26px;
-                              font-weight: 800;
+                              font-size: clamp(20px, 1.5em, 1.5em);
+                              font-weight: 700;
                               color: var(--base--blurple-01, #303A4D);
+                              font-family: Noka, sans-serif;
                               text-transform: uppercase;
-                              letter-spacing: 1px;
+                              letter-spacing: -0.02em;
                             }
 
                             .swipe-prompt {
                               color: var(--base--offblurple-02, #E8E9EA);
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 600;
+                              font-family: Sofiapro, sans-serif;
                               margin: 8px 0 0;
                               animation: swipePrompt 2s infinite;
                             }
@@ -2536,9 +2424,11 @@
 
                             /* Urgency Banner */
                             .urgency-banner {
-                              background-color: var(--base--offwhite-01, #F8F9FA);
-                              padding: 12px 20px;
-                              border-bottom: 1px solid var(--base--offwhite-02, #F1F3F4);
+                              background: linear-gradient(90deg, rgba(255, 243, 224, 0.8) 0%, rgba(254, 235, 200, 0.6) 100%);
+                              padding: 16px 24px;
+                              border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+                              border-top: 1px solid rgba(255, 255, 255, 0.5);
+                              backdrop-filter: blur(5px);
                             }
 
                             .countdown-wrapper {
@@ -2549,22 +2439,26 @@
                             }
 
                             .countdown-time {
-                              font-weight: 800;
+                              font-weight: 700;
                               color: var(--base--blurple-01, #303A4D);
-                              font-size: 16px;
+                              font-size: clamp(16px, 1em, 1em);
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             .countdown-label {
                               color: #3B4559;
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 600;
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             /* Store Overview */
                             .store-overview {
-                              padding: 20px;
-                              border-bottom: 1px solid var(--base--offblurple-02, #E8E9EA);
-                              background-color: var(--base--white-01, #FFFFFF);
+                              padding: 24px;
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 249, 250, 0.5) 100%);
+                              border-bottom: 1px solid rgba(232, 233, 234, 0.6);
+                              border-top: 1px solid rgba(255, 255, 255, 0.8);
+                              backdrop-filter: blur(5px);
                             }
 
                             .rating {
@@ -2580,15 +2474,17 @@
                             }
 
                             .rating-number {
-                              font-weight: 800;
+                              font-weight: 700;
                               color: #303A4D;
-                              font-size: 16px;
+                              font-size: clamp(16px, 1em, 1em);
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             .review-count {
                               color: #3B4559;
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 600;
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             .store-info {
@@ -2602,17 +2498,20 @@
                               align-items: center;
                               gap: 8px;
                               color: #3B4559;
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 600;
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             /* Order Mode Selection */
                             .order-mode {
                               display: flex;
-                              padding: 15px 20px;
+                              padding: 18px 24px;
                               gap: 8px;
-                              border-bottom: 1px solid var(--base--offblurple-02, #E8E9EA);
-                              background-color: var(--base--white-01, #FFFFFF);
+                              background: linear-gradient(90deg, rgba(248, 249, 250, 0.8) 0%, rgba(241, 243, 244, 0.6) 100%);
+                              border-bottom: 1px solid rgba(232, 233, 234, 0.6);
+                              border-top: 1px solid rgba(255, 255, 255, 0.6);
+                              backdrop-filter: blur(5px);
                             }
 
                             .mode-btn {
@@ -2660,9 +2559,10 @@
                               align-items: center;
                               gap: 8px;
                               margin: 5px 0;
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 600;
                               color: #303A4D;
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             .fee-tooltip {
@@ -2740,16 +2640,21 @@
                               display: flex;
                               flex-direction: column;
                               gap: 8px;
-                              padding: 10px;
-                              border: 1px solid #E8E9EA;
-                              border-radius: 10px;
-                              background-color: #FFFFFF;
-                              transition: all 0.3s ease;
+                              padding: 14px;
+                              margin: 8px 16px;
+                              border: 1px solid rgba(232, 233, 234, 0.4);
+                              border-radius: 12px;
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.7) 100%);
+                              backdrop-filter: blur(5px);
+                              box-shadow: 0 2px 8px rgba(48, 58, 77, 0.04);
+                              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                             }
 
                             .product-item:hover {
-                              border-color: #D7D8DA;
-                              background-color: #F8F9FA;
+                              border-color: rgba(215, 216, 218, 0.6);
+                              background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(248, 249, 250, 0.9) 100%);
+                              transform: translateY(-2px);
+                              box-shadow: 0 8px 16px rgba(48, 58, 77, 0.08);
                             }
 
                             .product-image {
@@ -2772,9 +2677,10 @@
 
                             .product-header h4 {
                               margin: 0;
-                              font-size: 14px;
+                              font-size: clamp(14px, 0.875em, 0.875em);
                               font-weight: 700;
                               color: #303A4D;
+                              font-family: Sofiapro, sans-serif;
                             }
 
                             .stock-status {
@@ -2796,16 +2702,18 @@
                             }
 
                             .product-price {
-                              font-size: 14px;
-                              font-weight: 800;
+                              font-size: clamp(14px, 0.875em, 0.875em);
+                              font-weight: 700;
                               color: #303A4D;
+                              font-family: Sofiapro, sans-serif;
                               margin: 4px 0;
                             }
 
                             .product-description {
-                              font-size: 12px;
+                              font-size: clamp(12px, 0.75em, 0.75em);
                               font-weight: 500;
                               color: #3B4559;
+                              font-family: Sofiapro, sans-serif;
                               margin-bottom: 8px;
                               line-height: 1.4;
                               display: -webkit-box;
@@ -2822,8 +2730,9 @@
                               padding: 6px 12px;
                               border-radius: 20px;
                               cursor: pointer;
-                              font-size: 11px;
+                              font-size: clamp(11px, 0.6875em, 0.6875em);
                               font-weight: 600;
+                              font-family: Sofiapro, sans-serif;
                               transition: all 0.2s ease;
                               text-transform: uppercase;
                               letter-spacing: 0.5px;
@@ -2897,6 +2806,7 @@
                               .products-sidebar {
                                 width: 100%;
                                 left: -100%;
+                                background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 40%, #f5f6f7 100%);
                               }
 
                               .products-list {
@@ -2904,7 +2814,8 @@
                               }
 
                               .product-item {
-                                padding: 10px;
+                                padding: 12px;
+                                margin: 6px 12px;
                               }
 
                               .product-image {
@@ -2965,257 +2876,6 @@
                                 border-radius: 15px;
                                 margin: 8px 0;
                                 float: right;
-                              }
-                            }
-
-                            /* Market Card Styles - Clean & Professional */
-                            .market-card {
-                              background: #FFFFFF;
-                              border: 1px solid #E5E7EB;
-                              border-radius: 12px;
-                              overflow: hidden;
-                              transition: all 0.3s ease;
-                              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-                              height: 100%;
-                              display: flex;
-                              flex-direction: column;
-                            }
-
-                            .market-card:hover {
-                              border-color: #D1D5DB;
-                              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-                              transform: translateY(-2px);
-                            }
-
-                            .market-image-container {
-                              position: relative;
-                              height: 180px;
-                              overflow: hidden;
-                            }
-
-                            .market-image {
-                              width: 100%;
-                              height: 100%;
-                              object-fit: cover;
-                              transition: transform 0.3s ease;
-                            }
-
-                            .market-card:hover .market-image {
-                              transform: scale(1.05);
-                            }
-
-                            .market-category-badge {
-                              position: absolute;
-                              top: 12px;
-                              right: 12px;
-                              background: rgba(48, 58, 77, 0.9);
-                              color: white;
-                              padding: 4px 8px;
-                              border-radius: 6px;
-                              font-size: 11px;
-                              font-weight: 600;
-                              text-transform: uppercase;
-                              letter-spacing: 0.5px;
-                              backdrop-filter: blur(4px);
-                            }
-
-                            .market-content {
-                              padding: 20px;
-                              flex: 1;
-                              display: flex;
-                              flex-direction: column;
-                            }
-
-                            .market-name {
-                              margin: 0 0 8px 0;
-                              font-size: 18px;
-                              font-weight: 700;
-                              color: #1F2937;
-                              line-height: 1.3;
-                            }
-
-                            .market-location {
-                              display: flex;
-                              align-items: center;
-                              gap: 6px;
-                              color: #6B7280;
-                              font-size: 14px;
-                              font-weight: 500;
-                              margin-bottom: 12px;
-                            }
-
-                            .market-location svg {
-                              flex-shrink: 0;
-                            }
-
-                            .market-specialties {
-                              display: flex;
-                              flex-wrap: wrap;
-                              gap: 6px;
-                              margin-bottom: 12px;
-                            }
-
-                            .specialty-tag {
-                              background: #F3F4F6;
-                              color: #4B5563;
-                              padding: 4px 8px;
-                              border-radius: 6px;
-                              font-size: 12px;
-                              font-weight: 500;
-                            }
-
-                            .market-rating {
-                              display: flex;
-                              align-items: center;
-                              gap: 8px;
-                              margin-bottom: 16px;
-                            }
-
-                            .market-rating .stars {
-                              color: #F59E0B;
-                              font-size: 14px;
-                              letter-spacing: 1px;
-                            }
-
-                            .rating-text {
-                              color: #6B7280;
-                              font-size: 13px;
-                              font-weight: 500;
-                            }
-
-                            .view-products-btn-new {
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              gap: 8px;
-                              width: 100%;
-                              padding: 12px 16px;
-                              background: #303A4D;
-                              color: white;
-                              border: none;
-                              border-radius: 8px;
-                              font-size: 14px;
-                              font-weight: 600;
-                              cursor: pointer;
-                              transition: all 0.2s ease;
-                              margin-top: auto;
-                            }
-
-                            .view-products-btn-new:hover {
-                              background: #3B4559;
-                              transform: translateY(-1px);
-                            }
-
-                            .view-products-btn-new:active {
-                              transform: translateY(0);
-                            }
-
-                            .view-products-btn-new svg {
-                              width: 16px;
-                              height: 16px;
-                              transition: transform 0.2s ease;
-                            }
-
-                            .view-products-btn-new:hover svg {
-                              transform: translateX(2px);
-                            }
-
-                            /* Grid Layout for Market Cards */
-                            .recipes-list {
-                              display: grid;
-                              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                              gap: 24px;
-                              padding: 0;
-                            }
-
-                            /* Responsive Design */
-                            @media (max-width: 991px) {
-                              .recipes-list {
-                                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                                gap: 20px;
-                              }
-
-                              .market-image-container {
-                                height: 160px;
-                              }
-
-                              .market-content {
-                                padding: 16px;
-                              }
-
-                              .market-name {
-                                font-size: 16px;
-                              }
-                            }
-
-                            @media (max-width: 768px) {
-                              .recipes-list {
-                                grid-template-columns: 1fr;
-                                gap: 16px;
-                              }
-
-                              .market-card {
-                                flex-direction: row;
-                                height: auto;
-                              }
-
-                              .market-image-container {
-                                width: 120px;
-                                height: 120px;
-                                flex-shrink: 0;
-                              }
-
-                              .market-content {
-                                padding: 12px 16px;
-                                flex: 1;
-                              }
-
-                              .market-name {
-                                font-size: 15px;
-                                margin-bottom: 6px;
-                              }
-
-                              .market-location {
-                                font-size: 13px;
-                                margin-bottom: 8px;
-                              }
-
-                              .specialty-tag {
-                                font-size: 11px;
-                                padding: 3px 6px;
-                              }
-
-                              .market-rating {
-                                margin-bottom: 12px;
-                              }
-
-                              .view-products-btn-new {
-                                padding: 8px 12px;
-                                font-size: 13px;
-                              }
-                            }
-
-                            @media (max-width: 480px) {
-                              .market-image-container {
-                                width: 100px;
-                                height: 100px;
-                              }
-
-                              .market-content {
-                                padding: 10px 12px;
-                              }
-
-                              .market-name {
-                                font-size: 14px;
-                              }
-
-                              .market-specialties {
-                                margin-bottom: 8px;
-                              }
-
-                              .specialty-tag {
-                                font-size: 10px;
-                                padding: 2px 5px;
                               }
                             }
                           </style>
