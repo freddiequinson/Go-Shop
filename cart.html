@@ -1508,20 +1508,7 @@
 
 
   <script>
-    const pprtgr = [
-      'color: #F2F3F3',
-      'background: #080808',
-      'font-size: 12px',
-      'padding-left: 10px',
-      'line-height: 2',
-      'border-left: 5px solid #ff3c31',
-    ].join(';');
-    console.info(`
-
-%cWebsite by Paper Tiger${' '}
-www.papertiger.com${'     '}
-
-`, pprtgr);
+    // Removed Paper Tiger console log
   </script>
 
   <script>
@@ -1817,6 +1804,9 @@ www.papertiger.com${'     '}
 
   <!-- Cart Management System -->
   <script src="src/js/cart-manager.js"></script>
+  <script src="src/js/checkout.js"></script>
+  <script src="src/js/member-checkout.js"></script>
+  <script src="src/js/order-notifications.js"></script>
 
   <script>
     window.Scroll.start();
@@ -1918,6 +1908,48 @@ www.papertiger.com${'     '}
         // Update active coupons display
         updateActiveCouponsDisplay();
       }
+
+      // Guest checkout: wire Place order button
+      const placeOrderBtn = document.querySelector('.cs-place');
+      console.log('Place order button found:', placeOrderBtn);
+      console.log('GuestCheckout available:', !!window.GuestCheckout);
+      console.log('CartManager available:', !!window.cartManager);
+      
+      if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          console.log('Place order button clicked');
+          try {
+            const isLoggedIn = window.GoShopAuth && window.GoShopAuth.isLoggedIn && window.GoShopAuth.isLoggedIn();
+            const summary = window.cartManager ? window.cartManager.getCartSummary() : null;
+            
+            if (!summary || summary.totals.selectedItemsCount === 0) {
+              alert('Please select items to checkout');
+              return;
+            }
+
+            if (isLoggedIn && window.MemberCheckout) {
+              // Use member checkout for signed-in users
+              window.MemberCheckout.openModal({
+                totals: summary.totals,
+                items: summary.items.filter(i => i.selected)
+              });
+            } else if (window.GuestCheckout) {
+              // Use guest checkout for non-signed-in users
+              window.GuestCheckout.openModal({
+                totals: summary.totals,
+                items: summary.items.filter(i => i.selected)
+              });
+            } else {
+              console.error('Checkout system not available');
+            }
+          } catch (err) {
+            console.error('Checkout error:', err);
+          }
+        });
+      } else {
+        console.error('Place order button not found');
+      }
     }
 
     // Show cart messages
@@ -1980,6 +2012,92 @@ www.papertiger.com${'     '}
       };
     }
   </script>
+
+  <!-- Guest Checkout Modal -->
+  <div id="guest-checkout-modal" class="guest-checkout-modal" style="display:none; position: fixed; inset: 0; z-index: 10000;">
+    <div class="gcm-backdrop" style="position:absolute; inset:0; background: rgba(0,0,0,0.5);"></div>
+    <div class="gcm-dialog" role="dialog" aria-modal="true" aria-labelledby="guest-checkout-title" style="
+      position: relative; max-width: 520px; width: calc(100% - 2rem); margin: 5vh auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+      <div style="padding: 20px 24px; background: var(--clr-offwhite-02);">
+        <div class="t-display-2" id="guest-checkout-title" style="font-size: 1.25em; font-weight: 800; color: var(--clr-charcoal-01);">Checkout</div>
+        <div class="t-body-2" style="opacity: 0.8;">Enter your contact to receive your receipt.</div>
+      </div>
+      <form id="guest-checkout-form" style="padding: 20px 24px; display: grid; gap: 12px;">
+        <div>
+          <label for="gcm-email" class="t-body-3" style="display:block; margin-bottom:6px; font-weight:600;">Email</label>
+          <input id="gcm-email" type="email" placeholder="you@example.com" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+        </div>
+        <div>
+          <label for="gcm-phone" class="t-body-3" style="display:block; margin-bottom:6px; font-weight:600;">Phone</label>
+          <input id="gcm-phone" type="tel" placeholder="e.g. +233 24 123 4567" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+        </div>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+          <div class="t-body-3" id="gcm-total" style="font-weight: 700;">Total: —</div>
+          <div style="display:flex; gap: 10px;">
+            <button type="button" id="gcm-cancel" class="c-btn is-large is-secondary" style="padding: 10px 16px; border-radius: 8px;">Cancel</button>
+            <button type="submit" class="c-btn is-large" style="padding: 10px 16px; border-radius: 8px; background: var(--clr-yellow-01);">Pay now</button>
+          </div>
+        </div>
+        <div class="t-body-3" style="opacity:0.7;">No account needed. You'll be invited to create one after payment to unlock order history.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Checkout Modal -->
+  <div id="member-checkout-modal" class="member-checkout-modal" style="display:none; position: fixed; inset: 0; z-index: 10000;">
+    <div class="mcm-backdrop" style="position:absolute; inset:0; background: rgba(0,0,0,0.5);"></div>
+    <div class="mcm-dialog" role="dialog" aria-modal="true" aria-labelledby="member-checkout-title" style="
+      position: relative; max-width: 640px; width: calc(100% - 2rem); margin: 3vh auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); max-height: 90vh; display: flex; flex-direction: column;">
+      <div style="padding: 20px 24px; background: var(--clr-offwhite-02);">
+        <div class="t-display-2" id="member-checkout-title" style="font-size: 1.25em; font-weight: 800; color: var(--clr-charcoal-01);">Member Checkout</div>
+        <div class="t-body-2" style="opacity: 0.8;">Complete your order with saved addresses and delivery options.</div>
+      </div>
+      <div style="flex: 1; overflow-y: auto; padding: 20px 24px;">
+        <form id="member-checkout-form" style="display: grid; gap: 16px;">
+        <!-- Delivery Address -->
+        <div>
+          <label for="mcm-address" class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Delivery Address</label>
+          <select id="mcm-address" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+            <option value="">Select an address...</option>
+          </select>
+          <button type="button" id="mcm-new-address" class="t-body-3" style="margin-top:6px; color:var(--clr-yellow-01); text-decoration:underline; background:none; border:none; cursor:pointer;">+ Add new address</button>
+        </div>
+        
+        <!-- Delivery Day -->
+        <div>
+          <label for="mcm-delivery-day" class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Delivery Day</label>
+          <select id="mcm-delivery-day" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+            <option value="">Select delivery day...</option>
+          </select>
+          <div class="t-body-3" style="margin-top:4px; opacity:0.7;">Orders placed after 3 PM will be delivered the next available day.</div>
+        </div>
+        
+        <!-- Payment Method -->
+        <div>
+          <label for="mcm-payment-method" class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Payment Method</label>
+          <select id="mcm-payment-method" class="c-form-input" style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+            <option value="card">Credit/Debit Card</option>
+            <option value="momo">Mobile Money</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+        </div>
+        
+        <!-- Order Summary -->
+        <div style="background: var(--clr-offwhite-02); padding: 16px; border-radius: 8px;">
+          <div class="t-body-3" style="font-weight:600; margin-bottom:8px;">Order Summary</div>
+          <div class="t-body-3" id="mcm-total" style="font-weight: 700;"></div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display:flex; gap: 12px; margin-top: 8px;">
+          <button type="button" id="mcm-cancel" class="c-btn is-large is-secondary" style="flex:1; padding: 12px 16px; border-radius: 8px;">Cancel</button>
+          <button type="submit" class="c-btn is-large" style="flex:2; padding: 12px 16px; border-radius: 8px; background: var(--clr-yellow-01);">Place Order</button>
+        </div>
+        
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- SWIPER -->
   <script>

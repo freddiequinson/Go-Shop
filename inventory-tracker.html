@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Inventory Tracker | Go-Shop</title>
+    <meta content="Track your pantry and fridge inventory" name="description" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link rel="stylesheet" href="src/css/backup.css">
+    <link rel="stylesheet" href="src/css/nodes.css">
+    <link rel="icon" href="src/images/logo1.png" />
+    <style>
+        .inventory-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .inventory-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--clr-yellow-01), #f59e0b);
+            border-radius: 16px;
+            color: var(--clr-charcoal-01);
+        }
+        .inventory-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--clr-charcoal-01);
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .inventory-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .category-filter {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: var(--clr-yellow-01);
+            border-color: var(--clr-yellow-01);
+            color: var(--clr-charcoal-01);
+        }
+        .inventory-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .inventory-item {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .inventory-item.low-stock {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .inventory-item.out-of-stock {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .item-icon {
+            width: 50px;
+            height: 50px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .item-status {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-display {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .member-only-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .member-only-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            margin: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Member-only overlay (shown for non-members) -->
+    <div id="member-only-overlay" class="member-only-overlay" style="display: none;">
+        <div class="member-only-card">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+            <h3 style="margin-bottom: 1rem;">Members Only Feature</h3>
+            <p style="margin-bottom: 1.5rem; color: #6b7280;">
+                The inventory tracker is available to Go-Shop members only. 
+                Sign in or create an account to track your pantry and fridge items.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <a href="index.html" class="c-btn is-secondary" style="padding: 0.75rem 1.5rem; border-radius: 8px;">Go Home</a>
+                <button onclick="redirectToSignIn()" class="c-btn" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: var(--clr-yellow-01);">Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-container">
+        <!-- Header -->
+        <div class="inventory-header">
+            <h1 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">🏠 Inventory Tracker</h1>
+            <p style="margin: 0; font-size: 1.125rem; opacity: 0.9;">Keep track of what's in your pantry and fridge</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="inventory-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-items">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="low-stock-count">0</div>
+                <div class="stat-label">Low Stock</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="out-of-stock-count">0</div>
+                <div class="stat-label">Out of Stock</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="categories-count">0</div>
+                <div class="stat-label">Categories</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="inventory-actions">
+            <button onclick="addNewItem()" class="c-btn" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: var(--clr-yellow-01);">+ Add Item</button>
+            <button onclick="suggestFromOrders()" class="c-btn is-secondary" style="padding: 0.75rem 1.5rem; border-radius: 8px;">📦 Add from Recent Orders</button>
+            <button onclick="exportInventory()" class="c-btn is-secondary" style="padding: 0.75rem 1.5rem; border-radius: 8px;">📄 Export List</button>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <button class="filter-btn active" onclick="filterCategory('all')">All</button>
+            <button class="filter-btn" onclick="filterCategory('fruits')">🍎 Fruits</button>
+            <button class="filter-btn" onclick="filterCategory('vegetables')">🥬 Vegetables</button>
+            <button class="filter-btn" onclick="filterCategory('dairy')">🥛 Dairy</button>
+            <button class="filter-btn" onclick="filterCategory('meat')">🥩 Meat</button>
+            <button class="filter-btn" onclick="filterCategory('pantry')">🥫 Pantry</button>
+            <button class="filter-btn" onclick="filterCategory('frozen')">🧊 Frozen</button>
+        </div>
+
+        <!-- Inventory Grid -->
+        <div class="inventory-grid" id="inventory-grid">
+            <!-- Dynamic inventory items will be populated here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/profile-icon-updater.js"></script>
+    <script>
+        // Sample inventory data
+        const sampleInventory = [
+            { id: 1, name: 'Organic Bananas', category: 'fruits', quantity: 6, unit: 'pieces', icon: '🍌', expiresIn: 3 },
+            { id: 2, name: 'Milk', category: 'dairy', quantity: 1, unit: 'liter', icon: '🥛', expiresIn: 5 },
+            { id: 3, name: 'Spinach', category: 'vegetables', quantity: 0, unit: 'bunch', icon: '🥬', expiresIn: 0 },
+            { id: 4, name: 'Chicken Breast', category: 'meat', quantity: 2, unit: 'pieces', icon: '🐔', expiresIn: 2 },
+            { id: 5, name: 'Rice', category: 'pantry', quantity: 1, unit: 'kg', icon: '🍚', expiresIn: 90 },
+            { id: 6, name: 'Tomatoes', category: 'vegetables', quantity: 4, unit: 'pieces', icon: '🍅', expiresIn: 7 },
+            { id: 7, name: 'Yogurt', category: 'dairy', quantity: 1, unit: 'container', icon: '🥛', expiresIn: 8 },
+            { id: 8, name: 'Frozen Peas', category: 'frozen', quantity: 1, unit: 'bag', icon: '🧊', expiresIn: 60 }
+        ];
+
+        let currentFilter = 'all';
+        let inventory = [];
+
+        function getUserData() {
+            try {
+                if (window.GoShopAuth && window.GoShopAuth.getCurrentUser) {
+                    return window.GoShopAuth.getCurrentUser();
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getInventoryData() {
+            try {
+                const user = getUserData();
+                if (!user) return [];
+                
+                const data = localStorage.getItem(`goshop_inventory_${user.email}`);
+                return data ? JSON.parse(data) : sampleInventory;
+            } catch (e) {
+                return sampleInventory;
+            }
+        }
+
+        function saveInventoryData() {
+            try {
+                const user = getUserData();
+                if (user) {
+                    localStorage.setItem(`goshop_inventory_${user.email}`, JSON.stringify(inventory));
+                }
+            } catch (e) {
+                console.error('Failed to save inventory data');
+            }
+        }
+
+        function getItemStatus(item) {
+            if (item.quantity === 0) return 'out-of-stock';
+            if (item.quantity <= 2) return 'low-stock';
+            return 'in-stock';
+        }
+
+        function getExpiryStatus(expiresIn) {
+            if (expiresIn <= 0) return 'expired';
+            if (expiresIn <= 3) return 'expiring-soon';
+            return 'fresh';
+        }
+
+        function renderInventoryStats() {
+            const totalItems = inventory.length;
+            const lowStock = inventory.filter(item => item.quantity > 0 && item.quantity <= 2).length;
+            const outOfStock = inventory.filter(item => item.quantity === 0).length;
+            const categories = new Set(inventory.map(item => item.category)).size;
+
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('low-stock-count').textContent = lowStock;
+            document.getElementById('out-of-stock-count').textContent = outOfStock;
+            document.getElementById('categories-count').textContent = categories;
+        }
+
+        function renderInventoryGrid() {
+            const grid = document.getElementById('inventory-grid');
+            const filteredItems = currentFilter === 'all' 
+                ? inventory 
+                : inventory.filter(item => item.category === currentFilter);
+
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; opacity: 0.7;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+                        <div>No items in this category</div>
+                        <button onclick="addNewItem()" class="c-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; border-radius: 6px; background: var(--clr-yellow-01);">Add First Item</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const itemsHtml = filteredItems.map(item => {
+                const status = getItemStatus(item);
+                const expiryStatus = getExpiryStatus(item.expiresIn);
+                
+                let statusText = '';
+                if (status === 'out-of-stock') statusText = 'Out of stock';
+                else if (status === 'low-stock') statusText = 'Low stock';
+                else if (expiryStatus === 'expiring-soon') statusText = `Expires in ${item.expiresIn} days`;
+                else statusText = 'In stock';
+
+                return `
+                    <div class="inventory-item ${status}">
+                        <div class="item-icon">${item.icon}</div>
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-status">${statusText}</div>
+                        </div>
+                        <div class="item-quantity">
+                            <button class="quantity-btn" onclick="changeQuantity(${item.id}, -1)">−</button>
+                            <div class="quantity-display">${item.quantity} ${item.unit}</div>
+                            <button class="quantity-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.innerHTML = itemsHtml;
+        }
+
+        function changeQuantity(itemId, change) {
+            const item = inventory.find(i => i.id === itemId);
+            if (item) {
+                item.quantity = Math.max(0, item.quantity + change);
+                saveInventoryData();
+                renderInventoryStats();
+                renderInventoryGrid();
+            }
+        }
+
+        function filterCategory(category) {
+            currentFilter = category;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderInventoryGrid();
+        }
+
+        function addNewItem() {
+            alert('Add new item form would open here in a full implementation');
+        }
+
+        function suggestFromOrders() {
+            alert('This would suggest items from your recent orders to add to inventory');
+        }
+
+        function exportInventory() {
+            const data = inventory.map(item => ({
+                name: item.name,
+                category: item.category,
+                quantity: item.quantity,
+                unit: item.unit,
+                status: getItemStatus(item)
+            }));
+            
+            const csv = [
+                'Name,Category,Quantity,Unit,Status',
+                ...data.map(item => `${item.name},${item.category},${item.quantity},${item.unit},${item.status}`)
+            ].join('\\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'go-shop-inventory.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function redirectToSignIn() {
+            window.location.href = 'index.html#sign-in';
+        }
+
+        function initializeInventoryTracker() {
+            const user = getUserData();
+            
+            if (!user) {
+                // Show member-only overlay
+                document.getElementById('member-only-overlay').style.display = 'flex';
+                return;
+            }
+            
+            // Load inventory data
+            inventory = getInventoryData();
+            renderInventoryStats();
+            renderInventoryGrid();
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeInventoryTracker);
+        } else {
+            initializeInventoryTracker();
+        }
+
+        // Re-initialize when auth state changes
+        document.addEventListener('authStateChanged', initializeInventoryTracker);
+    </script>
+</body>
+</html>

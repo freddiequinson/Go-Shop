@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Order Successful | Go-Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="src/css/backup.css">
+  <link rel="stylesheet" href="src/css/nodes.css">
+  <link rel="stylesheet" href="src/css/cart.css">
+  <link rel="icon" href="src/images/logo1.png" />
+  <style>
+    .success-wrap { max-width: 760px; margin: 8vh auto; padding: 24px; }
+    .success-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+    .success-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .success-icon { width: 40px; height: 40px; border-radius: 50%; background: #22c55e; color: white; display:flex; align-items:center; justify-content:center; font-weight: 800; }
+    .success-grid { display:grid; gap: 12px; margin-top: 16px; }
+    .success-actions { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
+    .btn.primary { background: var(--clr-yellow-01); border: none; }
+    .receipt { background: #fafafa; border: 1px dashed #e5e7eb; border-radius: 10px; padding: 16px; margin-top: 12px; }
+    .line { display: flex; justify-content: space-between; margin: 6px 0; }
+  </style>
+  <script src="src/js/auth.js"></script>
+  <script src="src/js/profile-icon-updater.js"></script>
+</head>
+<body class="c-body" style="background: var(--clr-offwhite-02)">
+  <div class="success-wrap">
+    <div class="success-card">
+      <div class="success-head">
+        <div class="success-icon">✓</div>
+        <div>
+          <div class="t-display-2" style="font-weight:800; color: var(--clr-charcoal-01)">Go-Shop</div>
+          <div class="t-body-2" style="opacity:0.8">Your order is confirmed. A receipt was sent to your email/phone.</div>
+        </div>
+      </div>
+
+      <div id="order-summary" class="receipt"></div>
+
+      <div class="success-actions">
+        <button id="print-receipt" class="btn">Print receipt</button>
+        <button id="download-receipt" class="btn">Download receipt</button>
+        <a href="cart.html" class="btn">Back to shop</a>
+        <a href="auth.html" class="btn primary">Create account to save orders</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function formatCurrency(v){ try { return `${window.cartManager?.defaultCurrency || '₵'}${parseFloat(v||0).toFixed(2)}` } catch (_) { return v } }
+
+    function renderReceipt(data){
+      if(!data){
+        document.getElementById('order-summary').innerHTML = '<div>No receipt found.</div>';
+        return;
+      }
+      const items = (data.items||[]).map(i => `<div class="line"><span>${i.quantity} × ${i.name}</span><span>${formatCurrency(i.price * i.quantity)}</span></div>`).join('');
+      document.getElementById('order-summary').innerHTML = `
+        <div class="line"><strong>Order ID</strong><span>${data.id}</span></div>
+        <div class="line"><strong>Date</strong><span>${new Date(data.createdAt).toLocaleString()}</span></div>
+        <div class="line"><strong>Email</strong><span>${data.email}</span></div>
+        <div class="line"><strong>Phone</strong><span>${data.phone}</span></div>
+        <hr />
+        ${items}
+        <hr />
+        <div class="line"><span>Subtotal</span><span>${formatCurrency(data.totals?.subtotal)}</span></div>
+        <div class="line"><span>Tax</span><span>${formatCurrency(data.totals?.tax || 0)}</span></div>
+        <div class="line"><span>Delivery</span><span>${formatCurrency(data.totals?.deliveryFee || 0)}</span></div>
+        <div class="line"><strong>Total</strong><strong>${formatCurrency(data.totals?.total)}</strong></div>
+      `;
+    }
+
+    function download(text, filename){
+      const blob = new Blob([text], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    const data = JSON.parse(localStorage.getItem('goshop_last_receipt') || 'null');
+    renderReceipt(data);
+
+    document.getElementById('print-receipt').onclick = () => window.print();
+    document.getElementById('download-receipt').onclick = () => {
+      const txt = `Go-Shop Receipt\nOrder: ${data?.id}\nDate: ${new Date(data?.createdAt||Date.now()).toLocaleString()}\nTotal: ${data?.totals?.total}`;
+      download(txt, `receipt-${data?.id||Date.now()}.txt`);
+    };
+  </script>
+</body>
+</html>
+
+

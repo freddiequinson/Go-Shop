@@ -2182,6 +2182,11 @@
                                 <h1 class="profile-name">Welcome Back!</h1>
                                 <p class="profile-email">user@example.com</p>
                             </div>
+                            <div style="margin-left: auto;">
+                                <button class="notification-bell" style="position: relative; background: none; border: none; cursor: pointer; padding: 8px; border-radius: 8px; color: var(--clr-charcoal-01); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <!-- Bell icon and badge will be added by the notification script -->
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2205,6 +2210,7 @@
                                     Info</button>
                                 <button class="profile-nav-dropdown-item" data-tab="orders">Orders</button>
                                 <button class="profile-nav-dropdown-item" data-tab="addresses">Addresses</button>
+                                <button class="profile-nav-dropdown-item" data-tab="saved-items">Saved Items</button>
                                 <button class="profile-nav-dropdown-item" data-tab="payment">Payment Methods</button>
                                 <button class="profile-nav-dropdown-item" data-tab="preferences">Preferences</button>
                             </div>
@@ -2215,6 +2221,7 @@
                             <button class="profile-nav-btn active" data-tab="personal">Personal Info</button>
                             <button class="profile-nav-btn" data-tab="orders">Orders</button>
                             <button class="profile-nav-btn" data-tab="addresses">Addresses</button>
+                            <button class="profile-nav-btn" data-tab="saved-items">Saved Items</button>
                             <button class="profile-nav-btn" data-tab="payment">Payment Methods</button>
                             <button class="profile-nav-btn" data-tab="preferences">Preferences</button>
                         </div>
@@ -2438,6 +2445,31 @@
                                 </div>
                             </div>
 
+                            <!-- Quick Actions -->
+                            <div class="quick-actions" style="margin: 2rem 0;">
+                                <h4 class="form-section-title" style="margin-bottom: 1rem; font-size: 1.125rem;">Member Features</h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                    <a href="inventory-tracker.html" class="quick-action-card" style="display: block; padding: 1.5rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; text-decoration: none; transition: all 0.2s; color: inherit;" onmouseover="this.style.borderColor='var(--clr-yellow-01)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                            <div style="width: 40px; height: 40px; background: var(--clr-yellow-01); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">🏠</div>
+                                            <div>
+                                                <div style="font-weight: 600; margin-bottom: 0.25rem;">Inventory Tracker</div>
+                                                <div style="font-size: 0.875rem; opacity: 0.7;">Track your pantry & fridge</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <div class="quick-action-card" style="padding: 1.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; opacity: 0.6;">
+                                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                            <div style="width: 40px; height: 40px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">📊</div>
+                                            <div>
+                                                <div style="font-weight: 600; margin-bottom: 0.25rem;">Shopping Analytics</div>
+                                                <div style="font-size: 0.875rem; opacity: 0.7;">Coming soon</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Edit Form (Hidden by default) -->
                             <div class="profile-edit-form" id="profile-edit-form" style="display: none;">
                                 <div class="profile-edit-header"
@@ -2590,6 +2622,9 @@
                                 </div>
                             </div>
                             <div class="orders-list">
+                                <div id="order-history-container">
+                                    <!-- Dynamic order history will be populated here -->
+                                </div>
                                 <!-- Order Item 1 -->
                                 <div class="order-item">
                                     <div class="order-header">
@@ -2718,6 +2753,9 @@
                                 </button>
                             </div>
                             <div class="addresses-list">
+                                <div id="saved-addresses-container">
+                                    <!-- Dynamic saved addresses will be populated here -->
+                                </div>
                                 <!-- Default Address -->
                                 <div class="address-item default">
                                     <div class="address-badge">Default</div>
@@ -2851,6 +2889,19 @@
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saved Items Tab -->
+                        <div class="profile-tab" id="saved-items">
+                            <div class="saved-items-header">
+                                <h3 class="form-section-title">Saved Items</h3>
+                                <div class="t-body-3" style="opacity: 0.7;">Items you've saved for later</div>
+                            </div>
+                            <div class="saved-items-list" style="display: grid; gap: 1rem; margin-top: 1.5rem;">
+                                <div id="saved-items-container">
+                                    <!-- Dynamic saved items will be populated here -->
                                 </div>
                             </div>
                         </div>
@@ -3577,6 +3628,8 @@
     <!-- Authentication and Profile Management -->
     <script src="src/js/auth.js"></script>
     <script src="src/js/profile-icon-updater.js"></script>
+    <script src="src/js/member-dashboard.js"></script>
+    <script src="src/js/order-notifications.js"></script>
     <script>
         // Profile page initialization
         document.addEventListener('DOMContentLoaded', function () {

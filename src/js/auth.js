@@ -132,14 +132,43 @@ class GoShopAuth {
             password: password, // In production, you'd hash this
             createdAt: new Date().toISOString(),
             orders: [],
-            favorites: [],
+            favorites: [
+                {
+                    id: 'item-1',
+                    name: 'Organic Spinach',
+                    price: 4.99,
+                    category: 'vegetables',
+                    savedAt: new Date().toISOString()
+                },
+                {
+                    id: 'item-2', 
+                    name: 'Fresh Avocados',
+                    price: 6.50,
+                    category: 'fruits',
+                    savedAt: new Date().toISOString()
+                }
+            ],
             addresses: [
                 {
                     id: 'default-address',
+                    label: 'Home',
                     type: 'home',
-                    name: 'Home',
-                    fullAddress: location.trim(),
+                    street: location.trim(),
+                    city: 'Accra',
+                    region: 'Greater Accra',
+                    phone: '+233 24 123 4567',
                     isDefault: true,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'office-address',
+                    label: 'Office',
+                    type: 'office',
+                    street: 'Ring Road Central, East Legon',
+                    city: 'Accra',
+                    region: 'Greater Accra',
+                    phone: '+233 24 123 4567',
+                    isDefault: false,
                     createdAt: new Date().toISOString()
                 }
             ],
