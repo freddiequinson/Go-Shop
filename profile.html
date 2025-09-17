@@ -3403,6 +3403,23 @@
                 }
             }
 
+            // Handle deep links: #payment or stored deeplink
+            try {
+                const hash = (window.location.hash || '').replace('#', '');
+                if (hash === 'payment') {
+                    switchTab('payment');
+                } else {
+                    const deeplinkRaw = localStorage.getItem('goshop_deeplink');
+                    if (deeplinkRaw) {
+                        const deeplink = JSON.parse(deeplinkRaw);
+                        if (deeplink && deeplink.target === 'profile' && deeplink.tab) {
+                            switchTab(deeplink.tab);
+                        }
+                        localStorage.removeItem('goshop_deeplink');
+                    }
+                }
+            } catch (_) {}
+
             // Form submissions
             const forms = document.querySelectorAll('form');
             forms.forEach(form => {
@@ -4778,6 +4795,17 @@
                 document.getElementById('payment-details-step').style.display = 'none';
             }
 
+            function setFieldState(selector, enabled, required) {
+                const el = document.querySelector(selector);
+                if (!el) return;
+                el.disabled = !enabled;
+                if (required) {
+                    el.setAttribute('required', '');
+                } else {
+                    el.removeAttribute('required');
+                }
+            }
+
             function showPaymentDetailsStep(paymentType) {
                 document.getElementById('payment-type-step').style.display = 'none';
                 document.getElementById('payment-details-step').style.display = 'block';
@@ -4796,13 +4824,29 @@
                 momoFields.style.display = 'none';
                 cashFields.style.display = 'none';
 
+                // Disable and un-require all inputs by default
+                setFieldState('input[name="cardNumber"]', false, false);
+                setFieldState('select[name="expiryMonth"]', false, false);
+                setFieldState('select[name="expiryYear"]', false, false);
+                setFieldState('input[name="cvv"]', false, false);
+                setFieldState('select[name="momoService"]', false, false);
+                setFieldState('input[name="momoName"]', false, false);
+                setFieldState('input[name="momoNumber"]', false, false);
+
                 // Show relevant fields and update title based on selection
                 if (paymentType === 'card') {
                     cardFields.style.display = 'block';
                     stepTitle.textContent = 'Card Details';
+                    setFieldState('input[name="cardNumber"]', true, true);
+                    setFieldState('select[name="expiryMonth"]', true, true);
+                    setFieldState('select[name="expiryYear"]', true, true);
+                    setFieldState('input[name="cvv"]', true, true);
                 } else if (paymentType === 'momo') {
                     momoFields.style.display = 'block';
                     stepTitle.textContent = 'Mobile Money Details';
+                    setFieldState('select[name="momoService"]', true, true);
+                    setFieldState('input[name="momoName"]', true, true);
+                    setFieldState('input[name="momoNumber"]', true, true);
                 } else if (paymentType === 'cash') {
                     cashFields.style.display = 'block';
                     stepTitle.textContent = 'Cash Payment';

@@ -21,6 +21,16 @@
         deliveryDaySelect: document.getElementById('mcm-delivery-day'),
         deliveryFeeEl: document.getElementById('mcm-delivery-fee'),
         paymentMethodSelect: document.getElementById('mcm-payment-method'),
+        addPaymentBtn: document.getElementById('mcm-add-payment'),
+        addPaymentForm: document.getElementById('mcm-add-payment-form'),
+        pmType: document.getElementById('mcm-pm-type'),
+        cardType: document.getElementById('mcm-card-type'),
+        cardLast4: document.getElementById('mcm-card-last4'),
+        expMonth: document.getElementById('mcm-exp-month'),
+        expYear: document.getElementById('mcm-exp-year'),
+        pmDefault: document.getElementById('mcm-pm-default'),
+        savePaymentBtn: document.getElementById('mcm-save-payment'),
+        cancelPaymentBtn: document.getElementById('mcm-cancel-payment'),
       };
     }
     return elementsCache;
@@ -111,6 +121,46 @@
     }
   }
 
+  function populatePaymentMethods() {
+    const elements = getElements();
+    if (!elements.paymentMethodSelect) return;
+    const user = getUserData();
+
+    // Clear existing options
+    elements.paymentMethodSelect.innerHTML = '';
+
+    const methods = (user && user.paymentMethods) ? user.paymentMethods : [];
+
+    if (methods.length > 0) {
+      methods.forEach((pm, idx) => {
+        let label = 'Payment Method';
+        
+        if (pm.type === 'card') {
+          label = `${pm.cardType || 'Card'} •••• ${pm.lastFour || 'XXXX'}`;
+        } else if (pm.type === 'momo') {
+          const provider = pm.provider || 'Mobile Money';
+          const lastFour = pm.phoneNumber ? pm.phoneNumber.slice(-4) : 'XXXX';
+          label = `${provider} •••• ${lastFour}`;
+        } else if (pm.type === 'cash') {
+          label = 'Cash on Delivery';
+        } else if (pm.label) {
+          label = pm.label;
+        }
+        
+        const option = document.createElement('option');
+        option.value = pm.id || String(idx);
+        option.textContent = label;
+        elements.paymentMethodSelect.appendChild(option);
+      });
+    } else {
+      // No payment methods → show placeholder and disable select
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = 'No payment methods saved';
+      elements.paymentMethodSelect.appendChild(option);
+    }
+  }
+
   function calculateDeliveryFee(deliveryDate) {
     if (!deliveryDate) return 0;
     
@@ -162,6 +212,7 @@
     // Populate form data
     populateSavedAddresses();
     populateDeliveryDays();
+    populatePaymentMethods();
     updateTotals();
     
     // Show modal
@@ -225,7 +276,7 @@
 
     const deliveryDate = elements.deliveryDaySelect?.value;
     const deliveryFee = calculateDeliveryFee(deliveryDate);
-    const paymentMethod = elements.paymentMethodSelect?.value || 'card';
+    const paymentMethod = elements.paymentMethodSelect?.value || '';
 
     const items = (currentCheckout.items || []).map(i => ({
       id: i.id,
@@ -280,6 +331,107 @@
       });
     }
 
+    // Add payment method handler → redirect to profile payments tab
+    if (elements.addPaymentBtn) {
+      elements.addPaymentBtn.addEventListener('click', () => {
+        try {
+          // Persist intent so profile can auto-open the Payment Methods tab
+          localStorage.setItem('goshop_deeplink', JSON.stringify({ target: 'profile', tab: 'payment' }));
+        } catch (_) {}
+        window.location.href = 'profile.html#payment';
+      });
+    }
+
+    // Cancel payment method handler
+    if (elements.cancelPaymentBtn) {
+      elements.cancelPaymentBtn.addEventListener('click', () => {
+        if (elements.addPaymentForm) {
+          elements.addPaymentForm.style.display = 'none';
+          // Clear form
+          if (elements.cardType) elements.cardType.value = '';
+          if (elements.cardLast4) elements.cardLast4.value = '';
+          if (elements.expMonth) elements.expMonth.value = '';
+          if (elements.expYear) elements.expYear.value = '';
+          if (elements.pmDefault) elements.pmDefault.checked = false;
+        }
+      });
+    }
+
+    // Save payment method handler
+    if (elements.savePaymentBtn) {
+      elements.savePaymentBtn.addEventListener('click', () => {
+        const pmType = elements.pmType?.value || 'card';
+        const cardType = elements.cardType?.value.trim();
+        const last4 = elements.cardLast4?.value.trim();
+        const expMonth = elements.expMonth?.value.trim();
+        const expYear = elements.expYear?.value.trim();
+        const isDefault = elements.pmDefault?.checked || false;
+
+        if (!cardType || !last4 || last4.length !== 4) {
+          alert('Please provide card type and last 4 digits');
+          return;
+        }
+
+        // Get current user data
+        const user = getUserData();
+        if (!user) {
+          alert('User not found');
+          return;
+        }
+
+        // Create new payment method
+        const newPaymentMethod = {
+          id: `pm_${Date.now()}`,
+          type: pmType,
+          cardType: cardType,
+          lastFour: last4,
+          expiryMonth: expMonth,
+          expiryYear: expYear,
+          isDefault: isDefault
+        };
+
+        // Add to user's payment methods
+        if (!user.paymentMethods) {
+          user.paymentMethods = [];
+        }
+        user.paymentMethods.push(newPaymentMethod);
+
+        // If this is set as default, unset others
+        if (isDefault) {
+          user.paymentMethods.forEach(pm => {
+            if (pm.id !== newPaymentMethod.id) {
+              pm.isDefault = false;
+            }
+          });
+        }
+
+        // Save updated user data
+        try {
+          localStorage.setItem('goshop_user', JSON.stringify(user));
+          
+          // Refresh payment method dropdown
+          populatePaymentMethods();
+          
+          // Hide the form
+          if (elements.addPaymentForm) {
+            elements.addPaymentForm.style.display = 'none';
+          }
+          
+          // Clear form
+          if (elements.cardType) elements.cardType.value = '';
+          if (elements.cardLast4) elements.cardLast4.value = '';
+          if (elements.expMonth) elements.expMonth.value = '';
+          if (elements.expYear) elements.expYear.value = '';
+          if (elements.pmDefault) elements.pmDefault.checked = false;
+          
+          alert('Payment method added successfully!');
+        } catch (e) {
+          console.error('Failed to save payment method', e);
+          alert('Failed to save payment method');
+        }
+      });
+    }
+
 
     // Submit handler
     if (elements.form) {
@@ -295,6 +447,15 @@
         }
         if (!deliveryDate) {
           alert('Please select a delivery day');
+          return;
+        }
+
+        // Require saved payment method
+        const pmVal = elements.paymentMethodSelect?.value || '';
+        const user = getUserData();
+        const hasMethods = Array.isArray(user?.paymentMethods) && user.paymentMethods.length > 0;
+        if (!hasMethods || !pmVal) {
+          alert('Please add a payment method in your profile before checkout.');
           return;
         }
 

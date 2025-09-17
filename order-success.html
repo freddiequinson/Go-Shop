@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="src/css/nodes.css">
   <link rel="stylesheet" href="src/css/cart.css">
   <link rel="icon" href="src/images/logo1.png" />
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <style>
     .success-wrap { max-width: 760px; margin: 8vh auto; padding: 24px; }
     .success-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
@@ -19,6 +20,23 @@
     .btn.primary { background: var(--clr-yellow-01); border: none; }
     .receipt { background: #fafafa; border: 1px dashed #e5e7eb; border-radius: 10px; padding: 16px; margin-top: 12px; }
     .line { display: flex; justify-content: space-between; margin: 6px 0; }
+    .receipt-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .receipt-table th, .receipt-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+    .receipt-total { font-weight: 800; }
+    .delivery-summary { margin-top: 14px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; }
+    .delivery-summary h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 800; color: #303A4D; }
+    .delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .delivery-item { font-size: 13px; color: #374151; }
+    .delivery-route { font-size: 12px; color: #6b7280; margin-top: 6px; }
+
+    /* Print styles: hide controls and unify typography */
+    @media print {
+      .success-actions, .success-icon { display: none !important; }
+      body { background: #fff !important; }
+      .success-wrap { margin: 0; padding: 0; }
+      .success-card { box-shadow: none; border: none; padding: 0; }
+      .receipt { background: #fff; border: none; padding: 0; }
+    }
   </style>
   <script src="src/js/auth.js"></script>
   <script src="src/js/profile-icon-updater.js"></script>
@@ -38,7 +56,7 @@
 
       <div class="success-actions">
         <button id="print-receipt" class="btn">Print receipt</button>
-        <button id="download-receipt" class="btn">Download receipt</button>
+        <button id="download-receipt" class="btn">Download PDF</button>
         <a href="cart.html" class="btn">Back to shop</a>
         <a href="auth.html" class="btn primary">Create account to save orders</a>
       </div>
@@ -53,28 +71,69 @@
         document.getElementById('order-summary').innerHTML = '<div>No receipt found.</div>';
         return;
       }
-      const items = (data.items||[]).map(i => `<div class="line"><span>${i.quantity} × ${i.name}</span><span>${formatCurrency(i.price * i.quantity)}</span></div>`).join('');
+      const itemsTable = `
+        <table class="receipt-table">
+          <thead>
+            <tr><th style="width:60%">Item</th><th>Qty</th><th style="text-align:right">Amount</th></tr>
+          </thead>
+          <tbody>
+            ${(data.items||[]).map(i => `
+              <tr>
+                <td>${i.name}</td>
+                <td>${i.quantity}</td>
+                <td style="text-align:right">${formatCurrency((i.price||0) * (i.quantity||0))}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
       document.getElementById('order-summary').innerHTML = `
-        <div class="line"><strong>Order ID</strong><span>${data.id}</span></div>
-        <div class="line"><strong>Date</strong><span>${new Date(data.createdAt).toLocaleString()}</span></div>
-        <div class="line"><strong>Email</strong><span>${data.email}</span></div>
-        <div class="line"><strong>Phone</strong><span>${data.phone}</span></div>
+        <div class="line"><strong>Order ID</strong><span>${data.id||'-'}</span></div>
+        <div class="line"><strong>Date</strong><span>${new Date(data.createdAt||Date.now()).toLocaleString()}</span></div>
+        ${data.email ? `<div class="line"><strong>Email</strong><span>${data.email}</span></div>` : ''}
+        ${data.phone ? `<div class="line"><strong>Phone</strong><span>${data.phone}</span></div>` : ''}
         <hr />
-        ${items}
+        ${itemsTable}
         <hr />
         <div class="line"><span>Subtotal</span><span>${formatCurrency(data.totals?.subtotal)}</span></div>
         <div class="line"><span>Tax</span><span>${formatCurrency(data.totals?.tax || 0)}</span></div>
         <div class="line"><span>Delivery</span><span>${formatCurrency(data.totals?.deliveryFee || 0)}</span></div>
-        <div class="line"><strong>Total</strong><strong>${formatCurrency(data.totals?.total)}</strong></div>
+        <div class="line receipt-total"><span>Total</span><span>${formatCurrency(data.totals?.total)}</span></div>
+        ${buildDeliverySummary(data)}
       `;
     }
 
-    function download(text, filename){
-      const blob = new Blob([text], {type: 'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
+    function buildDeliverySummary(data){
+      try {
+        const addr = data.address || null;
+        const deliveryDate = data.deliveryDate || null;
+        const city = addr?.city || addr?.region || '';
+        const street = addr?.street || addr?.fullAddress || '';
+        const routeCity = city || 'Destination Area';
+        const dayLabel = deliveryDate ? new Date(deliveryDate).toLocaleDateString() : 'Not specified';
+
+        let windowLabel = 'Standard (2-3 days)';
+        if (deliveryDate) {
+          const dSel = new Date(deliveryDate);
+          const diffDays = Math.ceil((dSel - new Date()) / (1000*60*60*24));
+          windowLabel = diffDays <= 0 ? 'Same Day' : (diffDays === 1 ? 'Next Day' : `${diffDays} days`);
+        }
+
+        return `
+          <div class=\"delivery-summary\">
+            <h4>Delivery Summary</h4>
+            <div class=\"delivery-grid\">
+              <div class=\"delivery-item\"><strong>Delivery Date:</strong> ${dayLabel}</div>
+              <div class=\"delivery-item\"><strong>Window:</strong> ${windowLabel}</div>
+              ${street ? `<div class=\"delivery-item\" style=\"grid-column: span 2;\"><strong>Address:</strong> ${street}${city?`, ${city}`:''}</div>` : ''}
+            </div>
+            <div class=\"delivery-route\">
+              Route: Warehouse → Dispatch Center → ${routeCity} → Destination
+            </div>
+          </div>
+        `;
+      } catch (_) {
+        return '';
+      }
     }
 
     const data = JSON.parse(localStorage.getItem('goshop_last_receipt') || 'null');
@@ -82,8 +141,39 @@
 
     document.getElementById('print-receipt').onclick = () => window.print();
     document.getElementById('download-receipt').onclick = () => {
-      const txt = `Go-Shop Receipt\nOrder: ${data?.id}\nDate: ${new Date(data?.createdAt||Date.now()).toLocaleString()}\nTotal: ${data?.totals?.total}`;
-      download(txt, `receipt-${data?.id||Date.now()}.txt`);
+      const summaryEl = document.getElementById('order-summary');
+      const container = document.createElement('div');
+      container.style.padding = '16px';
+      container.style.fontFamily = 'Sofiapro, Arial, sans-serif';
+      container.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img src="src/images/logo1.png" alt="Go-Shop" style="width:32px; height:32px;"/>
+            <div style="font-size:18px; font-weight:800;">Go-Shop</div>
+          </div>
+          <div style="text-align:right; font-size:12px; color:#6b7280;">
+            <div>Order: ${data?.id||'-'}</div>
+            <div>${new Date(data?.createdAt||Date.now()).toLocaleString()}</div>
+          </div>
+        </div>
+        <hr style="margin:12px 0;"/>
+        ${summaryEl.innerHTML}
+        <div style="margin-top:12px; font-size:12px; color:#666;">Thank you for shopping with Go-Shop.</div>
+      `;
+
+      const opt = {
+        margin:       10,
+        filename:     `receipt-${data?.id||Date.now()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (window.html2pdf) {
+        window.html2pdf().set(opt).from(container).save();
+      } else {
+        alert('PDF generator not loaded. Please try again.');
+      }
     };
   </script>
 </body>

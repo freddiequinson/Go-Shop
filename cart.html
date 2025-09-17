@@ -2031,6 +2031,32 @@
           <label for="gcm-phone" class="t-body-3" style="display:block; margin-bottom:6px; font-weight:600;">Phone</label>
           <input id="gcm-phone" type="tel" placeholder="e.g. +233 24 123 4567" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
         </div>
+        <div>
+          <label class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Payment Method *</label>
+          <div style="display:grid; gap:8px;">
+            <select id="gcm-payment-type" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+              <option value="">Select a method...</option>
+              <option value="card">Credit/Debit Card</option>
+              <option value="momo">Mobile Money</option>
+            </select>
+            <div id="gcm-card-fields" style="display:none; grid-template-columns:1fr 1fr; gap:8px;">
+              <input id="gcm-card-type" type="text" placeholder="Card type (Visa/Mastercard)" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="gcm-card-last4" type="text" maxlength="4" placeholder="Last 4 digits" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="gcm-exp-month" type="text" maxlength="2" placeholder="MM" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="gcm-exp-year" type="text" maxlength="2" placeholder="YY" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+            </div>
+            <div id="gcm-momo-fields" style="display:none; grid-template-columns:1fr 1fr; gap:8px;">
+              <select id="gcm-momo-provider" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+                <option value="">Select provider...</option>
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="vodafone">Vodafone Cash</option>
+                <option value="airtel">AirtelTigo Money</option>
+              </select>
+              <input id="gcm-momo-number" type="tel" placeholder="Phone number" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+            </div>
+          </div>
+          <div class="t-body-3" style="opacity:0.7; margin-top:6px;">Payment method is required to complete your order.</div>
+        </div>
         <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 6px;">
           <div class="t-body-3" id="gcm-total" style="font-weight: 700;">Total: —</div>
           <div style="display:flex; gap: 10px;">
@@ -2075,11 +2101,28 @@
         <!-- Payment Method -->
         <div>
           <label for="mcm-payment-method" class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Payment Method</label>
-          <select id="mcm-payment-method" class="c-form-input" style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
-            <option value="card">Credit/Debit Card</option>
-            <option value="momo">Mobile Money</option>
-            <option value="bank">Bank Transfer</option>
-          </select>
+          <select id="mcm-payment-method" class="c-form-input" style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;"></select>
+          <button type="button" id="mcm-add-payment" class="t-body-3" style="margin-top:6px; color:var(--clr-yellow-01); text-decoration:underline; background:none; border:none; cursor:pointer;">+ Add payment method</button>
+          <div id="mcm-add-payment-form" style="display:none; margin-top:8px; background:#fafafa; border:1px solid #eee; border-radius:8px; padding:12px;">
+            <div class="t-body-3" style="font-weight:600; margin-bottom:6px;">Add Payment Method</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <select id="mcm-pm-type" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+                <option value="card">Credit/Debit Card</option>
+                <option value="momo">Mobile Money</option>
+              </select>
+              <input id="mcm-card-type" type="text" placeholder="Card type (Visa/Mastercard)" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="mcm-card-last4" type="text" maxlength="4" placeholder="Last 4 digits" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="mcm-exp-month" type="text" maxlength="2" placeholder="MM" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="mcm-exp-year" type="text" maxlength="2" placeholder="YY" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <label style="display:flex; align-items:center; gap:8px;">
+                <input id="mcm-pm-default" type="checkbox" /> Set as default
+              </label>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="button" id="mcm-save-payment" class="c-btn is-large" style="padding:8px 12px; border-radius:8px; background: var(--clr-yellow-01);">Save Method</button>
+              <button type="button" id="mcm-cancel-payment" class="c-btn is-large is-secondary" style="padding:8px 12px; border-radius:8px;">Cancel</button>
+            </div>
+          </div>
         </div>
         
         <!-- Order Summary -->

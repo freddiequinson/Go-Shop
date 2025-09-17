@@ -17,7 +17,16 @@
         totalEl: document.getElementById('gcm-total'),
         cancelBtn: document.getElementById('gcm-cancel'),
         emailInput: document.getElementById('gcm-email'),
-        phoneInput: document.getElementById('gcm-phone')
+        phoneInput: document.getElementById('gcm-phone'),
+        pmType: document.getElementById('gcm-payment-type'),
+        cardFields: document.getElementById('gcm-card-fields'),
+        momoFields: document.getElementById('gcm-momo-fields'),
+        cardType: document.getElementById('gcm-card-type'),
+        last4: document.getElementById('gcm-card-last4'),
+        expMonth: document.getElementById('gcm-exp-month'),
+        expYear: document.getElementById('gcm-exp-year'),
+        momoProvider: document.getElementById('gcm-momo-provider'),
+        momoNumber: document.getElementById('gcm-momo-number')
       };
       console.log('Checkout elements found:', {
         modal: !!elementsCache.modal,
@@ -25,7 +34,8 @@
         totalEl: !!elementsCache.totalEl,
         cancelBtn: !!elementsCache.cancelBtn,
         emailInput: !!elementsCache.emailInput,
-        phoneInput: !!elementsCache.phoneInput
+        phoneInput: !!elementsCache.phoneInput,
+        pmType: !!elementsCache.pmType
       });
     }
     return elementsCache;
@@ -57,6 +67,15 @@
     }
     if (elements.emailInput) elements.emailInput.value = '';
     if (elements.phoneInput) elements.phoneInput.value = '';
+    if (elements.pmType) elements.pmType.value = '';
+    if (elements.cardType) elements.cardType.value = '';
+    if (elements.last4) elements.last4.value = '';
+    if (elements.expMonth) elements.expMonth.value = '';
+    if (elements.expYear) elements.expYear.value = '';
+    if (elements.momoProvider) elements.momoProvider.value = '';
+    if (elements.momoNumber) elements.momoNumber.value = '';
+    if (elements.cardFields) elements.cardFields.style.display = 'none';
+    if (elements.momoFields) elements.momoFields.style.display = 'none';
     elements.modal.style.display = 'block';
     document.body.classList.add('no-scroll');
   }
@@ -80,7 +99,7 @@
     }
   }
 
-  function createGuestOrder(email, phone) {
+  function createGuestOrder(email, phone, payment) {
     const id = `G-${Date.now()}`;
     const createdAt = new Date().toISOString();
     const items = (currentCheckout?.items || []).map(i => ({
@@ -90,7 +109,7 @@
       quantity: i.quantity,
     }));
     const totals = currentCheckout?.totals || { subtotal: 0, total: 0 };
-    return { id, createdAt, email, phone, items, totals, status: 'paid' };
+    return { id, createdAt, email, phone, items, totals, payment, status: 'paid' };
   }
 
   // Initialize event handlers when needed
@@ -110,6 +129,19 @@
       });
     }
 
+    // Payment method toggle
+    if (elements.pmType) {
+      elements.pmType.addEventListener('change', () => {
+        const type = elements.pmType.value;
+        if (elements.cardFields) {
+          elements.cardFields.style.display = type === 'card' ? 'grid' : 'none';
+        }
+        if (elements.momoFields) {
+          elements.momoFields.style.display = type === 'momo' ? 'grid' : 'none';
+        }
+      });
+    }
+
     // Submit handler (simulate payment then redirect)
     if (elements.form) {
       elements.form.addEventListener('submit', function (e) {
@@ -126,8 +158,36 @@
           return;
         }
 
+        // Payment validation (guests must select/add payment)
+        const pmType = elements.pmType?.value || '';
+        if (!pmType) {
+          alert('Please select a payment method');
+          return;
+        }
+
+        let payment = { type: pmType };
+        if (pmType === 'card') {
+          const cardType = elements.cardType?.value.trim();
+          const last4 = elements.last4?.value.trim();
+          const expMonth = elements.expMonth?.value.trim();
+          const expYear = elements.expYear?.value.trim();
+          if (!cardType || !last4 || last4.length !== 4) {
+            alert('Please provide card type and last 4 digits');
+            return;
+          }
+          payment = { type: 'card', cardType, lastFour: last4, expiryMonth: expMonth, expiryYear: expYear };
+        } else if (pmType === 'momo') {
+          const provider = elements.momoProvider?.value.trim();
+          const number = elements.momoNumber?.value.trim();
+          if (!provider || !number || number.length < 10) {
+            alert('Please select a mobile money provider and enter a valid phone number');
+            return;
+          }
+          payment = { type: 'momo', provider, number };
+        }
+
         // Build order
-        const order = createGuestOrder(email, phone);
+        const order = createGuestOrder(email, phone, payment);
         saveGuestOrder(order);
 
         // Clear selected items from cart (simulate fulfillment)
