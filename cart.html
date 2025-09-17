@@ -636,6 +636,21 @@
           color: inherit;
         }
 
+        /* Admin menu styling */
+        .c-mobile-admin .c-btn {
+          transition: all 0.3s ease;
+        }
+
+        .c-mobile-admin .c-btn:hover {
+          background: rgba(254, 209, 65, 0.2) !important;
+          border-color: rgba(254, 209, 65, 0.5) !important;
+          transform: translateY(-2px);
+        }
+
+        .c-mobile-admin .c-btn:active {
+          transform: translateY(0);
+        }
+
         /* Footer auth forms responsive */
         .auth-toggle-wrap {
           display: flex;
@@ -1128,6 +1143,19 @@
             </a>
           </div>
         </div>
+        
+        <!-- Admin Menu Item (Mobile) -->
+        <div class="c-mobile-admin" style="margin: 1.5em 0; padding: 1em 0; border-top: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2);">
+          <a href="admin.html" class="c-btn is-large is-secondary w-inline-block" style="background: rgba(254, 209, 65, 0.1); border: 1px solid rgba(254, 209, 65, 0.3); color: #FED141;">
+            <div class="c-btn-inner">
+              <div class="c-btn-txt">
+                <div class="c-btn-label line-1">🔧 Admin Panel</div>
+                <div class="c-btn-label line-2">🔧 Admin Panel</div>
+              </div>
+            </div>
+          </a>
+        </div>
+        
         <div class="c-mobile-auth">
           <a href="auth.html" class="c-btn is-large w-inline-block">
             <div class="c-btn-bg"></div>
