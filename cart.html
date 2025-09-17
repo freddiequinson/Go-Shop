@@ -1801,6 +1801,7 @@
   <!-- Authentication and Profile Icon Updates -->
   <script src="src/js/auth.js"></script>
   <script src="src/js/profile-icon-updater.js"></script>
+  <script src="src/js/guest-cta.js"></script>
 
   <!-- Cart Management System -->
   <script src="src/js/cart-manager.js"></script>
@@ -2033,29 +2034,23 @@
         </div>
         <div>
           <label class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Payment Method *</label>
-          <div style="display:grid; gap:8px;">
-            <select id="gcm-payment-type" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="gcm-payment-type" class="c-form-input" required style="flex:1; min-width:200px; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
               <option value="">Select a method...</option>
-              <option value="card">Credit/Debit Card</option>
+              <option value="card">Credit/Debit Card (Sign in required)</option>
               <option value="momo">Mobile Money</option>
             </select>
-            <div id="gcm-card-fields" style="display:none; grid-template-columns:1fr 1fr; gap:8px;">
-              <input id="gcm-card-type" type="text" placeholder="Card type (Visa/Mastercard)" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
-              <input id="gcm-card-last4" type="text" maxlength="4" placeholder="Last 4 digits" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
-              <input id="gcm-exp-month" type="text" maxlength="2" placeholder="MM" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
-              <input id="gcm-exp-year" type="text" maxlength="2" placeholder="YY" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
-            </div>
-            <div id="gcm-momo-fields" style="display:none; grid-template-columns:1fr 1fr; gap:8px;">
-              <select id="gcm-momo-provider" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+            <div id="gcm-momo-fields" style="display:none; flex:1; min-width:200px; display:flex; flex-direction:column; gap:8px;">
+              <select id="gcm-momo-provider" class="c-form-input" style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
                 <option value="">Select provider...</option>
                 <option value="mtn">MTN Mobile Money</option>
                 <option value="vodafone">Vodafone Cash</option>
                 <option value="airtel">AirtelTigo Money</option>
               </select>
-              <input id="gcm-momo-number" type="tel" placeholder="Phone number" class="c-form-input" style="padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
+              <input id="gcm-momo-number" type="tel" placeholder="Phone number" class="c-form-input" style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
             </div>
           </div>
-          <div class="t-body-3" style="opacity:0.7; margin-top:6px;">Payment method is required to complete your order.</div>
+          <div class="t-body-3" style="opacity:0.7; margin-top:6px;">Guests can only pay with Mobile Money. Sign in to use cards.</div>
         </div>
         <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 6px;">
           <div class="t-body-3" id="gcm-total" style="font-weight: 700;">Total: —</div>
