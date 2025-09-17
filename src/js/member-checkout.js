@@ -15,11 +15,12 @@
         modal: document.getElementById('member-checkout-modal'),
         form: document.getElementById('member-checkout-form'),
         totalEl: document.getElementById('mcm-total'),
+        subtotalEl: document.getElementById('mcm-subtotal'),
+        deliveryFeeEl: document.getElementById('mcm-delivery-fee'),
         cancelBtn: document.getElementById('mcm-cancel'),
         addressSelect: document.getElementById('mcm-address'),
         newAddressBtn: document.getElementById('mcm-new-address'),
         deliveryDaySelect: document.getElementById('mcm-delivery-day'),
-        deliveryFeeEl: document.getElementById('mcm-delivery-fee'),
         paymentMethodSelect: document.getElementById('mcm-payment-method'),
         addPaymentBtn: document.getElementById('mcm-add-payment'),
         addPaymentForm: document.getElementById('mcm-add-payment-form'),
@@ -31,6 +32,11 @@
         pmDefault: document.getElementById('mcm-pm-default'),
         savePaymentBtn: document.getElementById('mcm-save-payment'),
         cancelPaymentBtn: document.getElementById('mcm-cancel-payment'),
+        // New summary elements
+        compactSummary: document.getElementById('mcm-compact-summary'),
+        addressDisplay: document.getElementById('mcm-address-display'),
+        deliveryDisplay: document.getElementById('mcm-delivery-display'),
+        feeDisplay: document.getElementById('mcm-fee-display'),
       };
     }
     return elementsCache;
@@ -66,12 +72,21 @@
     // Clear existing options
     elements.addressSelect.innerHTML = '<option value="">Select an address...</option>';
     
+    let defaultAddressIndex = -1;
+    
     // Add user's saved addresses
     if (user.addresses && user.addresses.length > 0) {
       user.addresses.forEach((address, index) => {
         const option = document.createElement('option');
         option.value = index;
         option.textContent = `${address.label || `Address ${index + 1}`} - ${address.street}, ${address.city}`;
+        
+        // Mark default address
+        if (address.isDefault) {
+          defaultAddressIndex = index;
+          option.textContent += ' (Default)';
+        }
+        
         elements.addressSelect.appendChild(option);
       });
     }
@@ -81,6 +96,12 @@
     newOption.value = 'new';
     newOption.textContent = '+ Add new address';
     elements.addressSelect.appendChild(newOption);
+    
+    // Preselect default address
+    if (defaultAddressIndex !== -1) {
+      elements.addressSelect.value = defaultAddressIndex;
+      updateCompactSummary();
+    }
   }
 
   function populateDeliveryDays() {
@@ -183,17 +204,67 @@
     const tax = currentCheckout.totals.tax || 0;
     const newTotal = subtotal + tax + deliveryFee;
 
-    elements.totalEl.innerHTML = `
-      <div>Subtotal: ${formatCurrency(subtotal)}</div>
-      <div>Tax: ${formatCurrency(tax)}</div>
-      <div>Delivery: ${formatCurrency(deliveryFee)}</div>
-      <div style="font-weight: bold; border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px;">
-        Total: ${formatCurrency(newTotal)}
-      </div>
-    `;
-
+    // Update breakdown display
+    if (elements.subtotalEl) {
+      elements.subtotalEl.textContent = formatCurrency(subtotal);
+    }
     if (elements.deliveryFeeEl) {
       elements.deliveryFeeEl.textContent = formatCurrency(deliveryFee);
+    }
+    if (elements.totalEl) {
+      elements.totalEl.textContent = formatCurrency(newTotal);
+    }
+
+    // Update compact summary
+    updateCompactSummary();
+  }
+
+  function updateCompactSummary() {
+    const elements = getElements();
+    if (!elements.compactSummary) return;
+
+    const addressIndex = elements.addressSelect?.value;
+    const deliveryDate = elements.deliveryDaySelect?.value;
+    const user = getUserData();
+
+    // Check if we have all required info to show summary
+    const hasAddress = addressIndex && addressIndex !== '' && addressIndex !== 'new';
+    const hasDelivery = deliveryDate && deliveryDate !== '';
+
+    if (hasAddress && hasDelivery) {
+      // Show compact summary
+      elements.compactSummary.style.display = 'block';
+
+      // Update address display
+      if (user && user.addresses && user.addresses[addressIndex]) {
+        const address = user.addresses[addressIndex];
+        elements.addressDisplay.textContent = `${address.label || 'Address'} - ${address.street}, ${address.city}`;
+      }
+
+      // Update delivery display
+      if (deliveryDate) {
+        const date = new Date(deliveryDate);
+        const today = new Date();
+        const daysDiff = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+        
+        let deliveryText = date.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+        
+        if (daysDiff === 0) deliveryText += ' (Today)';
+        else if (daysDiff === 1) deliveryText += ' (Tomorrow)';
+        
+        elements.deliveryDisplay.textContent = deliveryText;
+      }
+
+      // Update fee display
+      const deliveryFee = calculateDeliveryFee(deliveryDate);
+      elements.feeDisplay.textContent = formatCurrency(deliveryFee);
+    } else {
+      // Hide compact summary
+      elements.compactSummary.style.display = 'none';
     }
   }
 
@@ -317,6 +388,11 @@
       elements.modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('mcm-backdrop')) closeModal();
       });
+    }
+
+    // Address change handler
+    if (elements.addressSelect) {
+      elements.addressSelect.addEventListener('change', updateCompactSummary);
     }
 
     // Delivery day change handler

@@ -87,9 +87,23 @@
             `).join('')}
           </tbody>
         </table>`;
+      // Get user info if signed in
+      let userInfo = '';
+      try {
+        if (window.GoShopAuth && window.GoShopAuth.isLoggedIn()) {
+          const user = window.GoShopAuth.getProfile();
+          if (user && user.fullname) {
+            userInfo = `<div class="line"><strong>Customer</strong><span>${user.fullname}</span></div>`;
+          }
+        }
+      } catch (e) {
+        console.log('Could not get user info:', e);
+      }
+
       document.getElementById('order-summary').innerHTML = `
         <div class="line"><strong>Order ID</strong><span>${data.id||'-'}</span></div>
         <div class="line"><strong>Date</strong><span>${new Date(data.createdAt||Date.now()).toLocaleString()}</span></div>
+        ${userInfo}
         ${data.email ? `<div class="line"><strong>Email</strong><span>${data.email}</span></div>` : ''}
         ${data.phone ? `<div class="line"><strong>Phone</strong><span>${data.phone}</span></div>` : ''}
         <hr />
