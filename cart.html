@@ -2033,6 +2033,13 @@
           <input id="gcm-phone" type="tel" placeholder="e.g. +233 24 123 4567" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;" />
         </div>
         <div>
+          <label for="gcm-delivery-day" class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Delivery Day *</label>
+          <select id="gcm-delivery-day" class="c-form-input" required style="width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
+            <option value="">Select delivery day...</option>
+          </select>
+          <div class="t-body-3" style="margin-top:4px; opacity:0.7;">Orders placed after 3 PM will be delivered the next available day.</div>
+        </div>
+        <div>
           <label class="t-body-3" style="display:block; margin-bottom:8px; font-weight:600;">Payment Method *</label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <select id="gcm-payment-type" class="c-form-input" required style="flex:1; min-width:200px; padding:12px 14px; border:1px solid #e5e7eb; border-radius:8px;">
@@ -2052,11 +2059,27 @@
           </div>
           <div class="t-body-3" style="opacity:0.7; margin-top:6px;">Guests can only pay with Mobile Money. Sign in to use cards.</div>
         </div>
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-          <div class="t-body-3" id="gcm-total" style="font-weight: 700;">Total: —</div>
-          <div style="display:flex; gap: 10px;">
-            <button type="button" id="gcm-cancel" class="c-btn is-large is-secondary" style="padding: 10px 16px; border-radius: 8px;">Cancel</button>
-            <button type="submit" class="c-btn is-large" style="padding: 10px 16px; border-radius: 8px; background: var(--clr-yellow-01);">Pay now</button>
+        <div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+          <div id="gcm-order-summary" style="display: grid; gap: 4px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+              <span>Subtotal:</span>
+              <span id="gcm-subtotal">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px;">
+              <span>Delivery fee:</span>
+              <span id="gcm-delivery-fee">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; padding-top: 4px; border-top: 1px solid #e5e7eb;">
+              <span>Total:</span>
+              <span id="gcm-total">—</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content: space-between; align-items: center;">
+            <div></div>
+            <div style="display:flex; gap: 10px;">
+              <button type="button" id="gcm-cancel" class="c-btn is-large is-secondary" style="padding: 10px 16px; border-radius: 8px;">Cancel</button>
+              <button type="submit" class="c-btn is-large" style="padding: 10px 16px; border-radius: 8px; background: var(--clr-yellow-01);">Pay now</button>
+            </div>
           </div>
         </div>
         <div class="t-body-3" style="opacity:0.7;">No account needed. You'll be invited to create one after payment to unlock order history.</div>

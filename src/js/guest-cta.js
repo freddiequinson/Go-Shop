@@ -125,8 +125,8 @@
             return false;
         }
 
-        // Don't show if user has dismissed it in this session
-        if (sessionStorage.getItem('goshop_cta_dismissed') === 'true') {
+        // Don't show if user has dismissed it on this specific page load
+        if (window.goshopCtaDismissed) {
             return false;
         }
 
@@ -152,7 +152,7 @@
         // Add global hide function
         window.hideGuestCTA = function() {
             hideCTA();
-            sessionStorage.setItem('goshop_cta_dismissed', 'true');
+            window.goshopCtaDismissed = true;
         };
     }
 
@@ -305,7 +305,7 @@
             hideCTA();
         },
         reset: function() {
-            sessionStorage.removeItem('goshop_cta_dismissed');
+            window.goshopCtaDismissed = false;
             if (shouldShowCTA()) {
                 createCTA();
                 showCTA();

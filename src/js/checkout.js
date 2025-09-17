@@ -15,9 +15,12 @@
         modal: document.getElementById('guest-checkout-modal'),
         form: document.getElementById('guest-checkout-form'),
         totalEl: document.getElementById('gcm-total'),
+        subtotalEl: document.getElementById('gcm-subtotal'),
+        deliveryFeeEl: document.getElementById('gcm-delivery-fee'),
         cancelBtn: document.getElementById('gcm-cancel'),
         emailInput: document.getElementById('gcm-email'),
         phoneInput: document.getElementById('gcm-phone'),
+        deliveryDaySelect: document.getElementById('gcm-delivery-day'),
         pmType: document.getElementById('gcm-payment-type'),
         momoFields: document.getElementById('gcm-momo-fields'),
         momoProvider: document.getElementById('gcm-momo-provider'),
@@ -46,6 +49,80 @@
     }
   }
 
+  function populateDeliveryDays() {
+    const elements = getElements();
+    if (!elements.deliveryDaySelect) return;
+
+    // Clear existing options
+    elements.deliveryDaySelect.innerHTML = '<option value="">Select delivery day...</option>';
+
+    // Generate next 7 days with cutoff validation
+    const today = new Date();
+    const cutoffHour = 15; // 3 PM cutoff for same-day delivery
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const isToday = i === 0;
+      const isAfterCutoff = isToday && today.getHours() >= cutoffHour;
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6; // Sunday or Saturday
+      
+      // Skip weekends and today if after cutoff
+      if (isWeekend || (isToday && isAfterCutoff)) {
+        continue;
+      }
+      
+      const option = document.createElement('option');
+      option.value = date.toISOString().split('T')[0];
+      
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      if (isToday) {
+        option.textContent = `Today (${dateStr}) - Same day delivery`;
+      } else if (i === 1) {
+        option.textContent = `Tomorrow (${dayName}, ${dateStr}) - Next day delivery`;
+      } else {
+        option.textContent = `${dayName}, ${dateStr} - Standard delivery`;
+      }
+      
+      elements.deliveryDaySelect.appendChild(option);
+    }
+  }
+
+  function calculateDeliveryFee(deliveryDate) {
+    if (!deliveryDate) return 0;
+    
+    const selectedDate = new Date(deliveryDate);
+    const today = new Date();
+    const daysDiff = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+    
+    // Same day delivery: ₵15, Next day: ₵8, 2+ days: ₵5
+    if (daysDiff === 0) return 15.00;
+    if (daysDiff === 1) return 8.00;
+    return 5.00;
+  }
+
+  function updateTotals() {
+    const elements = getElements();
+    if (!elements.totalEl || !currentCheckout) return;
+
+    const deliveryFee = calculateDeliveryFee(elements.deliveryDaySelect?.value);
+    const subtotal = currentCheckout.totals?.subtotal || 0;
+    const total = subtotal + deliveryFee;
+
+    if (elements.subtotalEl) {
+      elements.subtotalEl.textContent = formatCurrency(subtotal);
+    }
+    if (elements.deliveryFeeEl) {
+      elements.deliveryFeeEl.textContent = formatCurrency(deliveryFee);
+    }
+    if (elements.totalEl) {
+      elements.totalEl.textContent = formatCurrency(total);
+    }
+  }
+
   function openModal({ totals, items }) {
     currentCheckout = { totals, items };
     const elements = getElements();
@@ -57,15 +134,20 @@
     // Initialize event handlers on first open
     initializeEventHandlers();
     
-    if (elements.totalEl && totals) {
-      elements.totalEl.textContent = `Total: ${formatCurrency(totals.total)}`;
-    }
+    // Populate delivery days
+    populateDeliveryDays();
+    
+    // Reset form fields
     if (elements.emailInput) elements.emailInput.value = '';
     if (elements.phoneInput) elements.phoneInput.value = '';
+    if (elements.deliveryDaySelect) elements.deliveryDaySelect.value = '';
     if (elements.pmType) elements.pmType.value = '';
     if (elements.momoProvider) elements.momoProvider.value = '';
     if (elements.momoNumber) elements.momoNumber.value = '';
     if (elements.momoFields) elements.momoFields.style.display = 'none';
+    
+    // Update totals display
+    updateTotals();
     elements.modal.style.display = 'block';
     document.body.classList.add('no-scroll');
   }
@@ -89,7 +171,7 @@
     }
   }
 
-  function createGuestOrder(email, phone, payment) {
+  function createGuestOrder(email, phone, payment, deliveryDate, deliveryFee) {
     const id = `G-${Date.now()}`;
     const createdAt = new Date().toISOString();
     const items = (currentCheckout?.items || []).map(i => ({
@@ -98,8 +180,25 @@
       price: i.price,
       quantity: i.quantity,
     }));
-    const totals = currentCheckout?.totals || { subtotal: 0, total: 0 };
-    return { id, createdAt, email, phone, items, totals, payment, status: 'paid' };
+    const subtotal = currentCheckout?.totals?.subtotal || 0;
+    const total = subtotal + (deliveryFee || 0);
+    const totals = { 
+      subtotal, 
+      deliveryFee: deliveryFee || 0, 
+      total 
+    };
+    return { 
+      id, 
+      createdAt, 
+      email, 
+      phone, 
+      items, 
+      totals, 
+      payment, 
+      deliveryDate,
+      deliveryFee: deliveryFee || 0,
+      status: 'paid' 
+    };
   }
 
   // Initialize event handlers when needed
@@ -116,6 +215,13 @@
     if (elements.modal) {
       elements.modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('gcm-backdrop')) closeModal();
+      });
+    }
+
+    // Delivery day change handler
+    if (elements.deliveryDaySelect) {
+      elements.deliveryDaySelect.addEventListener('change', () => {
+        updateTotals();
       });
     }
 
@@ -154,6 +260,13 @@
           return;
         }
 
+        // Delivery day validation
+        const deliveryDate = elements.deliveryDaySelect?.value;
+        if (!deliveryDate) {
+          alert('Please select a delivery day');
+          return;
+        }
+
         // Payment validation (guests can only use mobile money)
         const pmType = elements.pmType?.value || '';
         if (!pmType || pmType !== 'momo') {
@@ -170,9 +283,10 @@
         }
         
         const payment = { type: 'momo', provider, number };
+        const deliveryFee = calculateDeliveryFee(deliveryDate);
 
-        // Build order
-        const order = createGuestOrder(email, phone, payment);
+        // Build order with delivery info
+        const order = createGuestOrder(email, phone, payment, deliveryDate, deliveryFee);
         saveGuestOrder(order);
 
         // Clear selected items from cart (simulate fulfillment)

@@ -1,5 +1,23 @@
 /* Cart page styles - tailored to project theme */
 
+/* Fix autofill styling for better visibility across all forms */
+.c-form-input:-webkit-autofill,
+.c-form-input:-webkit-autofill:hover,
+.c-form-input:-webkit-autofill:focus,
+.c-form-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #303A4D !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* For Firefox autofill */
+.c-form-input:-moz-autofill {
+  background-color: #ffffff !important;
+  color: #303A4D !important;
+  border: 1px solid #e5e7eb !important;
+}
+
 .cart-section {
   background: #F4F2E6;
   padding: 3em 0;
