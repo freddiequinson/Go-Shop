@@ -13,7 +13,7 @@ All tabs require user login. Users are automatically redirected to `auth.html` i
 
 ### Features:
 - ✅ **Pre-filled form fields** with user data
-- ✅ **Real-time updates** when data is saved
+- ✅ **Real-time updates** when data is saved`
 - ✅ **Form validation** with error handling
 - ✅ **Success notifications** when profile is updated
 

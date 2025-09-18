@@ -5842,13 +5842,15 @@ figcaption {
     box-shadow: 0 3px 3px rgba(0, 0, 0, .05)
 }
 
-.recipes-list {
+.w-dyn-list .recipes-list {
     grid-column-gap: 2.75em;
     grid-row-gap: 2.75em;
     grid-template-rows: auto auto;
     grid-template-columns: 1fr 1fr;
     grid-auto-columns: 1fr;
-    display: grid
+    display: grid;
+    justify-items: center;
+    align-items: start;
 }
 
 .recipes-list.single {
@@ -12525,29 +12527,38 @@ figcaption {
     /* New Market Card Styles */
     .market-card-item {
         margin-bottom: 1.5em;
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        justify-content: center;
     }
 
     .market-card {
-        background: transparent;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-        transition: transform 0.2s ease;
-        width: 320px;
-        height: 340px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        max-width: 380px;
+        height: 360px;
         cursor: pointer;
         display: flex;
         flex-direction: column;
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .market-card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
     .market-card-image {
         width: 100%;
-        height: 180px;
+        height: 200px;
         overflow: hidden;
         position: relative;
-        border-radius: 12px;
+        border-radius: 16px 16px 0 0;
         flex-shrink: 0;
     }
 
@@ -12563,7 +12574,7 @@ figcaption {
     }
 
     .market-card-content {
-        padding: 1em 0;
+        padding: 1.25em;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -12612,24 +12623,60 @@ figcaption {
     }
 
     .market-explore-btn {
-        background: none;
+        width: 100%;
+        background: var(--clr-yellow-01);
+        color: var(--clr-charcoal-01);
         border: none;
-        color: #3498db;
-        font-size: 0.875em;
-        font-weight: 500;
+        padding: 0.875em 1em;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9em;
         cursor: pointer;
-        padding: 0;
+        transition: all 0.2s ease;
         text-decoration: none;
-        transition: color 0.2s ease;
     }
 
     .market-explore-btn:hover {
-        color: #2980b9;
-        text-decoration: underline;
+        background: #e6c236;
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    /* Desktop-specific improvements - Higher specificity to override backup.css */
+    @media screen and (min-width: 992px) {
+        .w-dyn-list .recipes-list {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 2.5em !important;
+            justify-items: center !important;
+            align-items: start !important;
+            grid-column-gap: 2.5em !important;
+            grid-row-gap: 2.5em !important;
+        }
+        
+        .market-card-item {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .market-card {
+            width: 100%;
+            max-width: 380px;
+            height: 360px;
+        }
     }
 
     /* Responsive Design for Market Cards */
     @media screen and (max-width: 991px) {
+        .recipes-list {
+            grid-template-columns: 1fr;
+            justify-items: stretch;
+        }
+        
+        .market-card-item {
+            max-width: 100%;
+            margin-bottom: 1em;
+        }
+
         .market-card {
             width: 100%;
             height: auto;
