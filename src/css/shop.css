@@ -12858,4 +12858,31 @@ figcaption {
     .c-pp-block-grid {
         overflow: hidden
     }
+
+    /* Header: Remove Orders dropdown (desktop + mobile)
+       This targets the first dropdown in the right header section (Orders)
+       and the first mobile dropdown block (Orders), hiding their dropdown lists
+       and caret icons so they behave like simple, non-dropdown items. */
+    /* Desktop header: hide Orders dropdown list */
+    .c-header_rt .c-dd-link:first-of-type .c-dd-list {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Desktop header: disable pointer interactions on the Orders trigger */
+    .c-header_rt .c-dd-link:first-of-type {
+      cursor: default;
+    }
+
+    /* Mobile header: hide Orders caret icon and dropdown list */
+    .c-header-mobile_bt .c-dd-link-mobile:first-of-type .dd-icon,
+    .c-header-mobile_bt .c-dd-link-mobile:first-of-type .c-dd-list {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Mobile header: make Orders non-interactive */
+    .c-header-mobile_bt .c-dd-link-mobile:first-of-type .c-dd-link-mobile-inner {
+      pointer-events: none;
+    }
 }

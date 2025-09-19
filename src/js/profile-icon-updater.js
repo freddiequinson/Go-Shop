@@ -16,17 +16,30 @@
         updateProfileIcons();
     }
 
+    // Determine if current session is an admin session
+    function isAdminSession(user) {
+        try {
+            const adminFlag = localStorage.getItem('goshop_admin') === 'true';
+            const byRole = !!user && (user.role === 'admin' || user.username === 'admin' || user.email === 'admin@goshop.local');
+            return adminFlag || byRole;
+        } catch (e) {
+            return !!(user && (user.role === 'admin'));
+        }
+    }
+
     function updateProfileIcons() {
         const isLoggedIn = window.GoShopAuth.isLoggedIn();
         const user = isLoggedIn ? window.GoShopAuth.getProfile() : null;
 
         // Find all profile icons (both desktop and mobile)
-        const profileLinks = document.querySelectorAll('a[aria-label="Profile"]');
+        const profileLinks = document.querySelectorAll('a[aria-label^="Profile"]');
+
+        const isAdmin = isAdminSession(user);
 
         profileLinks.forEach(link => {
             if (isLoggedIn) {
                 // User is logged in - update icon and link
-                updateSignedInProfileIcon(link, user);
+                updateSignedInProfileIcon(link, user, isAdmin);
             } else {
                 // User is not logged in - ensure link goes to auth page
                 updateSignedOutProfileIcon(link);
@@ -34,15 +47,19 @@
         });
 
         // Update mobile sign-in buttons
-        updateMobileSignInButtons(isLoggedIn, user);
+        updateMobileSignInButtons(isLoggedIn, user, isAdmin);
     }
 
-    function updateSignedInProfileIcon(link, user) {
+    function updateSignedInProfileIcon(link, user, isAdmin) {
         // Update href to go to profile page
-        link.href = 'profile.html';
+        link.href = isAdmin ? 'admin.html' : 'profile.html';
 
         // Update aria-label
-        link.setAttribute('aria-label', `Profile - ${user.fullname || user.username}`);
+        if (isAdmin) {
+            link.setAttribute('aria-label', `Profile - Admin Dashboard`);
+        } else {
+            link.setAttribute('aria-label', `Profile - ${user.fullname || user.username}`);
+        }
 
         // Find the icon container
         const iconContainer = link.querySelector('.c-icon');
@@ -72,7 +89,7 @@
         `;
 
         // Add hover tooltip with user info
-        link.title = `Signed in as ${user.fullname || user.username}`;
+        link.title = isAdmin ? 'Open Admin Dashboard' : `Signed in as ${user.fullname || user.username}`;
 
         // Add signed-in styling
         link.style.color = '#28a745'; // Green color to indicate signed in
@@ -143,14 +160,14 @@
     // Setup listeners
     setupAuthStateListener();
 
-    function updateMobileSignInButtons(isLoggedIn, user) {
+    function updateMobileSignInButtons(isLoggedIn, user, isAdmin) {
         // Find all mobile sign-in buttons
         const mobileAuthContainers = document.querySelectorAll('.c-mobile-auth');
 
         mobileAuthContainers.forEach(container => {
             if (isLoggedIn) {
                 // User is logged in - show logout button and user info
-                updateSignedInMobileAuth(container, user);
+                updateSignedInMobileAuth(container, user, isAdmin);
             } else {
                 // User is not logged in - show original sign-in buttons
                 updateSignedOutMobileAuth(container);
@@ -158,33 +175,35 @@
         });
     }
 
-    function updateSignedInMobileAuth(container, user) {
+    function updateSignedInMobileAuth(container, user, isAdmin) {
+        const displayName = isAdmin ? 'Admin' : (user.fullname || user.username);
+        const displayEmail = isAdmin ? '' : (user.email || '');
         // Replace the mobile auth container content with user info and logout
         container.innerHTML = `
             <div style="
                 background: linear-gradient(135deg, #FED141 0%, #f7c52d 100%);
-                border-radius: 1em;
-                padding: 1.5em;
-                margin-bottom: 1em;
+                border-radius: 0.75em;
+                padding: 1em;
+                margin-bottom: 0.75em;
                 color: #303A4D;
-                text-align: center;
-                box-shadow: 0 4px 15px rgba(254, 209, 65, 0.3);
+                text-align: left;
+                box-shadow: 0 3px 10px rgba(254, 209, 65, 0.25);
             ">
                 <div style="
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    margin-bottom: 1em;
+                    justify-content: flex-start;
+                    margin-bottom: 0.75em;
                 ">
                     <div style="
-                        width: 50px;
-                        height: 50px;
+                        width: 40px;
+                        height: 40px;
                         background: rgba(48, 58, 77, 0.15);
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        margin-right: 1em;
+                        margin-right: 0.75em;
                     ">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #303A4D;">
                             <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -192,29 +211,27 @@
                         </svg>
                     </div>
                     <div style="text-align: left;">
-                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 0.25em;">
-                            ${user.fullname || user.username}
+                        <div style="font-weight: 700; font-size: 1em; margin-bottom: 0.1em;">
+                            ${displayName}
                         </div>
-                        <div style="font-size: 0.9em; opacity: 0.9;">
-                            ${user.email}
-                        </div>
+                        ${displayEmail ? `<div style="font-size: 0.8em; opacity: 0.8;">${displayEmail}</div>` : ''}
                     </div>
                 </div>
                 
                 <div style="display: flex; gap: 1em;">
-                    <a href="profile.html" class="c-btn is-large w-inline-block" style="
+                    <a href="${isAdmin ? 'admin.html' : 'profile.html'}" class="c-btn is-large w-inline-block" style="
                         flex: 1;
-                        background: rgba(48, 58, 77, 0.15);
-                        border: 2px solid rgba(48, 58, 77, 0.2);
-                        border-radius: 0.75em;
+                        background: rgba(48, 58, 77, 0.12);
+                        border: 1px solid rgba(48, 58, 77, 0.2);
+                        border-radius: 0.6em;
                         text-decoration: none;
                         transition: all 0.2s ease;
-                        padding: 0.75em 1em;
+                        padding: 0.6em 0.75em;
                         display: block;
                         text-align: center;
-                    " onmouseover="this.style.background='rgba(48, 58, 77, 0.25)'" onmouseout="this.style.background='rgba(48, 58, 77, 0.15)'">
-                        <div style="color: #303A4D; font-weight: 600; font-size: 0.95em;">
-                            View Profile
+                    " onmouseover="this.style.background='rgba(48, 58, 77, 0.2)'" onmouseout="this.style.background='rgba(48, 58, 77, 0.12)'">
+                        <div style="color: #303A4D; font-weight: 600; font-size: 0.85em;">
+                            ${isAdmin ? 'Dashboard' : 'View Profile'}
                         </div>
                     </a>
                     
@@ -222,15 +239,15 @@
                         flex: 1;
                         background: #303A4D;
                         border: none;
-                        border-radius: 0.75em;
+                        border-radius: 0.6em;
                         color: white;
                         font-weight: 600;
-                        font-size: 0.95em;
-                        padding: 0.75em 1em;
+                        font-size: 0.85em;
+                        padding: 0.6em 0.75em;
                         cursor: pointer;
                         transition: all 0.2s ease;
                     " onmouseover="this.style.background='#253142'" onmouseout="this.style.background='#303A4D'">
-                        Logout
+                        ${isAdmin ? 'Log Out' : 'Logout'}
                     </button>
                 </div>
             </div>

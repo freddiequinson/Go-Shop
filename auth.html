@@ -2162,6 +2162,44 @@ www.papertiger.com${'     '}
       }
     });
   </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      const signinFormEl = document.querySelector('#signin-form form');
+      if (signinFormEl) {
+        signinFormEl.addEventListener('submit', function(e) {
+          const fd = new FormData(signinFormEl);
+          const identifier = (fd.get('username') || '').toString().trim();
+          const password = (fd.get('password') || '').toString();
+          // Hardcoded admin login
+          if (identifier === 'admin' && password === 'admin123') {
+            e.preventDefault();
+            // Mark admin session
+            localStorage.setItem('goshop_admin', 'true');
+            // Optionally set current user via GoShopAuth
+            if (window.GoShopAuth && typeof window.GoShopAuth.setCurrentUser === 'function') {
+              window.GoShopAuth.setCurrentUser({
+                id: 'admin',
+                fullname: 'Admin User',
+                username: 'admin',
+                email: 'admin@goshop.local',
+                role: 'admin',
+                createdAt: new Date().toISOString()
+              });
+            }
+            // Redirect to admin
+            window.location.href = 'admin.html';
+          } else {
+            // Ensure admin flag is cleared for non-admin logins
+            localStorage.removeItem('goshop_admin');
+          }
+        }, { once: false });
+      }
+    } catch (err) {
+      console.error('Admin login hook error:', err);
+    }
+  });
+</script>
 </body>
 
 </html>

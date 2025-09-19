@@ -241,6 +241,8 @@ class GoShopAuth {
 
     // Logout user
     logout() {
+        // Clear admin session flag as well
+        try { localStorage.removeItem('goshop_admin'); } catch (e) {}
         this.clearCurrentUser();
         // Redirect to auth page
         window.location.href = 'auth.html';

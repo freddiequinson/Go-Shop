@@ -1815,7 +1815,6 @@
                                         <div class="t-body-2 is-bold">Go-Shop</div>
                                     </div>
                                 </a>
-                                <link rel="prefetch" href="/learn/our-wraps" />
                             </div>
                             <div id="w-node-a1e5dfa8-a649-c541-ef25-ca953a5061f3-019da0a9" class="c-dd-item learn">
                                 <a href="/learn/why-egg-whites" class="c-dd-item-link w-inline-block">
@@ -1825,7 +1824,6 @@
                                         <div class="t-body-2 is-bold">Why Go-Shop</div>
                                     </div>
                                 </a>
-                                <link rel="prefetch" href="/learn/why-egg-whites" />
                             </div>
                             <div id="w-node-_069bca2c-e9ce-4874-f88a-a2ba9cc66e74-019da0a9" class="c-dd-item learn">
                                 <a href="/learn/faq" class="c-dd-item-link w-inline-block">
@@ -1844,12 +1842,11 @@
                                         <div class="t-body-2 is-bold">Why we do it</div>
                                     </div>
                                 </a>
-                                <link rel="prefetch" href="/learn/why-we-do-it" />
                             </div>
                         </div>
                     </div>
                     <div class="c-nav-shop-wrap">
-                        <a aria-label="Profile" href="auth.html" class="c-nav-shop w-inline-block">
+                        <a aria-label="Profile" href="admin.html" class="c-nav-shop w-inline-block">
                             <div class="c-icon w-embed">
                                 <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -1915,7 +1912,7 @@
                 </div>
             </a>
             <div class="c-header-mobile_rt">
-                <a aria-label="Profile" href="auth.html" class="c-nav-shop mobile w-inline-block">
+                <a aria-label="Profile" href="admin.html" class="c-nav-shop mobile w-inline-block">
                     <div class="c-icon w-embed">
                         <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
@@ -2069,24 +2066,41 @@
                     </div>
                 </div>
                 <div class="c-mobile-auth">
-                    <a href="auth.html" class="c-btn is-large w-inline-block">
-                        <div class="c-btn-bg"></div>
+                    <a href="admin.html" class="c-btn is-large w-inline-block" style="
+                        display:block; flex:1; background: rgba(48,58,77,0.12); border:1px solid rgba(48,58,77,0.2);
+                        border-radius: .6em; padding:.6em .75em; text-align:center; margin-bottom:.5em;">
                         <div class="c-btn-inner">
                             <div class="c-btn-txt">
-                                <div class="c-btn-label line-1">Sign in</div>
-                                <div class="c-btn-label line-2">Sign in</div>
+                                <div class="c-btn-label line-1" style="font-size:.95em; font-weight:600; color:#303A4D;">Dashboard</div>
+                                <div class="c-btn-label line-2" style="font-size:.95em; font-weight:600; color:#303A4D;">Dashboard</div>
                             </div>
                         </div>
                     </a>
-                    <a href="auth.html" class="c-btn is-large is-secondary w-inline-block">
-                        <div class="c-btn-inner">
-                            <div class="c-btn-txt">
-                                <div class="c-btn-label line-1">Create account</div>
-                                <div class="c-btn-label line-2">Create account</div>
-                            </div>
-                        </div>
-                    </a>
+                    <button type="button" onclick="adminMobileLogout()" class="c-btn is-large is-secondary" style="
+                        display:block; width:100%; background:#303A4D; color:#fff; border:none; border-radius:.6em;
+                        padding:.6em .75em; font-size:.95em; font-weight:600;">
+                        Log Out
+                    </button>
                 </div>
+                <script>
+                  // Unified admin logout for both desktop and mobile
+                  function adminLogout(){
+                    // Clear any admin/session flags
+                    try { sessionStorage.removeItem('admin_authenticated'); } catch(e) {}
+                    try { localStorage.removeItem('goshop_admin'); } catch(e) {}
+                    try { localStorage.removeItem('goshop_current_user'); } catch(e) {}
+                    // Use global auth module if present, else hard redirect
+                    if (window.GoShopAuth && typeof window.GoShopAuth.logout === 'function') {
+                      try { window.GoShopAuth.logout(); return; } catch(e) {}
+                    }
+                    window.location.href = 'auth.html';
+                  }
+
+                  // Mobile handler delegates to unified logout
+                  function adminMobileLogout(){
+                    adminLogout();
+                  }
+                </script>
             </div>
             <div class="c-dd-link-mobile">
                 <div class="c-dd-link-mobile-inner">
@@ -2160,36 +2174,10 @@
     </div>
     </div>
     <main id="smooth-wrapper" class="o-page-wrapper" style="padding-top: 8rem;">
-      <!-- Admin Login Form -->
-      <div id="admin-login" class="admin-login-container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 8rem); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem;">
-        <div class="admin-login-form" style="background: #fff; padding: 3rem; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
-          <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="font-size: 1.5rem; font-weight: 700; color: #303A4D; margin: 0 0 0.5rem 0;">Admin Access</h1>
-            <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">Enter your credentials to continue</p>
-          </div>
-          
-          <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <div>
-              <label for="admin-username" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Username</label>
-              <input type="text" id="admin-username" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;" placeholder="Enter username">
-            </div>
-            
-            <div>
-              <label for="admin-password" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Password</label>
-              <input type="password" id="admin-password" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;" placeholder="Enter password">
-            </div>
-            
-            <button type="submit" style="background: #FED141; color: #303A4D; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.025em;">
-              Sign In
-            </button>
-            
-            <div id="admin-error" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 6px; font-size: 0.875rem; text-align: center;"></div>
-          </form>
-        </div>
-      </div>
+      <!-- Legacy Admin Login Form removed: admin now logs in via auth.html -->
 
       <!-- Admin Dashboard (hidden until authenticated) -->
-      <div id="admin-dashboard" class="admin-dashboard" style="padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; display: none; background: #ffffff; min-height: calc(100vh - 8rem);">
+      <div id="admin-dashboard" class="admin-dashboard" style="padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; display: block; background: #ffffff; min-height: calc(100vh - 8rem);">
         <!-- Header -->
         <div style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
@@ -3197,30 +3185,35 @@
         };
         
         // Check if already authenticated
+        // Note: We now rely on the global guard (goshop_admin/local auth) added at the bottom of the page.
+        // The legacy admin inline login is removed, so default to showing the dashboard.
         function checkAuth() {
-          const isAdminAuthenticated = sessionStorage.getItem('admin_authenticated') === 'true';
-          if (isAdminAuthenticated) {
-            showDashboard();
-          } else {
-            showLogin();
-          }
+          showDashboard();
         }
         
         // Show login form
         function showLogin() {
-          document.getElementById('admin-login').style.display = 'flex';
-          document.getElementById('admin-dashboard').style.display = 'none';
+          // Legacy: no-op, admin inline login was removed from DOM
+          const loginEl = document.getElementById('admin-login');
+          const dashEl = document.getElementById('admin-dashboard');
+          if (loginEl) loginEl.style.display = 'flex';
+          if (dashEl) dashEl.style.display = 'none';
         }
         
         // Show dashboard
         function showDashboard() {
-          document.getElementById('admin-login').style.display = 'none';
-          document.getElementById('admin-dashboard').style.display = 'block';
-          loadOrders();
-          loadVendorApplications();
-          loadShops();
-          addLogoutButton();
-          initializeAdminTabs();
+          const loginEl = document.getElementById('admin-login');
+          const dashEl  = document.getElementById('admin-dashboard');
+          if (loginEl) loginEl.style.display = 'none';
+          if (dashEl) dashEl.style.display = 'block';
+          // Only initialize dashboard data if the element exists
+          if (dashEl) {
+            loadOrders();
+            loadVendorApplications();
+            loadShops();
+            addLogoutButton();
+            initializeAdminTabs();
+          }
         }
         
         // Initialize admin tab functionality
@@ -3337,7 +3330,10 @@
           if (header && !document.getElementById('admin-logout-btn')) {
             const logoutBtn = document.createElement('button');
             logoutBtn.id = 'admin-logout-btn';
-            logoutBtn.textContent = 'Logout';
+            logoutBtn.textContent = 'Log Out';
+            logoutBtn.setAttribute('type', 'button');
+            // Inline handler as a fallback in case listeners are blocked
+            logoutBtn.setAttribute('onclick', 'if (window.adminLogout) { window.adminLogout(); }');
             logoutBtn.style.cssText = `
               background: #ef4444;
               color: white;
@@ -3359,7 +3355,18 @@
               this.style.backgroundColor = '#ef4444';
             });
             
-            logoutBtn.addEventListener('click', handleLogout);
+            // Use global adminLogout to fully clear session and redirect
+            logoutBtn.addEventListener('click', function(){
+              if (typeof window.adminLogout === 'function') {
+                window.adminLogout();
+              } else {
+                // Fallback
+                try { localStorage.removeItem('goshop_admin'); } catch(e) {}
+                try { localStorage.removeItem('goshop_current_user'); } catch(e) {}
+                try { sessionStorage.removeItem('admin_authenticated'); } catch(e) {}
+                window.location.href = 'auth.html';
+              }
+            });
             
             header.style.display = 'flex';
             header.style.alignItems = 'center';
@@ -3804,7 +3811,8 @@
           checkAuth();
           
           // Add login form event listener
-          document.getElementById('admin-login-form').addEventListener('submit', handleLogin);
+          const loginForm = document.getElementById('admin-login-form');
+          if (loginForm) loginForm.addEventListener('submit', handleLogin);
           
           // Add shop management event listeners
           document.getElementById('add-shop-btn').addEventListener('click', () => openShopModal());
@@ -6157,6 +6165,27 @@
             }
         }
     </script>
+<script>
+  // Simple client-side guard for Admin page
+  (function () {
+    try {
+      const isAdminFlag = localStorage.getItem('goshop_admin') === 'true';
+      let isAdminUser = false;
+      if (window.GoShopAuth && typeof window.GoShopAuth.getCurrentUser === 'function') {
+        const u = window.GoShopAuth.getCurrentUser();
+        isAdminUser = !!u && (u.role === 'admin' || u.username === 'admin' || u.email === 'admin@goshop.local');
+      }
+
+      if (!(isAdminFlag || isAdminUser)) {
+        // Not authorized, send to sign-in
+        window.location.replace('auth.html');
+      }
+    } catch (e) {
+      // On any error, fail closed
+      window.location.replace('auth.html');
+    }
+  })();
+</script>
 </body>
 
 </html>
