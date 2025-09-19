@@ -178,8 +178,15 @@
     }
 
     const savedItems = user.favorites || [];
+    // Normalize to objects to avoid undefined labels if favorites contain string IDs
+    const normalizedItems = savedItems.map(item => {
+      if (typeof item === 'string') {
+        return { id: item, name: item, price: 0 };
+      }
+      return item;
+    });
     
-    if (savedItems.length === 0) {
+    if (normalizedItems.length === 0) {
       container.innerHTML = `
         <div style="text-align: center; padding: 3rem 1rem;">
           <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">💝</div>
@@ -190,13 +197,13 @@
       return;
     }
 
-    const itemsHtml = savedItems.map(item => `
+    const itemsHtml = normalizedItems.map(item => `
       <div class="saved-item" style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; background: #fff; display: flex; gap: 1rem; align-items: center;">
         <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
           🥬
         </div>
         <div style="flex: 1;">
-          <div class="t-body-2" style="font-weight: 600; margin-bottom: 4px;">${item.name}</div>
+          <div class="t-body-2" style="font-weight: 600; margin-bottom: 4px;">${item.name || item.id}</div>
           <div class="t-body-3" style="opacity: 0.7;">${formatCurrency(item.price)}</div>
         </div>
         <div style="display: flex; gap: 8px;">

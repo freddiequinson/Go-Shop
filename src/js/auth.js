@@ -7,6 +7,8 @@ class GoShopAuth {
     constructor() {
         this.users = this.getUsers();
         this.currentUser = this.getCurrentUser();
+        // Cleanup any previously seeded demo favorites so users don't see hardcoded saved items
+        this.cleanSeededFavorites();
     }
 
     // Get users from localStorage
@@ -60,6 +62,47 @@ class GoShopAuth {
                     user: this.currentUser
                 }
             }));
+        }
+    }
+
+    // Remove previously seeded demo favorites from existing users
+    cleanSeededFavorites() {
+        try {
+            const seededIds = new Set(['item-1', 'item-2', 'tomato-1', 'banana-1']);
+            const seededNames = new Set(['Organic Spinach', 'Fresh Avocados']);
+
+            let changed = false;
+            const users = this.getUsers().map(u => {
+                if (!Array.isArray(u.favorites) || u.favorites.length === 0) return u;
+
+                const filtered = u.favorites.filter(fav => {
+                    if (typeof fav === 'string') return !seededIds.has(fav);
+                    if (fav && typeof fav === 'object') {
+                        return !(seededIds.has(fav.id) || seededNames.has(fav.name));
+                    }
+                    return true;
+                });
+
+                if (filtered.length !== u.favorites.length) {
+                    u.favorites = filtered;
+                    changed = true;
+                }
+                return u;
+            });
+
+            if (changed) {
+                this.saveUsers(users);
+                if (this.currentUser) {
+                    const updated = users.find(u => u.id === this.currentUser.id);
+                    if (updated) {
+                        const sessionUser = { ...updated };
+                        delete sessionUser.password;
+                        this.setCurrentUser(sessionUser);
+                    }
+                }
+            }
+        } catch (_) {
+            // silently ignore cleanup errors
         }
     }
 
@@ -132,22 +175,7 @@ class GoShopAuth {
             password: password, // In production, you'd hash this
             createdAt: new Date().toISOString(),
             orders: [],
-            favorites: [
-                {
-                    id: 'item-1',
-                    name: 'Organic Spinach',
-                    price: 4.99,
-                    category: 'vegetables',
-                    savedAt: new Date().toISOString()
-                },
-                {
-                    id: 'item-2', 
-                    name: 'Fresh Avocados',
-                    price: 6.50,
-                    category: 'fruits',
-                    savedAt: new Date().toISOString()
-                }
-            ],
+            favorites: [],
             addresses: [
                 {
                     id: 'default-address',
@@ -581,7 +609,7 @@ class GoShopAuth {
                         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
                     }
                 ],
-                favorites: ['tomato-1', 'banana-1'],
+                favorites: [],
                 addresses: [
                     {
                         id: 'address-1',
