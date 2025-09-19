@@ -45,6 +45,8 @@
       width: 100%;
       height: auto !important;
       min-height: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     * {
@@ -52,6 +54,14 @@
       -moz-osx-font-smoothing: grayscale;
       scrollbar-width: none;
       /* Remove Scrollbar Firefox */
+    }
+    
+    /* Prevent horizontal overflow on wrappers */
+    #smooth-wrapper,
+    #smooth-content,
+    .o-page-wrapper,
+    .o-wrapper {
+      overflow-x: hidden;
     }
 
     /* Remove Scrollbar Chrome */
@@ -666,14 +676,7 @@
           </a>
         </div>
         <div id="w-node-_766de0ad-ed3f-6d9c-d1aa-a14a8905ad84-019da0a9" class="c-header_rt">
-          <div class="c-dd-link">
-            <div class="c-nav-link_hover-clone w-embed">
-              <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <rect x="0.735352" y="3.8916" width="56" height="12" transform="rotate(-3 0.735352 3.8916)"
-                  fill="currentColor" />
-              </svg>
-            </div>
+          <a href="auth.html" class="c-nav-link w-inline-block" id="orders-link">
             <div class="c-nav-link_hover w-embed">
               <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -682,83 +685,8 @@
               </svg>
             </div>
             <div z-5="">Orders</div>
-            <div class="c-dd-list recipes">
-              <div class="c-dd-list-bg">
-
-              </div>
-              <div class="c-header_dd-wrap learn w-dyn-list">
-                <div role="list" class="c-header_dd recipes w-dyn-items">
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Order Now</div>
-                      </div>
-                    </a>
-                  </div>
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Your History</div>
-                      </div>
-                    </a>
-                  </div>
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Coupons</div>
-                      </div>
-                    </a>
-                  </div>
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Deals</div>
-                      </div>
-                    </a>
-                  </div>
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Contact US</div>
-                      </div>
-                    </a>
-                  </div>
-                  <div role="listitem" class="c-dd-item w-dyn-item">
-                    <a href="#" class="c-dd-item-link w-inline-block">
-                      <div class="c-img-contain dd-thumb">
-                      </div>
-                      <div class="c-dd-item_bt">
-                        <div class="t-body-3 is-bold">Follow Us</div>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div class="hide">
-                <a href="/recipes-hub" class="c-dd-item all-recipes w-inline-block">
-                  <div class="t-body-2 is-bold">Track Orders</div>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="c-dd-link">
-            <div class="c-nav-link_hover-clone w-embed">
-              <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <rect x="0.735352" y="3.8916" width="56" height="12" transform="rotate(-3 0.735352 3.8916)"
-                  fill="currentColor" />
-              </svg>
-            </div>
+          </a>
+          <a href="#best-service" class="c-nav-link w-inline-block">
             <div class="c-nav-link_hover w-embed">
               <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -767,51 +695,7 @@
               </svg>
             </div>
             <div z-5="">About</div>
-            <div class="c-dd-list learn">
-              <div class="c-dd-list-bg">
-
-              </div>
-              <div id="w-node-_1c2aacc5-5f71-a537-7383-67799aaa55fe-019da0a9" class="c-dd-item learn">
-                <a href="/learn/our-wraps" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb learn">
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-2 is-bold">Go-Shop</div>
-                  </div>
-                </a>
-                <link rel="prefetch" href="/learn/our-wraps" />
-              </div>
-              <div id="w-node-a1e5dfa8-a649-c541-ef25-ca953a5061f3-019da0a9" class="c-dd-item learn">
-                <a href="/learn/why-egg-whites" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb learn">
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-2 is-bold">Why Go-Shop</div>
-                  </div>
-                </a>
-                <link rel="prefetch" href="/learn/why-egg-whites" />
-              </div>
-              <div id="w-node-_069bca2c-e9ce-4874-f88a-a2ba9cc66e74-019da0a9" class="c-dd-item learn">
-                <a href="/learn/faq" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb learn">
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-2 is-bold">FAQs</div>
-                  </div>
-                </a>
-              </div>
-              <div id="w-node-_8ee84483-0672-f223-d32e-f25e50218e78-019da0a9" class="c-dd-item learn">
-                <a href="/learn/why-we-do-it" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb learn">
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-2 is-bold">Why we do it</div>
-                  </div>
-                </a>
-                <link rel="prefetch" href="/learn/why-we-do-it" />
-              </div>
-            </div>
-          </div>
+          </a>
           <div class="c-nav-shop-wrap">
             <a aria-label="Profile" href="auth.html" class="c-nav-shop w-inline-block">
               <div class="c-icon w-embed">
@@ -928,101 +812,27 @@
         </div>
         <div class="t-display-2 nav-mobile">Shop</div>
       </a>
-      <div class="c-dd-link-mobile">
-        <div class="c-dd-link-mobile-inner">
-          <div class="t-display-2 nav-mobile">Orders</div>
-          <div class="c-icon dd-icon w-embed">
-            <svg width="1em" height="1em" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12.5 2.6665L12.5 21.3332" stroke="#303A4D" stroke-width="5" stroke-linecap="round"
-                stroke-linejoin="round" />
-              <path d="M22.125 12L12.5 21.3333L2.875 12" stroke="#303A4D" stroke-width="5" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-          </div>
+      <a href="auth.html" class="c-nav-link w-inline-block" id="orders-link-mobile">
+        <div class="c-nav-link_hover w-embed">
+          <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.735352" y="3.8916" width="56" height="12" transform="rotate(-3 0.735352 3.8916)"
+              fill="currentColor" />
+          </svg>
         </div>
-        <div class="c-dd-list mobile">
-          <div class="c-header_dd-wrap learn w-dyn-list">
-            <div role="list" class="c-header_dd recipes w-dyn-items">
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d33dfc17fc36_breakfast.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Order Now</div>
-                  </div>
-                </a>
-              </div>
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d308e617fc18_Lunch.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Your History</div>
-                  </div>
-                </a>
-              </div>
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d3832b17fc4b_Dinner.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Coupons</div>
-                  </div>
-                </a>
-              </div>
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d37d6017fbfa_Snacks.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Deals</div>
-                  </div>
-                </a>
-              </div>
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d3db2117fbdb_Appetizers.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Contact US</div>
-                  </div>
-                </a>
-              </div>
-              <div role="listitem" class="c-dd-item w-dyn-item">
-                <a href="#" class="c-dd-item-link w-inline-block">
-                  <div class="c-img-contain dd-thumb">
-                    <img
-                      src="https://cdn.prod.website-files.com/6448cbe9ce99d3872617fb9c/6448cbe9ce99d3230117fbc0_Dessert.webp"
-                      loading="eager" alt="" class="c-img" />
-                  </div>
-                  <div class="c-dd-item_bt">
-                    <div class="t-body-3 is-bold">Follow Us</div>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="hide">
-            <a href="/recipes-hub" class="c-dd-item all-recipes-mobile w-inline-block">
-              <div class="t-body-2 is-bold">Track Orders</div>
-            </a>
-          </div>
+        <div class="t-display-2 nav-mobile">Orders</div>
+      </a>
+      <a href="#best-service" class="c-nav-link w-inline-block">
+        <div class="c-nav-link_hover w-embed">
+          <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.735352" y="3.8916" width="56" height="12" transform="rotate(-3 0.735352 3.8916)"
+              fill="currentColor" />
+          </svg>
         </div>
+        <div class="t-display-2 nav-mobile">About</div>
+      </a>
+      
         <div class="c-mobile-auth">
           <a href="auth.html" class="c-btn is-large w-inline-block">
             <div class="c-btn-bg"></div>
@@ -1043,73 +853,7 @@
           </a>
         </div>
       </div>
-      <div class="c-dd-link-mobile">
-        <div class="c-dd-link-mobile-inner">
-          <div class="t-display-2 nav-mobile">About</div>
-          <div class="c-icon dd-icon w-embed">
-            <svg width="1em" height="1em" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12.5 2.6665L12.5 21.3332" stroke="#303A4D" stroke-width="5" stroke-linecap="round"
-                stroke-linejoin="round" />
-              <path d="M22.125 12L12.5 21.3333L2.875 12" stroke="#303A4D" stroke-width="5" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-          </div>
-        </div>
-        <div class="c-dd-list mobile">
-          <div class="c-dd-list-inner">
-            <div class="c-dd-item learn">
-              <a href="/learn/our-wraps" class="c-dd-item-link w-inline-block">
-                <div class="c-img-contain dd-thumb learn">
-                  <img
-                    src="https://cdn.prod.website-files.com/63e361a5e2a22da1600ef70f/641d5bb789b0aa6ab616b025_dd-learn-img-01.webp"
-                    loading="eager" alt="" class="c-img learn" />
-                </div>
-                <div class="c-dd-item_bt">
-                  <div class="t-body-2 is-bold">Go-Shop</div>
-                </div>
-              </a>
-            </div>
-            <div id="w-node-c9f308da-a972-63b2-9fe5-bc4e9819e48e-9819e456" class="c-dd-item learn">
-              <a href="/learn/why-egg-whites" class="c-dd-item-link w-inline-block">
-                <div class="c-img-contain dd-thumb learn">
-                  <img
-                    src="https://cdn.prod.website-files.com/63e361a5e2a22da1600ef70f/641d5bb7903a715a7d99f1f8_dd-learn-img-02.webp"
-                    loading="eager" alt="" class="c-img learn" />
-                </div>
-                <div class="c-dd-item_bt">
-                  <div class="t-body-2 is-bold">Why Go-Shop</div>
-                </div>
-              </a>
-            </div>
-            <div id="w-node-c9f308da-a972-63b2-9fe5-bc4e9819e495-9819e456" class="c-dd-item learn">
-              <a href="/learn/faq" class="c-dd-item-link w-inline-block">
-                <div class="c-img-contain dd-thumb learn">
-                  <img
-                    src="https://cdn.prod.website-files.com/63e361a5e2a22da1600ef70f/641d5bb80ff1037b4d5dea6b_dd-learn-img-03.webp"
-                    loading="eager" alt="" class="c-img learn" />
-                </div>
-                <div class="c-dd-item_bt">
-                  <div class="t-body-2 is-bold">FAQs</div>
-                </div>
-              </a>
-            </div>
-            <div id="w-node-c9f308da-a972-63b2-9fe5-bc4e9819e49c-9819e456" class="c-dd-item learn">
-              <a href="/learn/why-we-do-it" class="c-dd-item-link w-inline-block">
-                <div class="c-img-contain dd-thumb learn">
-                  <img
-                    srcset="https://assets-global.website-files.com/6448cbe9ce99d3adb517fb98/6448cbe9ce99d336c217fcd3_why-dd-p-500.webp 500w, https://assets-global.website-files.com/6448cbe9ce99d3adb517fb98/6448cbe9ce99d336c217fcd3_why-dd.webp 606w"
-                    loading="eager" sizes="100vw"
-                    src="https://cdn.prod.website-files.com/6448cbe9ce99d3adb517fb98/6448cbe9ce99d336c217fcd3_why-dd.webp"
-                    alt="a factory worker making fresh grocery products" class="c-img learn" />
-                </div>
-                <div class="c-dd-item_bt">
-                  <div class="t-body-2 is-bold">Why we do it</div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   </div>
   <main id="smooth-wrapper" class="o-page-wrapper">
@@ -1671,7 +1415,7 @@
         </div>
       </div>
     </div>
-    <div expand-endtrigger="" z-5="" class="c-section hm-goals-bt">
+    <div expand-endtrigger="" z-5="" class="c-section hm-goals-bt" id="best-service">
       <div no-click="" class="c-hm-goals-bg w-embed">
         <svg width="100%" viewBox="0 0 1440 585" fill="none" xmlns="http://www.w3.org/2000/svg">
           <mask id="path-1-inside-1_1202_10732" fill="white">
@@ -2824,22 +2568,7 @@
   <script src="https://webflow-assets.sfo2.cdn.digitaloceanspaces.com/egglife/script.js"></script>
 
 
-  <script>
-    const pprtgr = [
-      'color: #F2F3F3',
-      'background: #080808',
-      'font-size: 12px',
-      'padding-left: 10px',
-      'line-height: 2',
-      'border-left: 5px solid #ff3c31',
-    ].join(';');
-    console.info(`
-
-%cWebsite by Paper Tiger${' '}
-www.papertiger.com${'     '}
-
-`, pprtgr);
-  </script>
+  
 
   <script>
     class Scroll extends Lenis {
@@ -2996,13 +2725,82 @@ www.papertiger.com${'     '}
   <script src="https://webflow-assets.sfo2.cdn.digitaloceanspaces.com/egglife%2Fegglife-hero.js"></script>
 
   <script>
+    // Dynamic Orders link routing based on auth state
+    (function () {
+      function setOrdersHref() {
+        try {
+          var ordersLink = document.getElementById('orders-link');
+          var ordersLinkMobile = document.getElementById('orders-link-mobile');
+          if (!ordersLink) return;
+          var isLoggedIn = !!(window.GoShopAuth && typeof window.GoShopAuth.isLoggedIn === 'function' && window.GoShopAuth.isLoggedIn());
+          ordersLink.setAttribute('href', isLoggedIn ? 'profile.html' : 'auth.html');
+          if (ordersLinkMobile) {
+            ordersLinkMobile.setAttribute('href', isLoggedIn ? 'profile.html' : 'auth.html');
+          }
+        } catch (e) { /* noop */ }
+      }
+      // Run immediately and also after auth scripts likely initialized
+      setOrdersHref();
+      window.addEventListener('DOMContentLoaded', setOrdersHref);
+    })();
+  </script>
+
+  <script>
+    // Mobile: close navbar before navigating/scrolling to section
+    (function () {
+      function isMobile() {
+        return window.matchMedia('(max-width: 991px)').matches;
+      }
+
+      function closeMobileNav() {
+        try {
+          var closeBtn = document.querySelector('.c-header-mobile .c-nav-close');
+          if (closeBtn) closeBtn.click();
+        } catch (e) { /* noop */ }
+      }
+
+      function handleMobileNavClick(event) {
+        if (!isMobile()) return;
+        var href = this.getAttribute('href') || '';
+        // Always retract first
+        closeMobileNav();
+
+        // For in-page anchors, prevent default and smooth scroll after closing
+        if (href.startsWith('#')) {
+          event.preventDefault();
+          var target = document.querySelector(href);
+          if (target) {
+            setTimeout(function () {
+              if (window.Scroll && typeof window.Scroll.scrollTo === 'function') {
+                window.Scroll.scrollTo(target);
+              } else {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 200);
+          }
+        }
+        // For non-anchor links (e.g., auth/profile), let default navigation proceed after retract
+      }
+
+      window.addEventListener('DOMContentLoaded', function () {
+        var mobileLinks = document.querySelectorAll('.c-header-mobile_bt a.c-nav-link');
+        mobileLinks.forEach(function (link) {
+          link.addEventListener('click', handleMobileNavClick, false);
+        });
+      });
+    })();
+  </script>
+
+  <script>
     window.Scroll.stop();
 
     // PAGE LOAD
     window.addEventListener("DOMContentLoaded", (event) => {
       recipesMarquee();
 
-      homePageLoad();
+      if (typeof homePageLoad === 'function') {
+        homePageLoad();
+      }
     });
   </script>
 
