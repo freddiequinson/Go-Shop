@@ -1021,6 +1021,7 @@
                 display: -webkit-box;
                 overflow: hidden;
                 -webkit-line-clamp: 2;
+                line-clamp: 2;
                 -webkit-box-orient: vertical;
             }
 
@@ -2158,9 +2159,9 @@
     </div>
     </div>
     </div>
-    <main id="smooth-wrapper" class="o-page-wrapper">
+    <main id="smooth-wrapper" class="o-page-wrapper" style="padding-top: 8rem;">
       <!-- Admin Login Form -->
-      <div id="admin-login" class="admin-login-container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem;">
+      <div id="admin-login" class="admin-login-container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 8rem); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem;">
         <div class="admin-login-form" style="background: #fff; padding: 3rem; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
           <div style="text-align: center; margin-bottom: 2rem;">
             <h1 style="font-size: 1.5rem; font-weight: 700; color: #303A4D; margin: 0 0 0.5rem 0;">Admin Access</h1>
@@ -2188,16 +2189,103 @@
       </div>
 
       <!-- Admin Dashboard (hidden until authenticated) -->
-      <div id="admin-dashboard" class="admin-dashboard" style="padding: 2rem; max-width: 1200px; margin: 0 auto; display: none;">
+      <div id="admin-dashboard" class="admin-dashboard" style="padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; display: none; background: #ffffff; min-height: calc(100vh - 8rem);">
         <!-- Header -->
-        <div style="margin-bottom: 2rem;">
-          <h1 style="font-size: 2rem; font-weight: 800; color: #303A4D; margin-bottom: 0.5rem;">Admin Dashboard</h1>
-          <p style="color: #6b7280; font-size: 1.1rem;">Go-Shop Management Console</p>
+        <div style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; line-height: 1.2;">Admin Dashboard</h1>
+            <p style="color: #64748b; font-size: 1.125rem; margin: 0;">Go-Shop Management Console</p>
+          </div>
         </div>
 
+        <!-- Admin Navigation -->
+        <div class="admin-nav" style="margin-bottom: 2rem;">
+          <!-- Mobile Dropdown -->
+          <div class="admin-nav-mobile" style="display: none; width: 100%; position: relative; margin-bottom: 1em;">
+            <button class="admin-nav-dropdown-btn" style="width: 100%; padding: 1em 1.5em; background: #1e293b; border: none; border-radius: 30px; color: #ffffff; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease;">
+              <span class="dropdown-text">Analytics</span>
+              <svg class="dropdown-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transition: transform 0.3s ease;">
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="admin-nav-dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 100; overflow: hidden;">
+              <button class="admin-nav-dropdown-item active" data-tab="analytics" style="width: 100%; padding: 1em 1.5em; border: none; background: transparent; color: #1e293b; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v10H7V7zm4-2h2v12h-2V5zm4 4h2v8h-2V9z" fill="currentColor"/>
+                </svg>
+                Analytics
+              </button>
+              <button class="admin-nav-dropdown-item" data-tab="shops" style="width: 100%; padding: 1em 1.5em; border: none; background: transparent; color: #64748b; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Shops
+              </button>
+              <button class="admin-nav-dropdown-item" data-tab="orders" style="width: 100%; padding: 1em 1.5em; border: none; background: transparent; color: #64748b; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Recent Orders
+              </button>
+              <button class="admin-nav-dropdown-item" data-tab="vendors" style="width: 100%; padding: 1em 1.5em; border: none; background: transparent; color: #64748b; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Vendor Applications
+              </button>
+              <button class="admin-nav-dropdown-item" data-tab="settings" style="width: 100%; padding: 1em 1.5em; border: none; background: transparent; color: #64748b; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Settings
+              </button>
+            </div>
+          </div>
+
+          <!-- Desktop Navigation -->
+          <div class="admin-nav-desktop" style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap;">
+            <button class="admin-nav-btn active" data-tab="analytics" style="padding: 1em 2em; border: none; background: #1e293b; color: #ffffff; cursor: pointer; border-radius: 30px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v10H7V7zm4-2h2v12h-2V5zm4 4h2v8h-2V9z" fill="currentColor"/>
+              </svg>
+              Analytics
+            </button>
+            <button class="admin-nav-btn" data-tab="shops" style="padding: 1em 2em; border: none; background: transparent; color: #64748b; cursor: pointer; border-radius: 30px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Shops
+            </button>
+            <button class="admin-nav-btn" data-tab="orders" style="padding: 1em 2em; border: none; background: transparent; color: #64748b; cursor: pointer; border-radius: 30px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Recent Orders
+            </button>
+            <button class="admin-nav-btn" data-tab="vendors" style="padding: 1em 2em; border: none; background: transparent; color: #64748b; cursor: pointer; border-radius: 30px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Vendor Applications
+            </button>
+            <button class="admin-nav-btn" data-tab="settings" style="padding: 1em 2em; border: none; background: transparent; color: #64748b; cursor: pointer; border-radius: 30px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="admin-tab-content">
+          <!-- Analytics Tab -->
+          <div id="analytics-tab" class="admin-tab-panel active" style="display: block;">
         <!-- Stats Overview -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-          <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 4px solid #FED141;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+          <div class="stat-card" style="background: #ffffff; padding: 2rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin: 0 0 0.5rem 0; text-transform: uppercase;">Total Orders</h3>
@@ -2211,7 +2299,7 @@
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 4px solid #10B981;">
+          <div class="stat-card" style="background: #ffffff; padding: 2rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #10b981; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin: 0 0 0.5rem 0; text-transform: uppercase;">Revenue</h3>
@@ -2225,7 +2313,7 @@
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 4px solid #3B82F6;">
+          <div class="stat-card" style="background: #ffffff; padding: 2rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #6366f1; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin: 0 0 0.5rem 0; text-transform: uppercase;">Active Users</h3>
@@ -2239,7 +2327,7 @@
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 4px solid #8B5CF6;">
+          <div class="stat-card" style="background: #ffffff; padding: 2rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <h3 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin: 0 0 0.5rem 0; text-transform: uppercase;">Vendor Applications</h3>
@@ -2255,11 +2343,12 @@
         </div>
 
         <!-- Recent Orders -->
-        <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-          <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
-            <h2 style="font-size: 1.25rem; font-weight: 700; color: #303A4D; margin: 0;">Recent Orders</h2>
+        <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; border: 1px solid #e2e8f0; overflow: hidden;">
+          <div style="padding: 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Recent Orders</h2>
+            <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">Latest customer orders and transactions</p>
           </div>
-          <div id="recent-orders" style="padding: 1.5rem;">
+          <div id="recent-orders" style="padding: 2rem;">
             <div style="text-align: center; color: #6b7280; padding: 2rem;">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
                 <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L20 21H4L5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2269,12 +2358,14 @@
           </div>
         </div>
 
+
         <!-- Vendor Applications -->
-        <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
-            <h2 style="font-size: 1.25rem; font-weight: 700; color: #303A4D; margin: 0;">Vendor Applications</h2>
+        <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; border: 1px solid #e2e8f0; overflow: hidden;">
+          <div style="padding: 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Vendor Applications</h2>
+            <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">Pending vendor registration requests</p>
           </div>
-          <div id="vendor-applications-list" style="padding: 1.5rem;">
+          <div id="vendor-applications-list" style="padding: 2rem;">
             <div style="text-align: center; color: #6b7280; padding: 2rem;">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
                 <path d="M19 21V19C19 17.9391 18.5786 16.9217 17.8284 16.1716C17.0783 15.4214 16.0609 15 15 15H9C7.93913 15 6.92172 15.4214 6.17157 16.1716C5.42143 16.9217 5 17.9391 5 19V21M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2282,13 +2373,502 @@
               <p>Loading applications...</p>
             </div>
           </div>
+            </div>
+
+            <!-- Analytics Charts Placeholder -->
+            <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem; border: 1px solid #e2e8f0;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 1rem 0;">Analytics Overview</h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 12px;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; color: #64748b;">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v10H7V7zm4-2h2v12h-2V5zm4 4h2v8h-2V9z" fill="currentColor"/>
+                  </svg>
+                  <h4 style="color: #1e293b; margin: 0 0 0.5rem 0;">Order Trends</h4>
+                  <p style="color: #64748b; margin: 0;">Chart placeholder for order trends over time</p>
+                </div>
+                <div style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 12px;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; color: #64748b;">
+                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <h4 style="color: #1e293b; margin: 0 0 0.5rem 0;">Revenue Chart</h4>
+                  <p style="color: #64748b; margin: 0;">Chart placeholder for revenue analytics</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shops Tab -->
+          <div id="shops-tab" class="admin-tab-panel" style="display: none;">
+            <div style="background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); overflow: hidden;">
+              <div style="padding: 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                  <div>
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Shop Management</h2>
+                    <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">Manage shops, vendors, and market listings</p>
+                  </div>
+                  <button id="add-shop-btn" style="background: #3b82f6; color: #ffffff; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Add Shop
+                  </button>
+                </div>
+              </div>
+              <div id="shops-list" style="padding: 2rem;">
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
+                    <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p>Loading shops...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders Tab -->
+          <div id="orders-tab" class="admin-tab-panel" style="display: none;">
+            <div style="background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); overflow: hidden;">
+              <div style="padding: 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Recent Orders</h2>
+                <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">Latest customer orders and their status</p>
+              </div>
+              <div id="recent-orders" style="padding: 2rem;">
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
+                    <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p>Loading orders...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vendors Tab -->
+          <div id="vendors-tab" class="admin-tab-panel" style="display: none;">
+            <div style="background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); overflow: hidden;">
+              <div style="padding: 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Vendor Applications</h2>
+                <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">Pending vendor applications awaiting approval</p>
+              </div>
+              <div id="vendor-applications-list" style="padding: 2rem;">
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p>Loading applications...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Tab -->
+          <div id="settings-tab" class="admin-tab-panel" style="display: none;">
+            <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem; border: 1px solid #e2e8f0;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 1.5rem 0;">System Settings</h3>
+              <div style="display: grid; gap: 1.5rem;">
+                <div style="padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                  <h4 style="color: #1e293b; margin: 0 0 0.5rem 0;">General Settings</h4>
+                  <p style="color: #64748b; margin: 0 0 1rem 0;">Configure general system settings and preferences</p>
+                     <button style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">Configure</button>
+                </div>
+                <div style="padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                  <h4 style="color: #1e293b; margin: 0 0 0.5rem 0;">Notification Settings</h4>
+                  <p style="color: #64748b; margin: 0 0 1rem 0;">Manage email and system notifications</p>
+                     <button style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">Configure</button>
+                </div>
+                <div style="padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                  <h4 style="color: #1e293b; margin: 0 0 0.5rem 0;">Security Settings</h4>
+                  <p style="color: #64748b; margin: 0 0 1rem 0;">Manage security and access controls</p>
+                     <button style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">Configure</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
 
+    <!-- Shop Management Modal -->
+    <div id="shop-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div class="modal-content" style="background: #fff; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-width: 600px; width: 90%;">
+        <div class="modal-header" style="padding: 2rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+          <h3 id="shop-modal-title" style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Add New Shop</h3>
+          <button id="close-shop-modal" style="background: none; border: none; font-size: 1.5rem; color: #6b7280; cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: all 0.2s ease;">&times;</button>
+        </div>
+        
+        <form id="shop-form" style="padding: 2rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+              <label for="shop-name" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Shop Name *</label>
+              <input type="text" id="shop-name" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+            <div>
+              <label for="shop-category" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Category *</label>
+              <select id="shop-category" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box; background: #fff;">
+                <option value="">Select Category</option>
+                <option value="fruits">Fruits & Vegetables</option>
+                <option value="dairy">Dairy & Eggs</option>
+                <option value="meat">Meat & Seafood</option>
+                <option value="bakery">Bakery & Bread</option>
+                <option value="beverages">Beverages</option>
+                <option value="snacks">Snacks & Confectionery</option>
+                <option value="health">Health & Wellness</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <label for="shop-description" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Description *</label>
+            <textarea id="shop-description" required rows="3" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box; resize: vertical; font-family: inherit;"></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+              <label for="shop-owner" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Owner Name *</label>
+              <input type="text" id="shop-owner" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+            <div>
+              <label for="shop-email" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Contact Email *</label>
+              <input type="email" id="shop-email" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+              <label for="shop-phone" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Phone Number</label>
+              <input type="tel" id="shop-phone" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+            <div>
+              <label for="shop-location" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Location *</label>
+              <input type="text" id="shop-location" required style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+              <label for="shop-image" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Image URL</label>
+              <input type="url" id="shop-image" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box;">
+            </div>
+            <div>
+              <label for="shop-status" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Status</label>
+              <select id="shop-status" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.2s ease; box-sizing: border-box; background: #fff;">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending Approval</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+            <button type="button" id="cancel-shop" style="background: #f3f4f6; color: #374151; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">Cancel</button>
+                 <button type="submit" id="save-shop" style="background: #3b82f6; color: #ffffff; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">Save Shop</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <style>
       .admin-dashboard {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      
+      /* Admin Navigation Styles */
+      .admin-nav-btn {
+        transition: all 0.2s ease;
+      }
+      
+      .admin-nav-btn:hover:not(.active) {
+        background: #334155 !important;
+        color: #ffffff !important;
+      }
+      
+      .admin-nav-btn.active {
+        background: #1e293b !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(30, 41, 59, 0.3);
+      }
+      
+      .admin-nav-dropdown-btn:hover {
+        background: #334155 !important;
+      }
+      
+      .admin-nav-dropdown-btn.active .dropdown-arrow {
+        transform: rotate(180deg);
+      }
+      
+      .admin-nav-dropdown-content.show {
+        display: block !important;
+      }
+      
+      .admin-nav-dropdown-item:hover {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+      }
+      
+      .admin-nav-dropdown-item.active {
+        background: #1e293b !important;
+        color: #ffffff !important;
+      }
+      
+      .admin-tab-panel {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Mobile Navigation Responsiveness */
+      @media (max-width: 768px) {
+        .admin-nav-desktop {
+          display: none !important;
+        }
+        
+        .admin-nav-mobile {
+          display: block !important;
+        }
+      }
+      
+      @media (min-width: 769px) {
+        .admin-nav-desktop {
+          display: flex !important;
+        }
+        
+        .admin-nav-mobile {
+          display: none !important;
+        }
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      }
+      
+      .order-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+      }
+      
+      .order-item:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+      }
+      
+      .vendor-application {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+      }
+      
+      .vendor-application:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+      }
+      
+      .shop-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+      }
+      
+      .shop-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      }
+      
+      .shop-card:hover .shop-image-container img {
+        transform: scale(1.05);
+      }
+      
+      .shop-card:hover .shop-actions-overlay {
+        opacity: 1;
+      }
+      
+      .shops-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+      
+      .phone-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        color: #64748b;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        position: relative;
+      }
+      
+      .phone-icon:hover {
+        background: #e2e8f0;
+        color: #475569;
+        transform: scale(1.1);
+      }
+      
+      /* Scroll locking for modals and overlays */
+      body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+      }
+      
+      body.dropdown-open {
+        overflow: hidden;
+      }
+      
+      /* Modal scroll containment */
+      .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      
+      /* Dropdown scroll containment */
+      .profile-nav-dropdown-content {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      
+      /* Smooth scrolling for modal content */
+      .modal-content::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+      }
+      
+      .modal-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+      }
+      
+      .modal-content::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+      
+      /* Prevent scroll on mobile when modal is open */
+      @media (max-width: 768px) {
+        body.modal-open {
+          position: fixed;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        
+        body.dropdown-open {
+          overflow: hidden;
+        }
+      }
+      
+      /* Smooth transitions for modal content */
+      .modal-content {
+        scroll-behavior: smooth;
+      }
+      
+      /* Focus management for accessibility */
+      .modal-content:focus {
+        outline: none;
+      }
+      
+      .shop-info {
+        flex: 1;
+        min-width: 300px;
+      }
+      
+      .shop-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      
+      .shop-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+      
+      .status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+      
+      .status-inactive {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      
+      .status-pending {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      
+      .btn-edit, .btn-delete {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      .btn-edit {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      
+      .btn-edit:hover {
+        background: #bfdbfe;
+      }
+      
+      .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+      
+      .btn-delete:hover {
+        background: #fecaca;
+      }
+      
+      #add-shop-btn:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+      
+      #shop-modal {
+        display: flex;
+      }
+      
+      .modal-hidden {
+        display: none !important;
       }
       
       .admin-login-container {
@@ -2378,17 +2958,229 @@
       
       @media (max-width: 768px) {
         .admin-dashboard {
-          padding: 1rem;
+          padding: 1.5rem 1rem;
         }
         
         .stat-card {
-          padding: 1rem;
+          padding: 1.5rem;
+        }
+        
+        .admin-dashboard h1 {
+          font-size: 2rem !important;
+        }
+        
+        .admin-dashboard h2 {
+          font-size: 1.25rem !important;
         }
         
         .order-item, .vendor-application {
           flex-direction: column;
           align-items: flex-start;
           gap: 0.5rem;
+        }
+        
+        /* Mobile Shop Management Improvements */
+        .shops-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        
+        .shop-card {
+          margin-bottom: 0;
+        }
+        
+        .shop-card .shop-image-container {
+          height: 180px;
+        }
+        
+        .shop-card .shop-content {
+          padding: 1.25rem;
+        }
+        
+        .shop-card .shop-content h3 {
+          font-size: 1.125rem;
+        }
+        
+        /* Mobile Modal Improvements */
+        #shop-modal > div {
+          width: 95%;
+          margin: 1rem;
+          max-height: 95vh;
+        }
+        
+        #shop-form > div {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        
+        #shop-form input,
+        #shop-form select,
+        #shop-form textarea {
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        .form-actions {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        
+        .form-actions button {
+          width: 100%;
+          padding: 14px 24px;
+        }
+        
+        /* Additional Mobile Improvements */
+        .btn-edit, .btn-delete {
+          min-height: 44px; /* iOS touch target minimum */
+          padding: 12px 16px;
+        }
+        
+        #add-shop-btn {
+          min-height: 44px;
+          padding: 12px 20px;
+        }
+        
+        .shop-item {
+          padding: 1.25rem;
+        }
+        
+        .shop-info > div:first-child {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.75rem;
+        }
+        
+        .shops-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        
+        .shop-card .shop-image-container {
+          height: 160px;
+        }
+        
+        .shop-card .shop-content {
+          padding: 1rem;
+        }
+        
+        .shop-card .shop-content h3 {
+          font-size: 1rem;
+        }
+        
+        .shop-actions-overlay {
+          opacity: 1 !important;
+        }
+        
+        .shop-actions-overlay button {
+          width: 36px;
+          height: 36px;
+        }
+        
+        .phone-icon {
+          width: 28px;
+          height: 28px;
+        }
+        
+        .phone-icon svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+      
+      @media (max-width: 768px) and (min-width: 481px) {
+        /* Tablet-specific improvements */
+        #shop-modal > div {
+          width: 90%;
+          margin: 2rem;
+        }
+        
+        #shop-form > div {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+        
+        .shops-grid {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.5rem;
+        }
+        
+        .shop-card .shop-image-container {
+          height: 190px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .admin-dashboard {
+          padding: 1rem 0.75rem;
+        }
+        
+        .stat-card {
+          padding: 1.25rem;
+        }
+        
+        .admin-dashboard h1 {
+          font-size: 1.75rem !important;
+        }
+        
+        /* Mobile Shop Management Styles */
+        .shop-item {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1rem;
+        }
+        
+        .shop-info {
+          min-width: unset;
+        }
+        
+        .shop-actions {
+          justify-content: space-between;
+          width: 100%;
+        }
+        
+        .shop-actions .shop-status {
+          order: -1;
+          align-self: flex-start;
+        }
+        
+        /* Mobile Modal Styles */
+        #shop-modal > div {
+          width: 95%;
+          margin: 1rem;
+          max-height: 95vh;
+        }
+        
+        #shop-modal .modal-header {
+          padding: 1.5rem;
+        }
+        
+        #shop-modal .modal-header h3 {
+          font-size: 1.25rem;
+        }
+        
+        #shop-form {
+          padding: 1.5rem;
+        }
+        
+        #shop-form > div {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        
+        #shop-form input,
+        #shop-form select,
+        #shop-form textarea {
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        #shop-form .form-actions {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        
+        #shop-form .form-actions button {
+          width: 100%;
+          padding: 14px 24px;
         }
       }
     </style>
@@ -2426,7 +3218,83 @@
           document.getElementById('admin-dashboard').style.display = 'block';
           loadOrders();
           loadVendorApplications();
+          loadShops();
           addLogoutButton();
+          initializeAdminTabs();
+        }
+        
+        // Initialize admin tab functionality
+      function initializeAdminTabs() {
+        const tabButtons = document.querySelectorAll('.admin-nav-btn, .admin-nav-dropdown-item');
+        const tabPanels = document.querySelectorAll('.admin-tab-panel');
+        const dropdownBtn = document.querySelector('.admin-nav-dropdown-btn');
+        const dropdownContent = document.querySelector('.admin-nav-dropdown-content');
+        const dropdownText = document.querySelector('.dropdown-text');
+        
+        // Desktop and mobile tab switching
+        tabButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            switchTab(targetTab);
+            
+            // Update dropdown button text and close dropdown for mobile
+            if (dropdownText && button.classList.contains('admin-nav-dropdown-item')) {
+              dropdownText.textContent = button.textContent.trim();
+              if (dropdownBtn) {
+                dropdownBtn.classList.remove('active');
+              }
+              if (dropdownContent) {
+                dropdownContent.classList.remove('show');
+              }
+            }
+          });
+        });
+        
+        // Mobile dropdown toggle
+        if (dropdownBtn && dropdownContent) {
+          dropdownBtn.addEventListener('click', () => {
+            dropdownBtn.classList.toggle('active');
+            dropdownContent.classList.toggle('show');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!dropdownBtn.contains(e.target)) {
+              dropdownBtn.classList.remove('active');
+              dropdownContent.classList.remove('show');
+            }
+          });
+        }
+      }
+      
+      function switchTab(targetTab) {
+        const tabButtons = document.querySelectorAll('.admin-nav-btn, .admin-nav-dropdown-item');
+        const tabPanels = document.querySelectorAll('.admin-tab-panel');
+        
+        // Remove active class from all buttons and panels
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabPanels.forEach(panel => panel.style.display = 'none');
+        
+        // Add active class to clicked button
+        const activeButton = document.querySelector(`[data-tab="${targetTab}"]`);
+        if (activeButton) {
+          activeButton.classList.add('active');
+        }
+        
+        // Show target panel
+        const targetPanel = document.getElementById(targetTab + '-tab');
+        if (targetPanel) {
+          targetPanel.style.display = 'block';
+          
+          // Load data for specific tabs when they become active
+          if (targetTab === 'orders') {
+            loadOrders();
+          } else if (targetTab === 'vendors') {
+            loadVendorApplications();
+          } else if (targetTab === 'shops') {
+            loadShops();
+          }
+        }
         }
         
         // Handle login form submission
@@ -2668,13 +3536,288 @@
           `).join('');
         }
         
+        // Shop Management Functions
+        let currentEditingShopId = null;
+        
+        function loadShops() {
+          try {
+            const shops = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+            displayShops(shops);
+          } catch (e) {
+            console.error('Error loading shops:', e);
+            document.getElementById('shops-list').innerHTML = `
+              <div style="text-align: center; color: #ef4444; padding: 2rem;">
+                <p>Error loading shops</p>
+              </div>
+            `;
+          }
+        }
+        
+        function displayShops(shops) {
+          const container = document.getElementById('shops-list');
+          
+          if (shops.length === 0) {
+            container.innerHTML = `
+              <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
+                  <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p>No shops found</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Click "Add Shop" to create your first shop</p>
+              </div>
+            `;
+            return;
+          }
+          
+          container.innerHTML = `
+            <div class="shops-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+              ${shops.map(shop => `
+                <div class="shop-card" data-shop-id="${shop.id}" style="background: #fff; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;">
+                  <div class="shop-image-container" style="position: relative; height: 200px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    ${shop.image ? 
+                      `<img src="${shop.image}" alt="${shop.name}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">` : 
+                      `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #FED141 0%, #e6c236 100%);">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #1e293b;">
+                          <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>`
+                    }
+                    <div class="shop-status-overlay" style="position: absolute; top: 1rem; right: 1rem;">
+                      <span class="shop-status status-${shop.status}" style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; backdrop-filter: blur(10px); background: rgba(255,255,255,0.9);">
+                        ${shop.status}
+                      </span>
+                    </div>
+                    <div class="shop-actions-overlay" style="position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem; opacity: 0; transition: opacity 0.3s ease;">
+                      <button class="btn-edit" onclick="event.stopPropagation(); editShop('${shop.id}')" style="background: rgba(59, 130, 246, 0.9); color: white; padding: 0.5rem; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                      <button class="btn-delete" onclick="event.stopPropagation(); deleteShop('${shop.id}')" style="background: rgba(239, 68, 68, 0.9); color: white; padding: 0.5rem; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="shop-content" style="padding: 1.5rem;">
+                    <div style="margin-bottom: 1rem;">
+                      <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 0.5rem 0; line-height: 1.3;">
+                        ${shop.name}
+                      </h3>
+                      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="background: #f1f5f9; color: #475569; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                          ${shop.category}
+                        </span>
+                        <span style="color: #64748b; font-size: 0.875rem;">
+                          📍 ${shop.location}
+                        </span>
+                      </div>
+                      <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin: 0 0 1rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${shop.description}
+                      </p>
+                    </div>
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                          <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.25rem;">
+                            Owner: <span style="font-weight: 600; color: #1e293b;">${shop.owner}</span>
+                          </div>
+                          <div style="font-size: 0.75rem; color: #94a3b8;">
+                            ${shop.email}
+                          </div>
+                        </div>
+                        <div style="text-align: right;">
+                          ${shop.phone ? `<div class="phone-icon" title="${shop.phone}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </div>` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+        
+        function openShopModal(shopId = null) {
+          const modal = document.getElementById('shop-modal');
+          const title = document.getElementById('shop-modal-title');
+          const form = document.getElementById('shop-form');
+          
+          if (shopId) {
+            title.textContent = 'Edit Shop';
+            currentEditingShopId = shopId;
+            loadShopData(shopId);
+          } else {
+            title.textContent = 'Add New Shop';
+            currentEditingShopId = null;
+            form.reset();
+          }
+          
+          modal.style.display = 'flex';
+          lockBodyScroll();
+        }
+        
+        function closeShopModal() {
+          const modal = document.getElementById('shop-modal');
+          modal.style.display = 'none';
+          currentEditingShopId = null;
+          unlockBodyScroll();
+        }
+        
+        function loadShopData(shopId) {
+          const shops = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+          const shop = shops.find(s => s.id === shopId);
+          
+          if (shop) {
+            document.getElementById('shop-name').value = shop.name || '';
+            document.getElementById('shop-category').value = shop.category || '';
+            document.getElementById('shop-description').value = shop.description || '';
+            document.getElementById('shop-owner').value = shop.owner || '';
+            document.getElementById('shop-email').value = shop.email || '';
+            document.getElementById('shop-phone').value = shop.phone || '';
+            document.getElementById('shop-location').value = shop.location || '';
+            document.getElementById('shop-image').value = shop.image || '';
+            document.getElementById('shop-status').value = shop.status || 'active';
+          }
+        }
+        
+        function saveShop(event) {
+          event.preventDefault();
+          
+          const formData = {
+            name: document.getElementById('shop-name').value.trim(),
+            category: document.getElementById('shop-category').value,
+            description: document.getElementById('shop-description').value.trim(),
+            owner: document.getElementById('shop-owner').value.trim(),
+            email: document.getElementById('shop-email').value.trim(),
+            phone: document.getElementById('shop-phone').value.trim(),
+            location: document.getElementById('shop-location').value.trim(),
+            image: document.getElementById('shop-image').value.trim(),
+            status: document.getElementById('shop-status').value
+          };
+          
+          // Validation
+          if (!formData.name || !formData.category || !formData.description || !formData.owner || !formData.email || !formData.location) {
+            alert('Please fill in all required fields');
+            return;
+          }
+          
+          if (!isValidEmail(formData.email)) {
+            alert('Please enter a valid email address');
+            return;
+          }
+          
+          const shops = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+          
+          if (currentEditingShopId) {
+            // Update existing shop
+            const index = shops.findIndex(s => s.id === currentEditingShopId);
+            if (index !== -1) {
+              shops[index] = { ...shops[index], ...formData };
+            }
+          } else {
+            // Add new shop
+            const newShop = {
+              id: 'shop_' + Date.now(),
+              ...formData,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            shops.push(newShop);
+          }
+          
+          localStorage.setItem('goshop_shops', JSON.stringify(shops));
+          loadShops();
+          closeShopModal();
+        }
+        
+        
+        function isValidEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+        
+        // Initialize sample data if none exists
+        function initializeSampleData() {
+          const existingShops = localStorage.getItem('goshop_shops');
+          if (!existingShops || JSON.parse(existingShops).length === 0) {
+            const sampleShops = [
+              {
+                id: 'shop_1',
+                name: 'Fresh Farm Produce',
+                category: 'fruits',
+                description: 'Fresh organic fruits and vegetables delivered daily from local farms. We specialize in seasonal produce and sustainable farming practices.',
+                owner: 'John Smith',
+                email: 'john@freshfarm.com',
+                phone: '+233 24 123 4567',
+                location: 'Accra, Ghana',
+                image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+                status: 'active',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              {
+                id: 'shop_2',
+                name: 'Dairy Delights',
+                category: 'dairy',
+                description: 'Premium dairy products including fresh milk, cheese, yogurt, and artisanal butter. All products are locally sourced and pasteurized.',
+                owner: 'Mary Johnson',
+                email: 'mary@dairydelights.com',
+                phone: '+233 24 234 5678',
+                location: 'Kumasi, Ghana',
+                image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=300&fit=crop',
+                status: 'active',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              {
+                id: 'shop_3',
+                name: 'Bakery Corner',
+                category: 'bakery',
+                description: 'Artisanal breads, pastries, and baked goods made fresh daily. We use traditional recipes and high-quality ingredients.',
+                owner: 'David Brown',
+                email: 'david@bakerycorner.com',
+                phone: '+233 24 345 6789',
+                location: 'Tema, Ghana',
+                image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
+            ];
+            localStorage.setItem('goshop_shops', JSON.stringify(sampleShops));
+          }
+        }
+        
         // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
+          // Initialize sample data
+          initializeSampleData();
+          
           // Check authentication status
           checkAuth();
           
           // Add login form event listener
           document.getElementById('admin-login-form').addEventListener('submit', handleLogin);
+          
+          // Add shop management event listeners
+          document.getElementById('add-shop-btn').addEventListener('click', () => openShopModal());
+          document.getElementById('close-shop-modal').addEventListener('click', closeShopModal);
+          document.getElementById('cancel-shop').addEventListener('click', closeShopModal);
+          document.getElementById('shop-form').addEventListener('submit', saveShop);
+          
+          // Close modal when clicking outside
+          document.getElementById('shop-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+              closeShopModal();
+            }
+          });
           
           // Add logout button when dashboard is shown
           addLogoutButton();
@@ -2684,9 +3827,170 @@
         setInterval(() => {
           loadOrders();
           loadVendorApplications();
+          loadShops();
         }, 30000);
         
       })();
+      
+      // Scroll locking utilities
+      function lockBodyScroll() {
+        document.body.classList.add('modal-open');
+        // Store current scroll position
+        const scrollY = window.scrollY;
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+      }
+      
+      function unlockBodyScroll() {
+        document.body.classList.remove('modal-open');
+        // Restore scroll position
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+      }
+      
+      function lockBodyScrollForDropdown() {
+        document.body.classList.add('dropdown-open');
+      }
+      
+      function unlockBodyScrollForDropdown() {
+        document.body.classList.remove('dropdown-open');
+      }
+      
+      // Global shop management functions
+      function editShop(shopId) {
+        // Access the function from the IIFE scope
+        if (typeof window.openShopModal === 'function') {
+          window.openShopModal(shopId);
+        } else {
+          // Fallback: try to access from the global scope
+          const modal = document.getElementById('shop-modal');
+          if (modal) {
+            modal.style.display = 'flex';
+            lockBodyScroll();
+            // Load shop data into form
+            const shops = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+            const shop = shops.find(s => s.id === shopId);
+            if (shop) {
+              document.getElementById('shop-name').value = shop.name;
+              document.getElementById('shop-category').value = shop.category;
+              document.getElementById('shop-description').value = shop.description;
+              document.getElementById('shop-owner').value = shop.owner;
+              document.getElementById('shop-email').value = shop.email;
+              document.getElementById('shop-phone').value = shop.phone || '';
+              document.getElementById('shop-location').value = shop.location;
+              document.getElementById('shop-image').value = shop.image || '';
+              document.getElementById('shop-status').value = shop.status;
+              document.getElementById('shop-modal-title').textContent = 'Edit Shop';
+              document.getElementById('save-shop').textContent = 'Update Shop';
+              document.getElementById('save-shop').setAttribute('data-shop-id', shopId);
+            }
+          }
+        }
+      }
+      
+      function deleteShop(shopId) {
+        if (confirm('Are you sure you want to delete this shop? This action cannot be undone.')) {
+          const shops = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+          const updatedShops = shops.filter(s => s.id !== shopId);
+          localStorage.setItem('goshop_shops', JSON.stringify(updatedShops));
+          // Reload shops display
+          const shopsList = document.getElementById('shops-list');
+          if (shopsList) {
+            const updatedShopsData = JSON.parse(localStorage.getItem('goshop_shops') || '[]');
+            if (updatedShopsData.length === 0) {
+              shopsList.innerHTML = `
+                <div style="text-align: center; color: #6b7280; padding: 2rem;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem; opacity: 0.5;">
+                    <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p>No shops found. Add your first shop to get started!</p>
+                </div>
+              `;
+            } else {
+              // Re-render shops
+              shopsList.innerHTML = `
+                <div class="shops-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                  ${updatedShopsData.map(shop => `
+                    <div class="shop-card" data-shop-id="${shop.id}" style="background: #fff; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;">
+                      <div class="shop-image-container" style="position: relative; height: 200px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        ${shop.image ?
+                          `<img src="${shop.image}" alt="${shop.name}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">` :
+                          `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #FED141 0%, #e6c236 100%);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #1e293b;">
+                              <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7M3 7L5 21H19L21 7M3 7H21M9 11V17M15 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </div>`
+                        }
+                        <div class="shop-status-overlay" style="position: absolute; top: 1rem; right: 1rem;">
+                          <span class="shop-status status-${shop.status}" style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; backdrop-filter: blur(10px); background: rgba(255,255,255,0.9);">
+                            ${shop.status}
+                          </span>
+                        </div>
+                        <div class="shop-actions-overlay" style="position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem; opacity: 0; transition: opacity 0.3s ease;">
+                          <button class="btn-edit" onclick="event.stopPropagation(); editShop('${shop.id}')" style="background: rgba(59, 130, 246, 0.9); color: white; padding: 0.5rem; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </button>
+                          <button class="btn-delete" onclick="event.stopPropagation(); deleteShop('${shop.id}')" style="background: rgba(239, 68, 68, 0.9); color: white; padding: 0.5rem; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(10px);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="shop-content" style="padding: 1.5rem;">
+                        <div style="margin-bottom: 1rem;">
+                          <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 0.5rem 0; line-height: 1.3;">
+                            ${shop.name}
+                          </h3>
+                          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="background: #f1f5f9; color: #475569; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                              ${shop.category}
+                            </span>
+                            <span style="color: #64748b; font-size: 0.875rem;">
+                              📍 ${shop.location}
+                            </span>
+                          </div>
+                          <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin: 0 0 1rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            ${shop.description}
+                          </p>
+                        </div>
+                        <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                          <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                              <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.25rem;">
+                                Owner: <span style="font-weight: 600; color: #1e293b;">${shop.owner}</span>
+                              </div>
+                              <div style="font-size: 0.75rem; color: #94a3b8;">
+                                ${shop.email}
+                              </div>
+                            </div>
+                            <div style="text-align: right;">
+                              ${shop.phone ? `<div class="phone-icon" title="${shop.phone}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                              </div>` : ''}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `;
+            }
+          }
+        }
+      }
     </script>
 
     <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=6448cbe9ce99d3adb517fb98"
@@ -3050,6 +4354,13 @@
                 dropdownBtn.addEventListener('click', () => {
                     dropdownBtn.classList.toggle('active');
                     dropdownContent.classList.toggle('show');
+                    
+                    // Lock/unlock body scroll for dropdown
+                    if (dropdownContent.classList.contains('show')) {
+                        lockBodyScrollForDropdown();
+                    } else {
+                        unlockBodyScrollForDropdown();
+                    }
                 });
 
                 // Close dropdown when clicking outside
@@ -3057,6 +4368,7 @@
                     if (!dropdownBtn.contains(e.target)) {
                         dropdownBtn.classList.remove('active');
                         dropdownContent.classList.remove('show');
+                        unlockBodyScrollForDropdown();
                     }
                 });
             }
@@ -3077,6 +4389,7 @@
                     }
                     if (dropdownContent) {
                         dropdownContent.classList.remove('show');
+                        unlockBodyScrollForDropdown();
                     }
                 });
             });
@@ -4218,7 +5531,7 @@
             console.log('showAddAddressModal function called');
             const modalHTML = `
                 <div id="add-address-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                    <div style="background: white; padding: 2em; border-radius: 1em; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-content" style="background: white; padding: 2em; border-radius: 1em; max-width: 500px; width: 90%;">
                         <h3 style="margin-top: 0;">Add New Address</h3>
                         <form id="add-address-form">
                             <div style="margin-bottom: 1em;">
@@ -4265,6 +5578,7 @@
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
+            lockBodyScroll();
 
             document.getElementById('add-address-form').addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -4303,7 +5617,7 @@
         function showAddPaymentModal() {
             const modalHTML = `
                 <div id="add-payment-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                    <div style="background: white; padding: 2em; border-radius: 1em; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-content" style="background: white; padding: 2em; border-radius: 1em; max-width: 500px; width: 90%;">
                         
                         <!-- Step 1: Payment Type Selection -->
                         <div id="payment-type-step">
@@ -4466,6 +5780,7 @@
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
+            lockBodyScroll();
 
             // Handle payment type selection
             document.querySelectorAll('.payment-type-option').forEach(btn => {
@@ -4644,12 +5959,18 @@
 
         function closeAddressModal() {
             const modal = document.getElementById('add-address-modal');
-            if (modal) modal.remove();
+            if (modal) {
+                modal.remove();
+                unlockBodyScroll();
+            }
         }
 
         function closePaymentModal() {
             const modal = document.getElementById('add-payment-modal');
-            if (modal) modal.remove();
+            if (modal) {
+                modal.remove();
+                unlockBodyScroll();
+            }
         }
 
         function saveProfileChanges() {
@@ -4736,7 +6057,7 @@
             // Create modal HTML
             const modalHTML = `
                 <div id="edit-profile-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                    <div style="background: white; padding: 2em; border-radius: 1em; max-width: 400px; width: 90%;">
+                    <div class="modal-content" style="background: white; padding: 2em; border-radius: 1em; max-width: 400px; width: 90%;">
                         <h3 style="margin-top: 0;">Edit Profile</h3>
                         <form id="edit-profile-form">
                             <div style="margin-bottom: 1em;">
@@ -4761,6 +6082,7 @@
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
+            lockBodyScroll();
 
             // Add form submit handler
             document.getElementById('edit-profile-form').addEventListener('submit', function (e) {
@@ -4788,6 +6110,7 @@
             const modal = document.getElementById('edit-profile-modal');
             if (modal) {
                 modal.remove();
+                unlockBodyScroll();
             }
         }
 
@@ -4814,11 +6137,11 @@
                     font-family: monospace;
                 `;
 
-                const user = window.GoShopAuth.getProfile();
+                const user = window.GoShopAuth && window.GoShopAuth.getProfile ? window.GoShopAuth.getProfile() : null;
                 debugInfo.innerHTML = `
                     <strong>Auth Debug Info:</strong><br>
-                    User: ${user.username}<br>
-                    Email: ${user.email}<br>
+                    User: ${user ? user.username : 'Not logged in'}<br>
+                    Email: ${user ? user.email : 'N/A'}<br>
                     Profile elements updated: ${document.querySelector('.profile-name') ? 'Yes' : 'No'}<br>
                     <small>This debug info only shows in localhost</small>
                 `;

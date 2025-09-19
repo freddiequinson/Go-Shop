@@ -6,7 +6,7 @@
   <title>Go-Shop | Fresh Groceries from the Farm to Your Office</title>
   <meta content="Fresh Groceries from the Farm to Your Office" name="description" />
   <meta content="Go-Shop | Fresh Groceries from the Farm to Your Office" property="og:title" />
-  <meta content="Fresh Groceries from the Farm to Your Office" property="og:description" />
+  <meta content="Fre sh Groceries from the Farm to Your Office" property="og:description" />
   <meta content="OG-Image.png" property="og:image" />
   <meta content="Fresh Groceries from the Farm to Your Office" property="twitter:title" />
   <meta content="Fresh Groceries from the Farm to Your Office" property="twitter:description" />
@@ -636,21 +636,6 @@
           border: 1px solid currentColor;
           color: inherit;
         }
-
-        /* Admin menu styling */
-        .c-mobile-admin .c-btn {
-          transition: all 0.3s ease;
-        }
-
-        .c-mobile-admin .c-btn:hover {
-          background: rgba(254, 209, 65, 0.2) !important;
-          border-color: rgba(254, 209, 65, 0.5) !important;
-          transform: translateY(-2px);
-        }
-
-        .c-mobile-admin .c-btn:active {
-          transform: translateY(0);
-        }
       }
     </style>
   </div>
@@ -1038,19 +1023,6 @@
             </a>
           </div>
         </div>
-        
-        <!-- Admin Menu Item (Mobile) -->
-        <div class="c-mobile-admin" style="margin: 1.5em 0; padding: 1em 0; border-top: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2);">
-          <a href="admin.html" class="c-btn is-large is-secondary w-inline-block" style="background: rgba(254, 209, 65, 0.1); border: 1px solid rgba(254, 209, 65, 0.3); color: #FED141;">
-            <div class="c-btn-inner">
-              <div class="c-btn-txt">
-                <div class="c-btn-label line-1">🔧 Admin Panel</div>
-                <div class="c-btn-label line-2">🔧 Admin Panel</div>
-              </div>
-            </div>
-          </a>
-        </div>
-        
         <div class="c-mobile-auth">
           <a href="auth.html" class="c-btn is-large w-inline-block">
             <div class="c-btn-bg"></div>
@@ -1061,11 +1033,11 @@
               </div>
             </div>
           </a>
-          <a href="auth.html" class="c-btn is-large is-secondary w-inline-block">
+          <a href="admin.html" class="c-btn is-large is-secondary w-inline-block">
             <div class="c-btn-inner">
               <div class="c-btn-txt">
-                <div class="c-btn-label line-1">Create account</div>
-                <div class="c-btn-label line-2">Create account</div>
+                <div class="c-btn-label line-1">Admin</div>
+                <div class="c-btn-label line-2">Admin</div>
               </div>
             </div>
           </a>
@@ -3020,7 +2992,6 @@ www.papertiger.com${'     '}
   <!-- Authentication and Profile Icon Updates -->
   <script src="src/js/auth.js"></script>
   <script src="src/js/profile-icon-updater.js"></script>
-  <script src="src/js/guest-cta.js"></script>
 
   <script src="https://webflow-assets.sfo2.cdn.digitaloceanspaces.com/egglife%2Fegglife-hero.js"></script>
 
@@ -3242,155 +3213,6 @@ www.papertiger.com${'     '}
       } else {
       }
     });
-  </script>
-
-  <!-- Discreet Admin Access -->
-  <script>
-    (function() {
-      'use strict';
-      
-      let adminKeySequence = [];
-      const adminCode = ['1', '2', '3', '4', '5']; // "12345"
-      let adminLinkVisible = false;
-      
-      // Create hidden admin link
-      const adminLink = document.createElement('a');
-      adminLink.href = 'admin.html';
-      adminLink.textContent = 'Admin Panel';
-      adminLink.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #ffffff;
-        color: #303A4D;
-        padding: 12px 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-        pointer-events: none;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        letter-spacing: 0.025em;
-        text-transform: uppercase;
-        max-width: 120px;
-        text-align: center;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-      `;
-      
-      // Add mobile-specific styles
-      const mobileStyles = document.createElement('style');
-      mobileStyles.textContent = `
-        @media (max-width: 768px) {
-          .admin-link-mobile {
-            bottom: 15px !important;
-            right: 15px !important;
-            padding: 14px 20px !important;
-            font-size: 15px !important;
-            max-width: 140px !important;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
-            border-radius: 10px !important;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .admin-link-mobile {
-            bottom: 10px !important;
-            right: 10px !important;
-            padding: 12px 16px !important;
-            font-size: 13px !important;
-            max-width: 120px !important;
-          }
-        }
-      `;
-      document.head.appendChild(mobileStyles);
-      
-      // Add mobile class for responsive styling
-      adminLink.className = 'admin-link-mobile';
-      document.body.appendChild(adminLink);
-      
-      // Listen for key presses
-      document.addEventListener('keydown', function(e) {
-        // Add key to sequence (case insensitive)
-        adminKeySequence.push(e.key.toLowerCase());
-        
-        // Keep only the last 5 characters (length of admin code)
-        if (adminKeySequence.length > adminCode.length) {
-          adminKeySequence.shift();
-        }
-        
-        // Check if sequence matches admin code
-        if (adminKeySequence.length === adminCode.length && 
-            adminKeySequence.every((key, index) => key === adminCode[index])) {
-          
-          if (!adminLinkVisible) {
-            // Show admin link
-            adminLink.style.opacity = '1';
-            adminLink.style.transform = 'translateY(0)';
-            adminLink.style.pointerEvents = 'auto';
-            adminLinkVisible = true;
-            
-            // Auto-hide after 10 seconds
-            setTimeout(() => {
-              if (adminLinkVisible) {
-                adminLink.style.opacity = '0';
-                adminLink.style.transform = 'translateY(20px)';
-                adminLink.style.pointerEvents = 'none';
-                adminLinkVisible = false;
-              }
-            }, 10000);
-            
-            // Reset sequence
-            adminKeySequence = [];
-          }
-        }
-      });
-      
-      // Hide admin link when clicking elsewhere (desktop and mobile)
-      document.addEventListener('click', function(e) {
-        if (adminLinkVisible && !adminLink.contains(e.target)) {
-          adminLink.style.opacity = '0';
-          adminLink.style.transform = 'translateY(20px)';
-          adminLink.style.pointerEvents = 'none';
-          adminLinkVisible = false;
-        }
-      });
-      
-      // Hide admin link when touching elsewhere (mobile)
-      document.addEventListener('touchstart', function(e) {
-        if (adminLinkVisible && !adminLink.contains(e.target)) {
-          adminLink.style.opacity = '0';
-          adminLink.style.transform = 'translateY(20px)';
-          adminLink.style.pointerEvents = 'none';
-          adminLinkVisible = false;
-        }
-      });
-      
-      // Add hover effect
-      adminLink.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-1px)';
-        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        this.style.borderColor = '#d1d5db';
-        this.style.backgroundColor = '#f9fafb';
-      });
-      
-      adminLink.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        this.style.borderColor = '#e5e7eb';
-        this.style.backgroundColor = '#ffffff';
-      });
-      
-    })();
   </script>
 </body>
 
