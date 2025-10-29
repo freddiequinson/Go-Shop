@@ -206,13 +206,13 @@ Let me provide a comprehensive breakdown of the navbar structure and functionali
 #### **1. Recipes Dropdown (`c-dd-link`)**
 **Trigger**: "Recipes" text with hover effects
 **Dropdown Content** (`c-dd-list recipes`):
-- **Breakfast** - Links to `/recipes-hub?meal=Breakfast`
-- **Lunch** - Links to `/recipes-hub?meal=Lunch` 
-- **Dinner** - Links to `/recipes-hub?meal=Dinner`
-- **Snack** - Links to `/recipes-hub?meal=Snack`
-- **Appetizer** - Links to `/recipes-hub?meal=Appetizer`
-- **Dessert** - Links to `/recipes-hub?meal=Dessert`
-- **All Recipes** - Links to `/recipes-hub` (hidden by default)
+- **Breakfast** - Links to `/shop-listings?meal=Breakfast`
+- **Lunch** - Links to `/shop-listings?meal=Lunch` 
+- **Dinner** - Links to `/shop-listings?meal=Dinner`
+- **Snack** - Links to `/shop-listings?meal=Snack`
+- **Appetizer** - Links to `/shop-listings?meal=Appetizer`
+- **Dessert** - Links to `/shop-listings?meal=Dessert`
+- **All Recipes** - Links to `/shop-listings` (hidden by default)
 
 **Visual Elements**:
 - Each dropdown item has a thumbnail image

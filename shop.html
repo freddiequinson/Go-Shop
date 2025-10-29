@@ -605,7 +605,7 @@
     <div class="o-container">
       <div class="c-header-inner">
         <div id="w-node-_44838ccd-f486-394f-5026-75156586150b-019da0a9" class="c-header_lt">
-          <a href="recipes-hub.html" class="c-nav-link w-inline-block w--current">
+          <a href="shop-listings.html" class="c-nav-link w-inline-block w--current">
             <div class="c-nav-link_hover w-embed">
               <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -829,7 +829,7 @@
       </div>
     </div>
     <div class="c-header-mobile_bt">
-      <a href="recipes-hub.html" class="c-nav-link w-inline-block w--current">
+      <a href="shop-listings.html" class="c-nav-link w-inline-block w--current">
         <div class="c-nav-link_hover w-embed">
           <svg width="100%" height="1em" preserveAspectRatio="none" viewBox="0 0 58 16" fill="none"
             xmlns="http://www.w3.org/2000/svg">
@@ -1306,7 +1306,7 @@
               <a href="#" class="c-footer-item w-inline-block">
                 <div class="t-body-3">FAQs</div>
               </a>
-              <a href="recipes-hub.html" class="c-footer-item w-inline-block">
+              <a href="shop-listings.html" class="c-footer-item w-inline-block">
                 <div class="t-body-3">Shop</div>
               </a>
               <a href="#" class="c-footer-item w-inline-block">
@@ -1546,6 +1546,158 @@
         lastScroll = current;
       });
     })();
+  </script>
+
+  <!-- Market-specific functionality -->
+  <script>
+    // Handle market parameter from URL
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const marketId = urlParams.get('market');
+      
+      if (marketId) {
+        displayMarketInfo(marketId);
+      }
+    });
+    
+    function displayMarketInfo(marketId) {
+      const marketData = {
+        'kaneshie': {
+          name: 'Kaneshie Market',
+          location: 'Kaneshie, Accra',
+          image: 'src/images/farmers/f1.jpg',
+          description: 'One of Accra\'s largest markets offering fresh produce, local foods, and household items.',
+          rating: '4.8',
+          reviews: '2.3k',
+          deliveryTime: '30-45 mins',
+          deliveryFee: '₵10.00'
+        },
+        'accra': {
+          name: 'Accra Central Market',
+          location: 'Central Accra',
+          image: 'src/images/farmers/f2.jpg',
+          description: 'The heart of Accra\'s trading district with diverse vendors and competitive prices.',
+          rating: '4.6',
+          reviews: '1.8k',
+          deliveryTime: '25-40 mins',
+          deliveryFee: '₵8.00'
+        },
+        'kumasi': {
+          name: 'Kumasi Central Market',
+          location: 'Kumasi, Ashanti Region',
+          image: 'src/images/farmers/f3.jpg',
+          description: 'Ghana\'s largest market in the cultural capital, known for authentic local products.',
+          rating: '4.7',
+          reviews: '3.1k',
+          deliveryTime: '35-50 mins',
+          deliveryFee: '₵12.00'
+        },
+        'tamale': {
+          name: 'Tamale Market',
+          location: 'Tamale, Northern Region',
+          image: 'src/images/farmers/shop1.jpg',
+          description: 'Northern Ghana\'s premier market featuring regional specialties and fresh produce.',
+          rating: '4.5',
+          reviews: '950',
+          deliveryTime: '40-60 mins',
+          deliveryFee: '₵15.00'
+        },
+        'cape': {
+          name: 'Cape Coast Market',
+          location: 'Cape Coast, Central Region',
+          image: 'src/images/farmers/shop2.jpg',
+          description: 'Coastal market specializing in fresh seafood and regional coastal products.',
+          rating: '4.4',
+          reviews: '720',
+          deliveryTime: '45-65 mins',
+          deliveryFee: '₵18.00'
+        },
+        'takoradi': {
+          name: 'Takoradi Market',
+          location: 'Takoradi, Western Region',
+          image: 'src/images/farmers/farmer1.jpg',
+          description: 'Western region\'s main market hub with diverse agricultural products.',
+          rating: '4.3',
+          reviews: '680',
+          deliveryTime: '50-70 mins',
+          deliveryFee: '₵20.00'
+        },
+        'sunyani': {
+          name: 'Sunyani Market',
+          location: 'Sunyani, Brong-Ahafo Region',
+          image: 'src/images/farmers/farmer2.webp',
+          description: 'Agricultural hub market known for fresh farm produce and local specialties.',
+          rating: '4.2',
+          reviews: '540',
+          deliveryTime: '55-75 mins',
+          deliveryFee: '₵22.00'
+        },
+        'koforidua': {
+          name: 'Koforidua Market',
+          location: 'Koforidua, Eastern Region',
+          image: 'src/images/farmers/farmer3.jpg',
+          description: 'Eastern region market featuring mountain-fresh produce and local crafts.',
+          rating: '4.1',
+          reviews: '420',
+          deliveryTime: '60-80 mins',
+          deliveryFee: '₵25.00'
+        }
+      };
+      
+      const market = marketData[marketId];
+      if (!market) return;
+      
+      // Update page title
+      document.title = `${market.name} | Go-Shop Ghana`;
+      
+      // Create and insert market header
+      const marketHeader = document.createElement('div');
+      marketHeader.className = 'market-header';
+      marketHeader.innerHTML = `
+        <div class="market-hero" style="background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('${market.image}'); background-size: cover; background-position: center; padding: 4rem 0; color: white; text-align: center;">
+          <div class="o-container">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${market.name}</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${market.description}</p>
+            <div class="market-stats" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+              <div class="stat-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                <div style="font-size: 1.5rem; font-weight: bold;">★ ${market.rating}</div>
+                <div style="font-size: 0.9rem;">(${market.reviews} reviews)</div>
+              </div>
+              <div class="stat-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                <div style="font-size: 1.2rem; font-weight: bold;">${market.deliveryTime}</div>
+                <div style="font-size: 0.9rem;">Delivery Time</div>
+              </div>
+              <div class="stat-item" style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; backdrop-filter: blur(10px);">
+                <div style="font-size: 1.2rem; font-weight: bold;">${market.deliveryFee}</div>
+                <div style="font-size: 0.9rem;">Delivery Fee</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Insert after header
+      const header = document.querySelector('.c-header');
+      if (header && header.nextSibling) {
+        header.parentNode.insertBefore(marketHeader, header.nextSibling);
+      }
+      
+      // Add back button
+      const backButton = document.createElement('div');
+      backButton.innerHTML = `
+        <div style="padding: 1rem 0; background: #f8f9fa;">
+          <div class="o-container">
+            <button onclick="window.history.back()" style="background: #fff; border: 1px solid #ddd; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              ← Back to Markets
+            </button>
+          </div>
+        </div>
+      `;
+      
+      if (marketHeader.nextSibling) {
+        marketHeader.parentNode.insertBefore(backButton, marketHeader.nextSibling);
+      }
+    }
   </script>
 
   <!-- Authentication and Profile Icon Updates -->

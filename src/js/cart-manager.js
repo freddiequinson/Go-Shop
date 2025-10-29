@@ -430,7 +430,7 @@ class CartManager {
                         <div class="cart-empty-icon">🛒</div>
                         <h3>Your cart is empty</h3>
                         <p>Add some fresh groceries to get started!</p>
-                        <a href="recipes-hub.html" class="cart-empty-btn">Start Shopping</a>
+                        <a href="shop-listings.html" class="cart-empty-btn">Start Shopping</a>
                     </div>
                 </li>
             `;

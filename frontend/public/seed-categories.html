@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Categories - GoShopGhana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #303A4D;
+        }
+        button {
+            background: #FED141;
+            color: #303A4D;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #F1B424;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Seed Categories</h1>
+        <p>This will create all initial categories and subcategories for GoShopGhana.</p>
+        <p><strong>Note:</strong> Make sure you're logged in as admin first!</p>
+        
+        <button id="seedBtn" onclick="seedCategories()">Start Seeding Categories</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8000";
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<div class="${className}">${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        const categoriesData = [
+            {
+                name: "Groceries",
+                description: "Food and grocery items",
+                subcategories: [
+                    { name: "Vegetables", description: "Fresh vegetables" },
+                    { name: "Fruits", description: "Fresh fruits" },
+                    { name: "Tubers", description: "Root vegetables and tubers" },
+                    { name: "Spices", description: "Spices and seasonings" },
+                    { name: "Beverages", description: "Drinks and beverage items" },
+                    { name: "Animal Protein", description: "Meat, fish, and eggs" },
+                    { name: "Seeds & Nuts", description: "Seeds and nuts" },
+                    { name: "Grains", description: "Grains and cereals" },
+                ]
+            },
+            { name: "Water", description: "Bottled and mineral water" },
+            { name: "Men's Fashion", description: "Men's clothing and accessories" },
+            { name: "Women's Fashion", description: "Women's clothing and accessories" },
+            { name: "Baby", description: "Baby products and essentials" },
+            { name: "Boy's Fashion", description: "Boys' clothing and accessories" },
+            { name: "Girls Fashion", description: "Girls' clothing and accessories" },
+            { name: "Auto Parts", description: "Automotive parts and accessories" },
+            { name: "Electronics", description: "Electronic devices and gadgets" },
+            { name: "Toiletries", description: "Personal care and hygiene products" },
+            { name: "Arts & Craft", description: "Art supplies and craft materials" },
+            { name: "Toys and Games", description: "Toys and games for children" },
+            { name: "Pet's Supplies", description: "Pet food and accessories" },
+            { name: "Home & Kitchen", description: "Home and kitchen essentials" },
+            { name: "Health", description: "Health and wellness products" },
+        ];
+
+        async function seedCategories() {
+            const btn = document.getElementById('seedBtn');
+            btn.disabled = true;
+            document.getElementById('output').innerHTML = '';
+            
+            const token = localStorage.getItem("access_token");
+            
+            if (!token) {
+                log("❌ No access token found. Please login to the admin panel first!", 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            log("🌱 Starting category seeding...", 'info');
+            let created = 0;
+
+            try {
+                for (const catData of categoriesData) {
+                    // Create main category
+                    const mainResponse = await fetch(`${API_URL}/api/v1/products/categories`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            name: catData.name,
+                            description: catData.description,
+                            is_active: true
+                        })
+                    });
+
+                    if (mainResponse.ok) {
+                        const mainCat = await mainResponse.json();
+                        created++;
+                        log(`✅ Created main category: ${mainCat.name}`, 'success');
+
+                        // Create subcategories if any
+                        if (catData.subcategories) {
+                            for (const subData of catData.subcategories) {
+                                const subResponse = await fetch(`${API_URL}/api/v1/products/categories`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Authorization": `Bearer ${token}`,
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        name: subData.name,
+                                        description: subData.description,
+                                        parent_id: mainCat.id,
+                                        is_active: true
+                                    })
+                                });
+
+                                if (subResponse.ok) {
+                                    const subCat = await subResponse.json();
+                                    created++;
+                                    log(`  ✅ Created subcategory: ${subCat.name}`, 'success');
+                                } else {
+                                    log(`  ⚠️ Subcategory ${subData.name} may already exist`, 'info');
+                                }
+                            }
+                        }
+                    } else {
+                        log(`⚠️ Category ${catData.name} may already exist`, 'info');
+                    }
+                }
+
+                log(`\n🎉 Successfully created ${created} categories!`, 'success');
+                log("Categories are now available in the system.", 'success');
+            } catch (error) {
+                log(`❌ Error seeding categories: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
