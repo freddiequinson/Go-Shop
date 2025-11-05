@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { MapPin, Plus, Edit, Trash2, Star, Loader2, X } from 'lucide-react'
-import MapboxAddressPicker from '@/components/MapboxAddressPicker'
+// import MapboxAddressPicker from '@/components/MapboxAddressPicker'
 import Link from 'next/link'
 
 export default function AddressesPage() {
@@ -263,14 +263,14 @@ export default function AddressesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Map Picker */}
-              <div>
+              {/* Map Picker - Temporarily disabled for deployment */}
+              {/* <div>
                 <MapboxAddressPicker
                   onAddressSelect={handleAddressSelect}
                   initialLatitude={formData.latitude}
                   initialLongitude={formData.longitude}
                 />
-              </div>
+              </div> */}
 
               {/* Address Label */}
               <div className="grid md:grid-cols-2 gap-4">
