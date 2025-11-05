@@ -6,14 +6,14 @@ FROM base AS deps
 WORKDIR /app
 
 # Copy package files
-COPY frontend/package.json frontend/package-lock.json* ./
+COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY frontend/ .
+COPY . .
 
 # Set environment variable for build
 ENV NEXT_TELEMETRY_DISABLED 1
