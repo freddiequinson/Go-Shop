@@ -21,7 +21,7 @@ pydantic[email]==2.5.0
 requests==2.31.0
 
 # Payment processing
-paystack==1.0.2
+paystack==1.5.0
 
 # HTTP client for external APIs
 httpx==0.25.2
