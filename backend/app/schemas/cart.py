@@ -8,6 +8,19 @@ from decimal import Decimal
 from datetime import datetime
 from pydantic import BaseModel, validator, field_serializer
 
+# Product details for cart items
+class CartProductDetails(BaseModel):
+    """Minimal product details for cart items"""
+    id: str
+    name: str
+    price_per_unit_cedis: int
+    unit_type: str
+    image_url: Optional[str] = None
+    primary_image_url: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
 # Cart Item schemas
 class CartItemBase(BaseModel):
     product_id: str
@@ -47,8 +60,12 @@ class CartItemResponse(CartItemBase):
     # Computed fields
     price_per_unit: Optional[float] = None
     line_total: Optional[float] = None
+    subtotal: Optional[float] = None  # For frontend compatibility
     
-    # Product details (will be populated from joins)
+    # Nested product object (for frontend)
+    product: Optional[CartProductDetails] = None
+    
+    # Flat product details (for backward compatibility)
     product_name: Optional[str] = None
     product_unit_type: Optional[str] = None
     product_minimum_quantity: Optional[Decimal] = None

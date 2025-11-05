@@ -59,16 +59,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: UserLogin) => {
     try {
       setIsLoading(true)
-      await authService.login(credentials)
+      const loginResponse = await authService.login(credentials)
       const currentUser = await authService.getCurrentUser()
       setUser(currentUser)
       
-      // Redirect based on user type
-      if (currentUser.user_type === 'admin') {
-        router.push('/admin')
+      // Use redirect_to from backend if available, otherwise fallback to user type
+      let redirectPath = '/'
+      if (loginResponse.redirect_to) {
+        redirectPath = loginResponse.redirect_to
       } else {
-        router.push('/')
+        // User type is now uppercase (ADMIN, SUPPLIER, SELLER, BUYER, RIDER)
+        const userType = currentUser.user_type?.toUpperCase()
+        if (userType === 'ADMIN') {
+          redirectPath = '/admin'
+        } else if (userType === 'SUPPLIER') {
+          redirectPath = '/supplier/dashboard'
+        } else if (userType === 'SELLER') {
+          redirectPath = '/seller/dashboard'
+        } else if (userType === 'RIDER') {
+          redirectPath = '/rider'
+        } else {
+          redirectPath = '/shop'
+        }
       }
+      
+      router.push(redirectPath)
     } catch (error) {
       const errorMessage = handleApiError(error)
       throw new Error(errorMessage)

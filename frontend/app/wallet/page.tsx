@@ -3,18 +3,27 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Wallet, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, Download } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { useAuth } from "@/lib/contexts/auth-context"
-import { paymentsService } from "@/lib/api/services"
+import { ArrowLeft, Wallet, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown, Download, Gift, Loader2, Clock, X } from "lucide-react"
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/lib/contexts/auth-context'
+import { paymentsService } from '@/lib/api/services'
+import apiClient from '@/lib/api/client'
 
 export default function WalletPage() {
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { toast } = useToast()
   const [wallet, setWallet] = useState<any>(null)
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Gift card redemption state
+  const [giftCardCode, setGiftCardCode] = useState('')
+  const [giftCardPin, setGiftCardPin] = useState('')
+  const [isRedeeming, setIsRedeeming] = useState(false)
+  const [showRedeemModal, setShowRedeemModal] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -48,6 +57,51 @@ export default function WalletPage() {
     totalCredits: transactions.filter(t => t.transaction_type === 'credit').reduce((sum, t) => sum + Number(t.amount || 0), 0),
     totalDebits: transactions.filter(t => t.transaction_type === 'debit').reduce((sum, t) => sum + Number(t.amount || 0), 0),
     transactionCount: transactions.length,
+  }
+
+  const handleRedeemGiftCard = async () => {
+    if (!giftCardCode.trim() || !giftCardPin.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both gift card code and PIN",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsRedeeming(true)
+    try {
+      const response = await apiClient.post('/giftcards/redeem', {
+        code: giftCardCode.trim(),
+        pin: giftCardPin.trim()
+      })
+
+      toast({
+        title: "Success!",
+        description: `Gift card redeemed! GH₵${response.data.amount_credited} added to your wallet.`,
+      })
+
+      // Clear form
+      setGiftCardCode('')
+      setGiftCardPin('')
+
+      // Refresh wallet data
+      const [walletData, txData] = await Promise.all([
+        paymentsService.getWallet(),
+        paymentsService.getTransactions()
+      ])
+      setWallet(walletData)
+      setTransactions(txData)
+
+    } catch (error: any) {
+      toast({
+        title: "Redemption Failed",
+        description: error.response?.data?.detail || "Failed to redeem gift card. Please check your code and PIN.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsRedeeming(false)
+    }
   }
 
   return (
@@ -85,8 +139,28 @@ export default function WalletPage() {
             </Link>
           </Card>
 
+          {/* Gift Card Redemption Button */}
+          <Card className="lg:col-span-1 p-6 bg-gradient-to-br from-[#FED141]/10 to-[#FED141]/5 border-[#FED141]/20">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-full bg-[#FED141] flex items-center justify-center">
+                <Gift className="w-6 h-6 text-[#303A4D]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-[#303A4D]">Gift Cards</h2>
+                <p className="text-sm text-gray-600">Redeem your gift card</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowRedeemModal(true)}
+              className="w-full bg-[#FED141] hover:bg-[#FED141]/90 text-[#303A4D] font-semibold"
+            >
+              <Gift className="w-4 h-4 mr-2" />
+              Redeem Gift Card
+            </Button>
+          </Card>
+
           {/* Stats Cards */}
-          <div className="lg:col-span-2 grid sm:grid-cols-3 gap-4">
+          <div className="lg:col-span-1 grid sm:grid-cols-3 lg:grid-cols-1 gap-4">
             <Card className="p-6 bg-white">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -202,6 +276,109 @@ export default function WalletPage() {
           </div>
         </Card>
       </div>
+
+      {/* Gift Card Redemption Modal */}
+      {showRedeemModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowRedeemModal(false)
+                setGiftCardCode('')
+                setGiftCardPin('')
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-[#FED141] flex items-center justify-center">
+                <Gift className="w-6 h-6 text-[#303A4D]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-[#303A4D]">Redeem Gift Card</h2>
+                <p className="text-sm text-gray-600">Enter your gift card details</p>
+              </div>
+            </div>
+
+            {/* Modal Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#303A4D] mb-2">
+                  Gift Card Code *
+                </label>
+                <input
+                  type="text"
+                  value={giftCardCode}
+                  onChange={(e) => setGiftCardCode(e.target.value.toUpperCase())}
+                  placeholder="GOSH-XXXX-XXXX-XXXX"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FED141] focus:border-transparent"
+                  disabled={isRedeeming}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter the code from your gift card</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#303A4D] mb-2">
+                  PIN *
+                </label>
+                <input
+                  type="password"
+                  value={giftCardPin}
+                  onChange={(e) => setGiftCardPin(e.target.value)}
+                  placeholder="Enter 6-digit PIN"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FED141] focus:border-transparent"
+                  disabled={isRedeeming}
+                  maxLength={6}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter the PIN from your gift card</p>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowRedeemModal(false)
+                    setGiftCardCode('')
+                    setGiftCardPin('')
+                  }}
+                  disabled={isRedeeming}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    await handleRedeemGiftCard()
+                    if (!isRedeeming) {
+                      setShowRedeemModal(false)
+                      setGiftCardCode('')
+                      setGiftCardPin('')
+                    }
+                  }}
+                  disabled={isRedeeming || !giftCardCode.trim() || !giftCardPin.trim()}
+                  className="flex-1 bg-[#FED141] hover:bg-[#FED141]/90 text-[#303A4D] font-semibold"
+                >
+                  {isRedeeming ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Redeeming...
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-4 h-4 mr-2" />
+                      Redeem
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

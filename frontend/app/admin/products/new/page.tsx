@@ -3,13 +3,16 @@
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Upload, X, Star, Image as ImageIcon, Plus } from "lucide-react"
+import { Upload, X, Star, Image as ImageIcon, Plus, AlertCircle, CheckCircle, Package } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import ProductSearchInput from "@/components/products/ProductSearchInput"
 
 export default function NewProduct() {
   const router = useRouter()
+  const [mode, setMode] = useState<"search" | "new" | "existing">("search")
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -24,6 +27,7 @@ export default function NewProduct() {
     cost_price: "",
     supplier_id: "",
     supplier_name: "",
+    warehouse_location: "",
   })
   const [images, setImages] = useState<string[]>([])
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0)
@@ -32,6 +36,7 @@ export default function NewProduct() {
   const [systemImages, setSystemImages] = useState<any[]>([])
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [locations, setLocations] = useState<any[]>([])
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [newCategory, setNewCategory] = useState({ name: "", description: "", parent_id: "" })
 
@@ -149,6 +154,7 @@ export default function NewProduct() {
     fetchSystemImages()
     fetchSuppliers()
     fetchCategories()
+    fetchLocations()
   }, [])
 
   const fetchSystemImages = async () => {
@@ -193,6 +199,21 @@ export default function NewProduct() {
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error)
+    }
+  }
+
+  const fetchLocations = async () => {
+    try {
+      const token = localStorage.getItem("access_token")
+      const response = await fetch("http://localhost:8000/api/v1/warehouse/locations/", {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setLocations(Array.isArray(data) ? data : (data.items || []))
+      }
+    } catch (error) {
+      console.error("Failed to fetch locations:", error)
     }
   }
 
@@ -293,14 +314,191 @@ export default function NewProduct() {
     }
   }
 
+  const handleSelectProduct = (product: any) => {
+    setSelectedProduct(product)
+    setMode("existing")
+    
+    // Pre-fill form with existing product data
+    setFormData({
+      ...formData,
+      name: product.name,
+      description: product.description || "",
+      category_id: product.category_id || "",
+      price_per_unit: product.price_per_unit?.toString() || "",
+      unit_type: product.unit_type || "kg",
+      stock_quantity: product.stock_quantity?.toString() || "",
+      cost_price: product.cost_price?.toString() || "",
+      is_perishable: product.is_perishable || false,
+      shelf_life_days: product.shelf_life_days?.toString() || "",
+    })
+    
+    // Load existing images if available
+    if (product.images && Array.isArray(product.images)) {
+      setImages(product.images)
+    }
+  }
+
+  const handleCreateNew = () => {
+    setMode("new")
+    setSelectedProduct(null)
+  }
+
+  const handleBackToSearch = () => {
+    setMode("search")
+    setSelectedProduct(null)
+    // Reset form
+    setFormData({
+      name: "",
+      description: "",
+      category_id: "",
+      price_per_unit: "",
+      price_per_quantity: "",
+      unit_type: "kg",
+      stock_quantity: "",
+      minimum_quantity: "1",
+      is_perishable: false,
+      shelf_life_days: "",
+      cost_price: "",
+      supplier_id: "",
+      supplier_name: "",
+      warehouse_location: "",
+    })
+    setImages([])
+  }
+
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-5xl font-bold text-[#303A4D] mb-4">Add New Product</h1>
-        <p className="text-xl text-[#303A4D]/70">Fill in the details to add a new product to your inventory</p>
+    <div className="p-4 md:p-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-3xl md:text-5xl font-bold text-[#303A4D] mb-2 md:mb-4">Add New Product</h1>
+        <p className="text-base md:text-xl text-[#303A4D]/70">Search for existing products or add a new one to your inventory</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 shadow-sm">
+      {/* Product Search Section */}
+      {mode === "search" && (
+        <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm mb-6">
+          <div className="mb-6">
+            <h2 className="text-xl md:text-2xl font-bold text-[#303A4D] mb-2">Search Existing Products</h2>
+            <p className="text-sm md:text-base text-[#303A4D]/70">Check if the product already exists to avoid duplicates</p>
+          </div>
+          
+          <ProductSearchInput
+            onSelectProduct={handleSelectProduct}
+            onCreateNew={handleCreateNew}
+            placeholder="Search by product name, SKU, or barcode..."
+            autoFocus
+          />
+
+          <div className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-semibold mb-1">Why search first?</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Prevents duplicate products in the system</li>
+                  <li>Shows existing supplier relationships</li>
+                  <li>Maintains consistent pricing across suppliers</li>
+                  <li>Helps with inventory tracking and reporting</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing Product Selected */}
+      {mode === "existing" && selectedProduct && (
+        <div className="bg-green-50 border-2 border-green-200 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm mb-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-green-900 mb-2">Existing Product Selected</h3>
+              <p className="text-sm md:text-base text-green-700 mb-4">
+                This product already exists in the system. You can update its details or link it to your supplier inventory.
+              </p>
+              
+              <div className="bg-white rounded-xl p-4 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-[#303A4D]/60 mb-1">Product Name</p>
+                    <p className="font-bold text-[#303A4D]">{selectedProduct.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-[#303A4D]/60 mb-1">Product ID</p>
+                    <p className="font-mono text-sm text-[#303A4D]">{selectedProduct.id}</p>
+                  </div>
+                  {selectedProduct.sku && (
+                    <div>
+                      <p className="text-sm text-[#303A4D]/60 mb-1">SKU</p>
+                      <p className="font-semibold text-[#303A4D]">{selectedProduct.sku}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-[#303A4D]/60 mb-1">Current Price</p>
+                    <p className="font-bold text-[#303A4D]">
+                      GH₵{Number(selectedProduct.price_per_unit).toFixed(2)} per {selectedProduct.unit_type}
+                    </p>
+                  </div>
+                </div>
+                {selectedProduct.supplier_count !== undefined && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-sm text-[#303A4D]/60 mb-1">Suppliers</p>
+                    <p className="font-bold text-[#303A4D]">
+                      {selectedProduct.supplier_count} supplier{selectedProduct.supplier_count !== 1 ? 's' : ''} currently stock this product
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={handleBackToSearch}
+                  className="px-6 py-2 bg-white border-2 border-green-600 text-green-700 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                >
+                  ← Back to Search
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateNew}
+                  className="px-6 py-2 bg-white border-2 border-gray-300 text-[#303A4D] rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Add as New Product Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Form */}
+      {(mode === "new" || mode === "existing") && (
+        <>
+          {mode === "new" && (
+            <div className="bg-[#FED141]/10 border-2 border-[#FED141] rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#FED141] rounded-full flex items-center justify-center flex-shrink-0">
+                  <Package className="w-6 h-6 text-[#303A4D]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl md:text-2xl font-bold text-[#303A4D] mb-2">Adding New Product</h3>
+                  <p className="text-sm md:text-base text-[#303A4D]/70 mb-4">
+                    This product doesn't exist in the system yet. Fill in all the details below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleBackToSearch}
+                    className="px-6 py-2 bg-[#303A4D] text-white rounded-lg font-semibold hover:bg-[#303A4D]/90 transition-colors"
+                  >
+                    ← Back to Search
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm">
         <div className="space-y-6">
           <div>
             <label className="block text-[#303A4D] font-bold mb-3">Product Images</label>
@@ -500,6 +698,23 @@ export default function NewProduct() {
               />
               <p className="text-sm text-[#303A4D]/60 mt-2">Your purchase cost from supplier</p>
             </div>
+
+            <div>
+              <label className="block text-[#303A4D] font-bold mb-3">Warehouse Location</label>
+              <select
+                value={formData.warehouse_location}
+                onChange={(e) => setFormData({ ...formData, warehouse_location: e.target.value })}
+                className="w-full bg-[#F4F2E6] rounded-2xl px-6 py-4 text-[#303A4D] focus:outline-none focus:ring-2 focus:ring-[#FED141]"
+              >
+                <option value="">Select Location (Optional)</option>
+                {locations.map(location => (
+                  <option key={location.id} value={location.id}>
+                    {location.name} {location.code ? `(${location.code})` : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-[#303A4D]/60 mt-2">Where this product will be stored in the warehouse</p>
+            </div>
           </div>
 
           {/* Pricing */}
@@ -539,7 +754,10 @@ export default function NewProduct() {
             {/* Optional: Price per Quantity (Piece) */}
             <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4">
               <label className="block text-[#303A4D] font-bold mb-3">
-                Price per Piece/Unit (GH₵) - Optional
+                {(formData.unit_type === 'piece' || formData.unit_type === 'pack') 
+                  ? 'Price per kg (GH₵) - Optional'
+                  : 'Price per Piece/Unit (GH₵) - Optional'
+                }
               </label>
               <input
                 type="number"
@@ -550,8 +768,10 @@ export default function NewProduct() {
                 placeholder="e.g., 2.50"
               />
               <p className="text-sm text-purple-900/70 mt-2">
-                💡 Set this if customers can also buy by individual pieces/units. Leave empty if only sold by weight/volume.
-                Example: Rice at GH₵8/kg OR GH₵2/pack
+                {(formData.unit_type === 'piece' || formData.unit_type === 'pack')
+                  ? '💡 Set this if customers can also buy by weight (kg). Example: Tomatoes at GH₵2/piece OR GH₵8/kg'
+                  : '💡 Set this if customers can also buy by individual pieces/units. Example: Rice at GH₵8/kg OR GH₵2/pack'
+                }
               </p>
             </div>
           </div>
@@ -647,6 +867,8 @@ export default function NewProduct() {
           </div>
         </div>
       </form>
+      </>
+      )}
 
       {/* Image Library Modal */}
       {showImageLibrary && (

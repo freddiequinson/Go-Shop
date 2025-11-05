@@ -48,7 +48,6 @@ class GiftCardResponse(BaseModel):
     redeemed_at: Optional[datetime]
     hash_chain: str
     created_at: datetime
-    updated_at: datetime
     
     class Config:
         from_attributes = True

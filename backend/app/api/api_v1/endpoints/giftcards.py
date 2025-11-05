@@ -52,10 +52,12 @@ async def generate_giftcard(
             redeemed_by_id=giftcard.redeemed_by_id,
             redeemed_at=giftcard.redeemed_at,
             hash_chain=giftcard.hash_chain,
-            created_at=giftcard.created_at,
-            updated_at=giftcard.updated_at
+            created_at=giftcard.created_at
         )
     except Exception as e:
+        import traceback
+        print(f"Error generating gift card: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate gift card: {str(e)}"
@@ -88,8 +90,7 @@ async def generate_batch_giftcards(
                 redeemed_by_id=gc.redeemed_by_id,
                 redeemed_at=gc.redeemed_at,
                 hash_chain=gc.hash_chain,
-                created_at=gc.created_at,
-                updated_at=gc.updated_at
+                created_at=gc.created_at
             )
             for gc in giftcards
         ]
@@ -166,6 +167,9 @@ async def redeem_giftcard_endpoint(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(f"Error redeeming gift card: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to redeem gift card: {str(e)}"

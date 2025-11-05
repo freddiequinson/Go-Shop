@@ -4,6 +4,7 @@ Pydantic models for request/response validation
 """
 
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, validator
 from app.models.user import UserType, VerificationStatus, PremiumTier
 
@@ -58,6 +59,8 @@ class UserResponse(UserBase):
     is_active: bool
     phone_number: Optional[str] = None
     profile_picture_url: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
@@ -72,7 +75,22 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+    supplier_id: Optional[str] = None  # For supplier users
+    redirect_to: Optional[str] = None  # Frontend redirect path
 
 # Token data schema (for JWT payload)
 class TokenData(BaseModel):
     user_id: Optional[str] = None
+    user_type: Optional[str] = None
+    supplier_id: Optional[str] = None
+
+# Password change schema
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+    
+    @validator('new_password')
+    def validate_new_password(cls, v):
+        if len(v) < 6:
+            raise ValueError('New password must be at least 6 characters long')
+        return v

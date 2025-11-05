@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Building2, Star, CheckCircle, Plus, Search } from "lucide-react"
 import Link from "next/link"
+import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
 
 interface Supplier {
   id: string
@@ -29,7 +30,7 @@ export default function SuppliersPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("access_token")
       const response = await fetch("http://localhost:8000/api/v1/suppliers?per_page=50", {
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -47,7 +48,7 @@ export default function SuppliersPage() {
 
   const verifySupplier = async (supplierId: string) => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("access_token")
       const response = await fetch(
         `http://localhost:8000/api/v1/suppliers/${supplierId}/verify`,
         {
@@ -76,15 +77,56 @@ export default function SuppliersPage() {
   const verifiedSuppliers = suppliers.filter(s => s.verification_status === "VERIFIED")
   const pendingSuppliers = suppliers.filter(s => s.verification_status === "PENDING")
 
+  const tourSteps: TourStep[] = [
+    {
+      target: '[data-tour="suppliers-header"]',
+      title: 'Supplier Management',
+      description: 'Manage your supplier network. Suppliers provide products that you can order through supply requests. Verify suppliers before accepting their offers.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="add-supplier"]',
+      title: 'Add New Supplier',
+      description: 'Register new suppliers with their business details, contact info, and specialization. Suppliers can then submit offers for your supply requests.',
+      position: 'left'
+    },
+    {
+      target: '[data-tour="supplier-stats"]',
+      title: 'Supplier Statistics',
+      description: 'Quick overview: total suppliers, verified suppliers, pending verification, and average supplier rating. Monitor your supplier network quality.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="search-suppliers"]',
+      title: 'Search Suppliers',
+      description: 'Search suppliers by name or supplier code. Quickly find specific suppliers to view details or create supply requests.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="supplier-list"]',
+      title: 'Supplier Directory',
+      description: 'All suppliers with verification status, ratings, and performance metrics. Click any supplier to view details, products, and create direct orders.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="verify-supplier"]',
+      title: 'Verify Supplier',
+      description: 'Verify new suppliers after reviewing their credentials. Only verified suppliers can submit offers and fulfill supply requests.',
+      position: 'left'
+    }
+  ]
+
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
+    <>
+      <OnboardingTour tourId="suppliers" steps={tourSteps} />
+      <div>
+      <div data-tour="suppliers-header" className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Suppliers</h1>
           <p className="text-lg text-[#303A4D]/70">Manage your supplier network</p>
         </div>
         <Link href="/admin/suppliers/new">
-          <button className="flex items-center gap-2 px-6 py-3 bg-[#FED141] text-[#303A4D] rounded-full font-bold hover:bg-[#F1B424] transition-colors">
+          <button data-tour="add-supplier" className="flex items-center gap-2 px-6 py-3 bg-[#FED141] text-[#303A4D] rounded-full font-bold hover:bg-[#F1B424] transition-colors">
             <Plus className="w-5 h-5" />
             Add Supplier
           </button>
@@ -92,7 +134,7 @@ export default function SuppliersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div data-tour="supplier-stats" className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Building2 className="w-5 h-5 text-blue-500" />
@@ -126,7 +168,7 @@ export default function SuppliersPage() {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm mb-6">
+      <div data-tour="search-suppliers" className="bg-white rounded-3xl p-6 shadow-sm mb-6">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#303A4D]/40 w-5 h-5" />
           <input
@@ -139,72 +181,111 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      {/* Suppliers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSuppliers.map((supplier) => (
-          <div key={supplier.id} className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 bg-[#FED141] rounded-2xl flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-[#303A4D]" />
-              </div>
-              {supplier.verification_status === "VERIFIED" ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" />
-                  Verified
-                </span>
-              ) : (
-                <button
-                  onClick={() => verifySupplier(supplier.id)}
-                  className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold hover:bg-yellow-200 transition-colors"
-                >
-                  Verify
-                </button>
-              )}
-            </div>
-
-            <h3 className="text-xl font-bold text-[#303A4D] mb-1">{supplier.name}</h3>
-            <p className="text-sm text-[#303A4D]/60 mb-4">{supplier.supplier_code}</p>
-
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#303A4D]/60">Rating</span>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="font-bold text-[#303A4D]">{supplier.rating.toFixed(1)}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#303A4D]/60">Total Supplies</span>
-                <span className="font-bold text-[#303A4D]">{supplier.total_supplies}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#303A4D]/60">On-Time Rate</span>
-                <span className="font-bold text-green-600">{supplier.on_time_delivery_rate.toFixed(0)}%</span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-[#F4F2E6]">
-              <div className="text-xs text-[#303A4D]/60 mb-1">Contact</div>
-              <div className="text-sm text-[#303A4D]">{supplier.email}</div>
-              <div className="text-sm text-[#303A4D]">{supplier.phone}</div>
-            </div>
-
-            <Link href={`/admin/suppliers/${supplier.id}`}>
-              <button className="w-full mt-4 px-4 py-2 bg-[#303A4D] text-white rounded-full font-bold hover:bg-[#303A4D]/90 transition-colors">
-                View Details
-              </button>
-            </Link>
+      {/* Suppliers Table */}
+      <div data-tour="supplier-list" className="bg-white rounded-3xl shadow-sm overflow-hidden">
+        {filteredSuppliers.length === 0 ? (
+          <div className="p-12 text-center">
+            <Building2 className="w-16 h-16 text-[#303A4D]/20 mx-auto mb-4" />
+            <p className="text-xl font-bold text-[#303A4D]">No Suppliers Found</p>
+            <p className="text-[#303A4D]/60">Try adjusting your search or add a new supplier</p>
           </div>
-        ))}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-[#F4F2E6]">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-[#303A4D]">Supplier</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-[#303A4D]">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-[#303A4D]">Contact</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-[#303A4D]">Rating</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-[#303A4D]">Supplies</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-[#303A4D]">On-Time</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-[#303A4D]">Status</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-[#303A4D]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F4F2E6]">
+                {filteredSuppliers.map((supplier) => (
+                  <tr key={supplier.id} className="hover:bg-[#F4F2E6]/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#FED141] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5 text-[#303A4D]" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-[#303A4D]">{supplier.name}</div>
+                          <div className="text-sm text-[#303A4D]/60">{supplier.supplier_code}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold capitalize">
+                        {supplier.supplier_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm">
+                        <div className="text-[#303A4D]">{supplier.email || "—"}</div>
+                        <div className="text-[#303A4D]/60">{supplier.phone}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="font-bold text-[#303A4D]">{Number(supplier.rating).toFixed(1)}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="font-semibold text-[#303A4D]">{supplier.total_supplies}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="font-semibold text-green-600">
+                        {Number(supplier.on_time_delivery_rate).toFixed(0)}%
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {supplier.verification_status === "VERIFIED" ? (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold inline-flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Verified
+                        </span>
+                      ) : supplier.verification_status === "PENDING" ? (
+                        <button
+                          data-tour="verify-supplier"
+                          onClick={() => verifySupplier(supplier.id)}
+                          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold hover:bg-yellow-200 transition-colors"
+                        >
+                          Pending
+                        </button>
+                      ) : (
+                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold capitalize">
+                          {supplier.verification_status}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <Link href={`/admin/suppliers/${supplier.id}`}>
+                          <button className="px-3 py-1.5 bg-[#303A4D] text-white rounded-lg text-xs font-semibold hover:bg-[#303A4D]/90 transition-colors">
+                            View
+                          </button>
+                        </Link>
+                        <Link href={`/admin/warehouse/grn?supplier_id=${supplier.id}`}>
+                          <button className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1">
+                            <Plus className="w-3 h-3" />
+                            GRN
+                          </button>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {filteredSuppliers.length === 0 && (
-        <div className="bg-white rounded-3xl p-12 text-center">
-          <Building2 className="w-16 h-16 text-[#303A4D]/20 mx-auto mb-4" />
-          <p className="text-xl font-bold text-[#303A4D]">No Suppliers Found</p>
-          <p className="text-[#303A4D]/60">Try adjusting your search or add a new supplier</p>
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   )
 }

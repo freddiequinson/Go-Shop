@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.api.api_v1.api import api_router
+from app.middleware.audit_middleware import AuditLoggingMiddleware
 
 
 @asynccontextmanager
@@ -38,6 +39,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add audit logging middleware
+app.add_middleware(AuditLoggingMiddleware)
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)

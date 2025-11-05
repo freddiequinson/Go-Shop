@@ -16,6 +16,10 @@ class RiderBase(BaseModel):
     vehicle_number: Optional[str] = None
     vehicle_make_model: Optional[str] = None
     vehicle_color: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    ghana_card_number: Optional[str] = None
+    ghana_card_front_url: Optional[str] = None
+    ghana_card_back_url: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry: Optional[datetime] = None
     insurance_number: Optional[str] = None
@@ -31,7 +35,9 @@ class RiderBase(BaseModel):
 
 
 class RiderCreate(RiderBase):
-    user_id: str
+    user_id: Optional[str] = None  # Optional - backend auto-creates if not provided
+    full_name: Optional[str] = None  # For auto-creating user account
+    email: Optional[str] = None  # For auto-creating user account and sending email
 
 
 class RiderUpdate(BaseModel):
@@ -39,6 +45,10 @@ class RiderUpdate(BaseModel):
     vehicle_number: Optional[str] = None
     vehicle_make_model: Optional[str] = None
     vehicle_color: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    ghana_card_number: Optional[str] = None
+    ghana_card_front_url: Optional[str] = None
+    ghana_card_back_url: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry: Optional[datetime] = None
     insurance_number: Optional[str] = None

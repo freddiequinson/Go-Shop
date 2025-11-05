@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TrendingUp, Package, Users, ShoppingCart, Eye } from "lucide-react"
+import { TrendingUp, Package, Users, ShoppingCart, Eye, RefreshCw } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 
 interface TopProduct {
   product_id: string
@@ -22,15 +24,17 @@ interface CustomerAnalytics {
   inactive_customers: number
   average_order_value: number
   average_orders_per_customer: number
-  customer_retention_rate: number
+  retention_rate: number
   customer_lifetime_value: number
 }
 
 export default function AnalyticsPage() {
+  const { toast } = useToast()
   const [topSelling, setTopSelling] = useState<TopProduct[]>([])
   const [mostViewed, setMostViewed] = useState<MostViewed[]>([])
   const [customerAnalytics, setCustomerAnalytics] = useState<CustomerAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAnalytics()
@@ -38,7 +42,19 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const token = localStorage.getItem("token")
+      setLoading(true)
+      setError(null)
+      const token = localStorage.getItem("access_token")
+      
+      if (!token) {
+        setError("Not authenticated")
+        toast({
+          title: "Error",
+          description: "Please login to view analytics",
+          variant: "destructive"
+        })
+        return
+      }
       
       // Fetch top selling products
       const topSellingRes = await fetch("http://localhost:8000/api/v1/admin/analytics/top-selling?limit=10", {
@@ -47,6 +63,8 @@ export default function AnalyticsPage() {
       if (topSellingRes.ok) {
         const data = await topSellingRes.json()
         setTopSelling(data.products || [])
+      } else {
+        console.error("Failed to fetch top selling:", await topSellingRes.text())
       }
 
       // Fetch most viewed products
@@ -56,6 +74,8 @@ export default function AnalyticsPage() {
       if (mostViewedRes.ok) {
         const data = await mostViewedRes.json()
         setMostViewed(data.products || [])
+      } else {
+        console.error("Failed to fetch most viewed:", await mostViewedRes.text())
       }
 
       // Fetch customer analytics
@@ -65,24 +85,64 @@ export default function AnalyticsPage() {
       if (customerRes.ok) {
         const data = await customerRes.json()
         setCustomerAnalytics(data)
+      } else {
+        console.error("Failed to fetch customer analytics:", await customerRes.text())
       }
+
+      toast({
+        title: "Success",
+        description: "Analytics data loaded successfully"
+      })
 
     } catch (error) {
       console.error("Failed to fetch analytics:", error)
+      setError("Failed to load analytics data")
+      toast({
+        title: "Error",
+        description: "Failed to load analytics data",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <RefreshCw className="w-8 h-8 text-[#FED141] animate-spin mb-4" />
+        <p className="text-lg text-[#303A4D]/70">Loading analytics...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">{error}</p>
+        <Button onClick={fetchAnalytics} className="bg-[#FED141] hover:bg-[#FED141]/90 text-[#303A4D]">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    )
   }
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Analytics & Reports</h1>
-        <p className="text-lg text-[#303A4D]/70">Insights into your business performance</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Analytics & Reports</h1>
+          <p className="text-lg text-[#303A4D]/70">Insights into your business performance</p>
+        </div>
+        <Button 
+          onClick={fetchAnalytics} 
+          variant="outline"
+          className="border-[#FED141] text-[#303A4D] hover:bg-[#FED141]/10"
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
       {/* Customer Analytics */}
@@ -104,23 +164,23 @@ export default function AnalyticsPage() {
                 <span className="text-sm text-[#303A4D]/60">Active Customers</span>
               </div>
               <p className="text-3xl font-bold text-[#303A4D]">{customerAnalytics.active_customers}</p>
-              <p className="text-sm text-[#303A4D]/60 mt-1">{customerAnalytics.retention_rate.toFixed(1)}% retention</p>
+              <p className="text-sm text-[#303A4D]/60 mt-1">{Number(customerAnalytics.retention_rate || 0).toFixed(1)}% retention</p>
             </div>
             <div className="bg-white rounded-3xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <ShoppingCart className="w-5 h-5 text-orange-500" />
                 <span className="text-sm text-[#303A4D]/60">Avg Order Value</span>
               </div>
-              <p className="text-3xl font-bold text-[#303A4D]">GH₵{customerAnalytics.average_order_value.toFixed(2)}</p>
-              <p className="text-sm text-[#303A4D]/60 mt-1">{customerAnalytics.average_orders_per_customer.toFixed(1)} orders/customer</p>
+              <p className="text-3xl font-bold text-[#303A4D]">GH₵{Number(customerAnalytics.average_order_value || 0).toFixed(2)}</p>
+              <p className="text-sm text-[#303A4D]/60 mt-1">{Number(customerAnalytics.average_orders_per_customer || 0).toFixed(1)} orders/customer</p>
             </div>
             <div className="bg-white rounded-3xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <TrendingUp className="w-5 h-5 text-purple-500" />
-                <span className="text-sm text-[#303A4D]/60">Customer LTV</span>
+                <span className="text-sm text-[#303A4D]/60">Avg Customer Value</span>
               </div>
-              <p className="text-3xl font-bold text-[#303A4D]">GH₵{customerAnalytics.customer_lifetime_value.toFixed(2)}</p>
-              <p className="text-sm text-[#303A4D]/60 mt-1">Lifetime value</p>
+              <p className="text-3xl font-bold text-[#303A4D]">GH₵{Number(customerAnalytics.customer_lifetime_value || 0).toFixed(2)}</p>
+              <p className="text-sm text-[#303A4D]/60 mt-1">Total spent per customer</p>
             </div>
           </div>
         </div>

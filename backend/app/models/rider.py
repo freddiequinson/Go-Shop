@@ -60,6 +60,12 @@ class Rider(Base):
     vehicle_make_model = Column(String(100), nullable=True)
     vehicle_color = Column(String(50), nullable=True)
     
+    # Profile and identification
+    profile_picture_url = Column(Text, nullable=True)  # Changed to Text for base64 images
+    ghana_card_number = Column(String(50), nullable=True)
+    ghana_card_front_url = Column(Text, nullable=True)  # Changed to Text for base64 images
+    ghana_card_back_url = Column(Text, nullable=True)  # Changed to Text for base64 images
+    
     # License and documentation
     license_number = Column(String(100), nullable=True)
     license_expiry = Column(DateTime(timezone=True), nullable=True)
@@ -109,6 +115,7 @@ class Rider(Base):
     # Relationships
     deliveries = relationship("DeliveryAssignment", back_populates="rider")
     locations = relationship("RiderLocation", back_populates="rider", order_by="desc(RiderLocation.timestamp)")
+    delivery_otps = relationship("DeliveryOTP", back_populates="rider")
 
     @property
     def success_rate(self):
@@ -218,6 +225,7 @@ class RiderLocation(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     rider_id = Column(String, ForeignKey("riders.id"), nullable=False)
+    order_id = Column(String, ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
     
     # GPS coordinates
     latitude = Column(Numeric(10, 8), nullable=False)

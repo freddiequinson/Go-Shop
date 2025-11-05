@@ -5,6 +5,7 @@ Audit Log endpoints for GoShopGhana
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime, timedelta
 
 from app.db.database import get_db
@@ -167,3 +168,122 @@ async def get_audit_log(
         )
     
     return AuditLogResponse.from_orm(log)
+
+
+@router.delete("/cleanup")
+async def cleanup_old_logs(
+    days: int = Query(90, ge=1, le=365, description="Delete logs older than N days"),
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """
+    Delete audit logs older than specified days (Admin only)
+    """
+    from app.models.audit_log import AuditLog
+    
+    cutoff_date = datetime.utcnow() - timedelta(days=days)
+    
+    # Count logs to be deleted
+    count = db.query(func.count(AuditLog.id)).filter(
+        AuditLog.created_at < cutoff_date
+    ).scalar()
+    
+    # Delete old logs
+    db.query(AuditLog).filter(
+        AuditLog.created_at < cutoff_date
+    ).delete()
+    
+    db.commit()
+    
+    return {
+        "deleted_count": count,
+        "cutoff_date": cutoff_date.isoformat(),
+        "message": f"Deleted {count} audit logs older than {days} days"
+    }
+
+
+@router.get("/analytics/overview")
+async def get_audit_analytics(
+    days: int = Query(30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """
+    Get comprehensive audit log analytics (Admin only)
+    """
+    from app.models.audit_log import AuditLog
+    
+    start_date = datetime.utcnow() - timedelta(days=days)
+    
+    # Total logs in period
+    total_logs = db.query(func.count(AuditLog.id)).filter(
+        AuditLog.created_at >= start_date
+    ).scalar()
+    
+    # Logs by status
+    by_status = db.query(
+        AuditLog.status, func.count(AuditLog.id)
+    ).filter(
+        AuditLog.created_at >= start_date
+    ).group_by(AuditLog.status).all()
+    
+    # Logs by action
+    by_action = db.query(
+        AuditLog.action, func.count(AuditLog.id)
+    ).filter(
+        AuditLog.created_at >= start_date
+    ).group_by(AuditLog.action).order_by(func.count(AuditLog.id).desc()).limit(10).all()
+    
+    # Top users
+    top_users = db.query(
+        AuditLog.user_email, func.count(AuditLog.id)
+    ).filter(
+        AuditLog.created_at >= start_date,
+        AuditLog.user_email.isnot(None)
+    ).group_by(AuditLog.user_email).order_by(func.count(AuditLog.id).desc()).limit(10).all()
+    
+    # Error rate
+    error_count = db.query(func.count(AuditLog.id)).filter(
+        AuditLog.created_at >= start_date,
+        AuditLog.status == "error"
+    ).scalar()
+    
+    # Failed login attempts
+    failed_logins = db.query(func.count(AuditLog.id)).filter(
+        AuditLog.created_at >= start_date,
+        AuditLog.action == "user_login",
+        AuditLog.status == "failed"
+    ).scalar()
+    
+    # Activity by hour (last 24 hours)
+    last_24h = datetime.utcnow() - timedelta(hours=24)
+    hourly_activity = db.query(
+        func.date_trunc('hour', AuditLog.created_at).label('hour'),
+        func.count(AuditLog.id).label('count')
+    ).filter(
+        AuditLog.created_at >= last_24h
+    ).group_by('hour').order_by('hour').all()
+    
+    # Top IP addresses
+    top_ips = db.query(
+        AuditLog.ip_address, func.count(AuditLog.id)
+    ).filter(
+        AuditLog.created_at >= start_date,
+        AuditLog.ip_address.isnot(None)
+    ).group_by(AuditLog.ip_address).order_by(func.count(AuditLog.id).desc()).limit(10).all()
+    
+    return {
+        "period_days": days,
+        "total_logs": total_logs or 0,
+        "error_count": error_count or 0,
+        "error_rate": round((error_count / total_logs * 100) if total_logs > 0 else 0, 2),
+        "failed_logins": failed_logins or 0,
+        "by_status": {status: count for status, count in by_status},
+        "top_actions": [{"action": action, "count": count} for action, count in by_action],
+        "top_users": [{"email": email, "count": count} for email, count in top_users],
+        "top_ips": [{"ip": ip, "count": count} for ip, count in top_ips],
+        "hourly_activity": [
+            {"hour": hour.isoformat() if hour else None, "count": count}
+            for hour, count in hourly_activity
+        ]
+    }

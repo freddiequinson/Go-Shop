@@ -23,7 +23,7 @@ export default function StockAlertsPage() {
 
   const fetchAlerts = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("access_token")
       const response = await fetch("http://localhost:8000/api/v1/warehouse/alerts?limit=100", {
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -41,7 +41,7 @@ export default function StockAlertsPage() {
 
   const resolveAlert = async (alertId: string) => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("access_token")
       const response = await fetch(
         `http://localhost:8000/api/v1/warehouse/alerts/${alertId}/resolve`,
         {

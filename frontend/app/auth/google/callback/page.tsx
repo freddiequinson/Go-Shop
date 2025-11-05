@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
@@ -10,9 +10,14 @@ export default function GoogleCallbackPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
+  const { refreshUser } = useAuth()
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Prevent double execution
+      if (isProcessing) return
+      
       const code = searchParams.get('code')
       
       if (!code) {
@@ -25,13 +30,18 @@ export default function GoogleCallbackPage() {
         return
       }
 
+      setIsProcessing(true)
+
       try {
         // Send code to backend
         const response = await apiClient.post('/oauth/google/callback', { code })
         
-        // Store token
+        // Store token and user in localStorage
         localStorage.setItem('access_token', response.data.access_token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
+        
+        // CRITICAL FIX: Update AuthContext by refreshing user data
+        await refreshUser()
         
         // Get user name from response
         const userName = response.data.user?.full_name || 'there'
@@ -41,7 +51,10 @@ export default function GoogleCallbackPage() {
           description: `Hi ${userName}! You've successfully signed in with Google. Start shopping for fresh groceries!`,
         })
         
-        router.push('/')
+        // Small delay to ensure state updates before redirect
+        setTimeout(() => {
+          router.push('/')
+        }, 100)
       } catch (error: any) {
         console.error('OAuth callback error:', error)
         
@@ -66,7 +79,7 @@ export default function GoogleCallbackPage() {
     }
 
     handleCallback()
-  }, [searchParams, router, toast])
+  }, [searchParams, router, toast, refreshUser, isProcessing])
 
   return (
     <div className="min-h-screen bg-[#FED141] flex items-center justify-center">

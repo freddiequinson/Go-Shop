@@ -6,6 +6,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar"
 import { Bell, User, LogOut } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { OnboardingProvider } from "@/lib/contexts/onboarding-context"
 
 export default function AdminLayout({
   children,
@@ -26,7 +27,8 @@ export default function AdminLayout({
     }
 
     const userData = JSON.parse(user)
-    if (userData.user_type !== "admin") {
+    // User type is now uppercase (ADMIN)
+    if (userData.user_type?.toUpperCase() !== "ADMIN") {
       router.push("/")
       return
     }
@@ -54,10 +56,11 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F2E6]">
-      <AdminSidebar />
-      
-      <div className="flex-1 flex flex-col">
+    <OnboardingProvider>
+      <div className="flex min-h-screen bg-[#F4F2E6]">
+        <AdminSidebar />
+        
+        <div className="flex-1 flex flex-col">
         {/* Top Header */}
         <header className={`px-6 py-3 sticky top-0 z-10 transition-all duration-300 ${
           scrolled 
@@ -99,7 +102,8 @@ export default function AdminLayout({
         <main id="admin-main-content" className="flex-1 overflow-auto w-full p-8">
           {children}
         </main>
+        </div>
       </div>
-    </div>
+    </OnboardingProvider>
   )
 }

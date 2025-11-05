@@ -79,12 +79,12 @@ class Transaction(Base):
     wallet_id = Column(String, ForeignKey("wallets.id"), nullable=False)
     
     # Transaction details
-    transaction_type = Column(Enum(TransactionType), nullable=False)
+    transaction_type = Column(Enum(TransactionType, values_callable=lambda x: [e.value for e in x]), nullable=False)
     amount_cedis = Column(Numeric(12, 0), nullable=False)
-    status = Column(Enum(TransactionStatus), default=TransactionStatus.PENDING, nullable=False)
+    status = Column(Enum(TransactionStatus, values_callable=lambda x: [e.value for e in x]), default=TransactionStatus.PENDING, nullable=False)
     
     # Payment details
-    payment_method = Column(Enum(PaymentMethod), nullable=True)
+    payment_method = Column(Enum(PaymentMethod, values_callable=lambda x: [e.value for e in x]), nullable=True)
     payment_reference = Column(String(255), nullable=True)  # Paystack reference
     
     # Description and metadata
@@ -131,8 +131,8 @@ class PaymentSession(Base):
     email = Column(String(255), nullable=False)
     
     # Status
-    status = Column(Enum(TransactionStatus), default=TransactionStatus.PENDING, nullable=False)
-    payment_method = Column(Enum(PaymentMethod), nullable=True)
+    status = Column(Enum(TransactionStatus, values_callable=lambda x: [e.value for e in x]), default=TransactionStatus.PENDING, nullable=False)
+    payment_method = Column(Enum(PaymentMethod, values_callable=lambda x: [e.value for e in x]), nullable=True)
     
     # Metadata
     meta_data = Column(Text, nullable=True)

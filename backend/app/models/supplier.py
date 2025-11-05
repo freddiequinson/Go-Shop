@@ -3,7 +3,7 @@ Supplier models for GoShopGhana
 Manage farmers and suppliers for inventory management
 """
 
-from sqlalchemy import Column, String, Text, Numeric, Boolean, DateTime, Enum, ForeignKey, Integer, JSON
+from sqlalchemy import Column, String, Text, Numeric, Boolean, DateTime, Enum, ForeignKey, Integer, JSON, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -26,6 +26,26 @@ class SupplierStatus(str, enum.Enum):
     VERIFIED = "verified"
     SUSPENDED = "suspended"
     REJECTED = "rejected"
+
+
+class SupplierCategory(str, enum.Enum):
+    """Supplier product categories"""
+    FRUITS = "fruits"
+    VEGETABLES = "vegetables"
+    MEAT = "meat"
+    POULTRY = "poultry"
+    SEAFOOD = "seafood"
+    DAIRY = "dairy"
+    GRAINS = "grains"
+    BEVERAGES = "beverages"
+    PACKAGED_GOODS = "packaged_goods"
+    SPICES = "spices"
+    BAKERY = "bakery"
+    FROZEN_FOODS = "frozen_foods"
+    SNACKS = "snacks"
+    CONDIMENTS = "condiments"
+    OIL_FATS = "oil_fats"
+    OTHER = "other"
 
 
 class Supplier(Base):
@@ -77,6 +97,7 @@ class Supplier(Base):
     # Relationships
     supplier_products = relationship("SupplierProduct", back_populates="supplier", cascade="all, delete-orphan")
     restock_orders = relationship("RestockOrder", back_populates="supplier")
+    supply_offers = relationship("SupplyOffer", back_populates="supplier")
 
     def __repr__(self):
         return f"<Supplier(id={self.id}, name={self.name}, type={self.supplier_type})>"
@@ -95,6 +116,9 @@ class SupplierProduct(Base):
     unit_cost = Column(Numeric(10, 2), nullable=False)  # Cost per unit from this supplier
     minimum_order_quantity = Column(Numeric(10, 2), default=1, nullable=False)
     lead_time_days = Column(Integer, default=1, nullable=False)  # Days needed for delivery
+    
+    # Supplier's product photos (for quality verification)
+    images = Column(JSON, nullable=True)  # Array of image URLs or base64
     
     # Tracking
     last_supply_date = Column(DateTime(timezone=True), nullable=True)

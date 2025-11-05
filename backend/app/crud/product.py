@@ -7,6 +7,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, desc
 from app.models.product import Product, Category, UnitType
+from app.models.warehouse import WarehouseInventory
 from app.schemas.product import ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate, ProductFilter
 
 def get_product_by_id(db: Session, product_id: str) -> Optional[Product]:
@@ -50,9 +51,18 @@ def get_products(
         
         if filters.is_active is not None:
             query = query.filter(Product.is_active == filters.is_active)
+        
+        if filters.is_published is not None:
+            query = query.filter(Product.is_published == filters.is_published)
+        
+        if filters.created_by_type:
+            query = query.filter(Product.created_by_type == filters.created_by_type)
+        
+        if filters.in_warehouse is not None:
+            query = query.filter(Product.in_warehouse == filters.in_warehouse)
     else:
-        # Default: only show active products
-        query = query.filter(Product.is_active == True)
+        # Default: only show active AND published products (for shop)
+        query = query.filter(Product.is_active == True, Product.is_published == True)
     
     # Get total count
     total = query.count()
@@ -68,8 +78,9 @@ def get_products_by_seller(db: Session, seller_id: str, skip: int = 0, limit: in
         Product.seller_id == seller_id
     ).order_by(desc(Product.created_at)).offset(skip).limit(limit).all()
 
-def create_product(db: Session, product: ProductCreate, seller_id: str) -> Product:
-    """Create a new product"""
+def create_product(db: Session, product: ProductCreate, seller_id: str, 
+                   created_by_type: str = 'admin') -> Product:
+    """Create a new product - handles both admin and supplier creation"""
     db_product = Product(
         seller_id=seller_id,
         name=product.name,
@@ -84,12 +95,32 @@ def create_product(db: Session, product: ProductCreate, seller_id: str) -> Produ
         supplier_id=product.supplier_id,
         cost_price=product.cost_price,
         is_perishable=product.is_perishable,
-        shelf_life_days=product.shelf_life_days
+        shelf_life_days=product.shelf_life_days,
+        created_by_type=created_by_type,
+        in_warehouse=created_by_type == 'admin',  # Admin products go straight to warehouse
+        is_published=product.is_published if product.is_published is not None else (created_by_type == 'admin')
     )
     
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
+    
+    # Only auto-create warehouse inventory for admin products
+    # Supplier products get warehouse inventory when GRN is approved
+    if created_by_type == 'admin':
+        warehouse_inventory = WarehouseInventory(
+            product_id=db_product.id,
+            quantity_available=product.stock_quantity or 0,
+            quantity_reserved=0,
+            quantity_damaged=0,
+            supplier_id=product.supplier_id,
+            cost_price=product.cost_price,
+            is_perishable=product.is_perishable or False
+        )
+        
+        db.add(warehouse_inventory)
+        db.commit()
+    
     return db_product
 
 def update_product(db: Session, product_id: str, product_update: ProductUpdate, user_id: str, is_admin: bool = False) -> Optional[Product]:

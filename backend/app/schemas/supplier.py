@@ -63,6 +63,20 @@ class SupplierResponse(SupplierBase):
     last_supply_date: Optional[datetime] = None
     verified_at: Optional[datetime] = None
 
+    @validator('location', pre=True)
+    def validate_location(cls, v):
+        """Convert string location to dict format"""
+        if isinstance(v, str):
+            return {"address": v}
+        return v
+
+    @validator('bank_details', pre=True)
+    def validate_bank_details(cls, v):
+        """Handle string bank details"""
+        if isinstance(v, str):
+            return {"details": v}
+        return v
+
     @field_serializer('created_at', 'updated_at', 'last_supply_date', 'verified_at')
     def serialize_datetime(self, value: Optional[datetime]) -> Optional[str]:
         return value.isoformat() if value else None
@@ -86,6 +100,7 @@ class SupplierProductBase(BaseModel):
     unit_cost: Decimal
     minimum_order_quantity: Decimal = Decimal("1")
     lead_time_days: int = 1
+    images: Optional[List[str]] = []  # Supplier's product photos
     is_preferred: bool = False
     notes: Optional[str] = None
     quality_notes: Optional[str] = None
@@ -106,6 +121,7 @@ class SupplierProductUpdate(BaseModel):
     unit_cost: Optional[Decimal] = None
     minimum_order_quantity: Optional[Decimal] = None
     lead_time_days: Optional[int] = None
+    images: Optional[List[str]] = None  # Supplier's product photos
     next_expected_date: Optional[datetime] = None
     is_preferred: Optional[bool] = None
     is_active: Optional[bool] = None

@@ -30,4 +30,12 @@ export const usersService = {
   async deactivateAccount(): Promise<void> {
     await apiClient.delete(API_ENDPOINTS.users.profile)
   },
+
+  /**
+   * Change user password
+   */
+  async changePassword(data: { current_password: string; new_password: string }): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(`${API_ENDPOINTS.users.profile}/change-password`, data)
+    return response.data
+  },
 }

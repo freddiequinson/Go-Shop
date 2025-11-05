@@ -67,9 +67,12 @@ async def create_order(
             detail=str(e)
         )
     except Exception as e:
+        import traceback
+        print(f"Full error creating order: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create order"
+            detail=f"Failed to create order: {str(e)}"
         )
 
 

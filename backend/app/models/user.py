@@ -13,9 +13,11 @@ from app.db.database import Base
 
 class UserType(str, enum.Enum):
     """User types"""
-    BUYER = "buyer"
-    SELLER = "seller"
-    ADMIN = "admin"
+    BUYER = "BUYER"
+    SELLER = "SELLER"
+    ADMIN = "ADMIN"
+    SUPPLIER = "SUPPLIER"
+    RIDER = "RIDER"
 
 
 class VerificationStatus(str, enum.Enum):

@@ -247,6 +247,207 @@ async def get_customer_analytics_endpoint(
     return analytics
 
 
+@router.get("/analytics/sales")
+async def get_sales_analytics_endpoint(
+    days: int = Query(30, ge=1, le=365),
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Get sales analytics (Admin only)
+    """
+    from app.models.order import Order, OrderStatus
+    from app.models.product import Product
+    from sqlalchemy import func, desc, or_
+    from datetime import datetime, timedelta
+    
+    # Calculate date range
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+    
+    # Total revenue and orders - Include delivered AND paid orders
+    # This ensures we show sales data even for orders not yet delivered but paid
+    from app.models.order import PaymentStatus
+    delivered_statuses = [OrderStatus.DELIVERED, OrderStatus.DELIVERED_LOWER, "DELIVERED", "delivered"]
+    paid_statuses = [PaymentStatus.COMPLETED, "completed"]
+    
+    # Count orders that are either delivered OR have completed payment
+    total_revenue = db.query(func.sum(Order.total_cedis)).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        )
+    ).scalar() or 0
+    
+    total_orders = db.query(Order).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        )
+    ).count()
+    
+    average_order_value = (total_revenue / total_orders) if total_orders > 0 else 0
+    
+    # Today's sales
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    sales_today = db.query(Order).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= today_start
+    ).count()
+    
+    revenue_today = db.query(func.sum(Order.total_cedis)).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= today_start
+    ).scalar() or 0
+    
+    # This week
+    week_start = end_date - timedelta(days=7)
+    sales_this_week = db.query(Order).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= week_start
+    ).count()
+    
+    revenue_this_week = db.query(func.sum(Order.total_cedis)).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= week_start
+    ).scalar() or 0
+    
+    # This month
+    month_start = end_date - timedelta(days=30)
+    sales_this_month = db.query(Order).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= month_start
+    ).count()
+    
+    revenue_this_month = db.query(func.sum(Order.total_cedis)).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= month_start
+    ).scalar() or 0
+    
+    # Top selling products from order items
+    from app.models.order import OrderItem
+    from app.models.product import Product, Category
+    
+    top_products_query = db.query(
+        OrderItem.product_name,
+        OrderItem.product_id,
+        func.sum(OrderItem.quantity).label('total_quantity'),
+        func.sum(OrderItem.line_total_cedis).label('total_revenue')
+    ).join(Order, OrderItem.order_id == Order.id).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= start_date
+    ).group_by(OrderItem.product_id, OrderItem.product_name).order_by(
+        desc('total_revenue')
+    ).limit(10).all()
+    
+    top_selling_products = [
+        {
+            "product_id": p.product_id,
+            "product_name": p.product_name,
+            "quantity_sold": float(p.total_quantity),
+            "revenue": float(p.total_revenue) / 100  # Convert pesewas to cedis
+        }
+        for p in top_products_query
+    ]
+    
+    # Sales by category from order items joined with products
+    category_sales_query = db.query(
+        Category.name.label('category_name'),
+        func.sum(OrderItem.quantity).label('total_quantity'),
+        func.sum(OrderItem.line_total_cedis).label('total_revenue')
+    ).select_from(OrderItem
+    ).join(Order, OrderItem.order_id == Order.id
+    ).join(Product, OrderItem.product_id == Product.id
+    ).join(Category, Product.category_id == Category.id
+    ).filter(
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
+        Order.created_at >= start_date
+    ).group_by(Category.name).order_by(
+        desc('total_revenue')
+    ).all()
+    
+    sales_by_category = [
+        {
+            "category": c.category_name,
+            "quantity": float(c.total_quantity),
+            "revenue": float(c.total_revenue) / 100  # Convert pesewas to cedis
+        }
+        for c in category_sales_query
+    ]
+    
+    # Daily sales trend
+    daily_sales = []
+    for i in range(min(days, 30)):
+        day_start = end_date - timedelta(days=i+1)
+        day_end = end_date - timedelta(days=i)
+        
+        day_orders = db.query(Order).filter(
+            or_(
+                Order.status.in_(delivered_statuses),
+                Order.payment_status.in_(paid_statuses)
+            ),
+            Order.created_at >= day_start,
+            Order.created_at < day_end
+        ).count()
+        
+        day_revenue = db.query(func.sum(Order.total_cedis)).filter(
+            or_(
+                Order.status.in_(delivered_statuses),
+                Order.payment_status.in_(paid_statuses)
+            ),
+            Order.created_at >= day_start,
+            Order.created_at < day_end
+        ).scalar() or 0
+        
+        daily_sales.append({
+            "date": day_start.strftime("%b %d"),
+            "orders": day_orders,
+            "revenue": float(day_revenue) / 100  # Convert pesewas to cedis
+        })
+    
+    daily_sales.reverse()
+    
+    return {
+        "total_sales": total_orders,
+        "total_revenue": float(total_revenue) / 100,  # Convert pesewas to cedis
+        "average_order_value": float(average_order_value) / 100,
+        "total_orders": total_orders,
+        "sales_today": sales_today,
+        "sales_this_week": sales_this_week,
+        "sales_this_month": sales_this_month,
+        "revenue_today": float(revenue_today) / 100,
+        "revenue_this_week": float(revenue_this_week) / 100,
+        "revenue_this_month": float(revenue_this_month) / 100,
+        "top_selling_products": top_selling_products,
+        "sales_by_category": sales_by_category,
+        "daily_sales": daily_sales
+    }
+
+
 @router.post("/analytics/track-view")
 async def track_view(
     product_id: str = Query(...),

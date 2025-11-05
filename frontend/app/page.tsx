@@ -3,11 +3,14 @@
 import { Button } from "@/components/ui/button"
 import { User, ShoppingBag, ArrowRight, Menu, X } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/lib/cart-context"
 import { CartDropdown } from "@/components/cart-dropdown"
 import Link from "next/link"
 import { useAuth } from "@/lib/contexts/auth-context"
+import SplitText from "@/components/SplitText"
+import RotatingText from "@/components/RotatingText"
+import { motion, AnimatePresence } from "motion/react"
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -16,12 +19,24 @@ export default function Home() {
   const { items } = useCart()
   const { isAuthenticated, user } = useAuth()
 
+  // Close mobile menu when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [mobileMenuOpen])
+
   const heroSlides = [
     { text: "Your Home", image: "/images/apple-inhand.jpg", bg: "#FED141" },
-    { text: "the Office", image: "/images/bags.jpg", bg: "#4698CA" },
-    { text: "her School", image: "/images/tomato.jpg", bg: "#ED8B00" },
-    { text: "his Hotel", image: "/images/rice.jpg", bg: "#93C90F" },
-    { text: "our place", image: "/images/nkatie.jpg", bg: "#C24628" },
+    { text: "The Office", image: "/images/rice.png", bg: "#4698CA" },
+    { text: "Your School", image: "/images/bags.png", bg: "#ED8B00" },
+    { text: "The Hostel", image: "/images/carter.png", bg: "#93C90F" },
+    { text: "Your Place", image: "/images/tomato.png", bg: "#C24628" },
   ]
 
   const products = [
@@ -75,7 +90,7 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F4F2E6]">
+    <div className="min-h-screen bg-[#F4F2E6] overflow-x-hidden">
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center justify-between px-8 py-6 bg-[#FED141]">
         <Link href="/shop" className="text-lg font-medium text-[#303A4D] hover:opacity-80 cursor-pointer">
@@ -84,14 +99,14 @@ export default function Home() {
 
         <div className="absolute left-1/2 -translate-x-1/2">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={124} height={39} />
+            <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-24 object-contain" />
           </Link>
         </div>
 
         <div className="flex items-center gap-6">
-          <a href="#" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
+          <Link href="/orders" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
             Orders
-          </a>
+          </Link>
           <a href="#best-service" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
             About
           </a>
@@ -132,10 +147,10 @@ export default function Home() {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden bg-[#FED141]">
+      <nav className="md:hidden bg-[#FED141] relative z-50">
         <div className="flex items-center justify-between px-6 py-4">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={100} height={32} />
+            <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="w-20 object-contain" />
           </Link>
           <div className="flex items-center gap-3">
             <Link href={isAuthenticated ? "/profile" : "/login"}>
@@ -172,36 +187,91 @@ export default function Home() {
 
         {mobileMenuOpen && (
           <div className="px-6 py-4 space-y-4 bg-[#FED141]">
-            <Link href="/shop" className="block text-2xl font-bold text-[#303A4D]">
+            <Link 
+              href="/shop" 
+              className="block text-2xl font-bold text-[#303A4D]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Shop
             </Link>
-            <a href="#" className="block text-2xl font-bold text-[#303A4D]">
+            <Link 
+              href="/orders" 
+              className="block text-2xl font-bold text-[#303A4D]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Orders
-            </a>
-            <a href="#best-service" className="block text-2xl font-bold text-[#303A4D]">
+            </Link>
+            <a 
+              href="#best-service" 
+              className="block text-2xl font-bold text-[#303A4D]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               About
             </a>
           </div>
         )}
       </nav>
 
+      {/* Mobile Menu Overlay - Click to close (Mobile only) */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden lg:hidden xl:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Hero Section */}
-      <section className="relative bg-[#FED141] px-6 md:px-8 pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden">
+      <section className="relative bg-[#FED141] px-6 md:px-8 pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden w-full">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4">
-              Fresh Groceries
-              <sup className="text-[0.25em] align-super">®</sup>
-            </h1>
-            <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
-              from the Market
-            </h2>
-            <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
-              To {heroSlides[currentSlide].text}
+            <SplitText
+              text="Fresh Groceries"
+              tag="h1"
+              className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4"
+              delay={40}
+              duration={1.2}
+              ease="power2.out"
+              splitType="chars"
+              from={{ opacity: 0, y: 40 }}
+              to={{ opacity: 1, y: 0 }}
+              threshold={0}
+              rootMargin="0px"
+              textAlign="center"
+            />
+            <SplitText
+              text="from the Market"
+              tag="h2"
+              className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight"
+              delay={40}
+              duration={1.2}
+              ease="power2.out"
+              splitType="chars"
+              from={{ opacity: 0, y: 40 }}
+              to={{ opacity: 1, y: 0 }}
+              threshold={0}
+              rootMargin="0px"
+              textAlign="center"
+            />
+            <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight inline-flex items-center justify-center">
+              <span className="mr-4">To</span>
+              <RotatingText
+                texts={heroSlides.map(slide => slide.text)}
+                mainClassName="inline-flex"
+                staggerFrom="last"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.035}
+                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                rotationInterval={4500}
+                onNext={(index) => setCurrentSlide(index)}
+              />
             </h2>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-12">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
             <p className="text-lg md:text-xl text-[#303A4D] text-center md:text-left">
               Get all your groceries without all the hassle
             </p>
@@ -215,67 +285,102 @@ export default function Home() {
           </div>
 
           {/* Decorative Circle Background */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] md:w-[900px] h-[300px] md:h-[450px] bg-white/30 rounded-t-full -z-0" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[min(600px,100vw)] md:w-[900px] h-[300px] md:h-[450px] bg-white/30 rounded-t-full -z-0" />
 
           {/* Hero Image */}
-          <div className="relative z-10 flex justify-center items-end h-[550px] md:h-[800px]">
-            <div className="relative w-[420px] md:w-[700px] h-[550px] md:h-[800px]">
-              <Image
-                src={heroSlides[currentSlide].image || "/placeholder.svg"}
-                alt="Fresh groceries"
-                fill
-                className="object-contain object-bottom"
-                priority
-              />
-            </div>
+          <div className="relative z-10 flex justify-center items-end h-[400px] md:h-[600px] w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "-100%", opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300, duration: 0.8 }}
+                className="relative w-[min(420px,90vw)] md:w-[700px] h-[400px] md:h-[600px]"
+              >
+                <Image
+                  src={heroSlides[currentSlide].image || "/placeholder.svg"}
+                  alt="Fresh groceries"
+                  fill
+                  className="object-contain object-bottom"
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
       {/* Community Section */}
-      <section className="py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+      <section className="py-12 md:py-20 lg:py-32 px-3 sm:px-4 md:px-6 bg-[#F4F2E6]">
+        <div className="max-w-[98%] sm:max-w-[95%] md:max-w-[90%] mx-auto bg-[#3D4A5C] rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] px-5 sm:px-8 md:px-12 lg:px-20 py-10 sm:py-12 md:py-16 lg:py-24 relative overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 lg:gap-20">
             <div>
-              <div className="relative inline-block mb-8">
-                <h2 className="text-4xl md:text-5xl font-bold text-[#303A4D] leading-tight">
-                  Join the Go-Shop Community
+              <div className="relative mb-6 sm:mb-8 md:mb-10">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
+                  Join the Go-
+                  <br />
+                  Shop Community
                 </h2>
-                <div className="absolute -right-12 -top-8 w-24 h-24">
-                  <Image src="/images/stamp.jpg" alt="stamp" fill className="object-contain rotate-12" />
+                {/* Stamp positioned in the middle of "Go-" - responsive positioning */}
+                <div className="absolute top-0 left-[180px] sm:left-[240px] md:left-[320px] lg:left-[400px] xl:left-[480px] -translate-y-1 sm:-translate-y-2 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36">
+                  <div className="relative w-full h-full">
+                    {/* Yellow stamp background */}
+                    <div className="absolute inset-0 bg-[#FED141] rounded-full"></div>
+                    {/* Rotating stamp image */}
+                    <Image 
+                      src="/images/stamp.JPG" 
+                      alt="Fast Delivery Badge" 
+                      fill 
+                      className="object-contain animate-spin" 
+                      style={{ 
+                        animation: 'spin 20s linear infinite'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="text-lg md:text-xl text-[#303A4D] mb-8">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-white/90 mb-8 sm:mb-10 max-w-xl leading-relaxed">
                 Stay up to date, discover new features, enjoy coupons, save on deals, and support the best shopping app.
               </p>
             </div>
 
             <div>
-              <form className="space-y-6">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  className="w-full bg-transparent border-b-2 border-[#303A4D] px-0 py-3 text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:border-[#FED141]"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full bg-transparent border-b-2 border-[#303A4D] px-0 py-3 text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:border-[#FED141]"
-                />
-                <select className="w-full bg-transparent border-b-2 border-[#303A4D] px-0 py-3 text-[#303A4D] focus:outline-none focus:border-[#FED141]">
-                  <option value="">Region</option>
-                  <option value="Greater Accra">Greater Accra</option>
-                  <option value="Eastern">Eastern</option>
-                  <option value="Ashanti">Ashanti</option>
-                  <option value="Other">Other</option>
-                </select>
+              <form className="space-y-6 sm:space-y-8 md:space-y-10">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    className="w-full bg-transparent border-b border-white/30 sm:border-b-2 px-0 py-3 sm:py-4 md:py-5 text-white text-base sm:text-lg md:text-xl lg:text-2xl placeholder:text-white/60 focus:outline-none focus:border-white transition-colors"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    className="w-full bg-transparent border-b border-white/30 sm:border-b-2 px-0 py-3 sm:py-4 md:py-5 text-white text-base sm:text-lg md:text-xl lg:text-2xl placeholder:text-white/60 focus:outline-none focus:border-white transition-colors"
+                  />
+                </div>
+                <div>
+                  <select className="w-full bg-transparent border-b border-white/30 sm:border-b-2 px-0 py-3 sm:py-4 md:py-5 text-white text-base sm:text-lg md:text-xl lg:text-2xl focus:outline-none focus:border-white transition-colors appearance-none cursor-pointer">
+                    <option value="" className="bg-[#3D4A5C] text-white">Region</option>
+                    <option value="Greater Accra" className="bg-[#3D4A5C] text-white">Greater Accra</option>
+                    <option value="Eastern" className="bg-[#3D4A5C] text-white">Eastern</option>
+                    <option value="Ashanti" className="bg-[#3D4A5C] text-white">Ashanti</option>
+                    <option value="Other" className="bg-[#3D4A5C] text-white">Other</option>
+                  </select>
+                </div>
                 <Button
                   type="submit"
                   size="lg"
-                  className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-8 py-6 text-lg font-medium h-auto w-full md:w-auto"
+                  className="bg-white hover:bg-white/90 text-[#303A4D] rounded-full px-8 sm:px-10 md:px-12 py-4 sm:py-5 md:py-6 lg:py-7 text-base sm:text-lg md:text-xl lg:text-2xl font-bold h-auto group relative overflow-hidden w-full sm:w-auto"
                 >
-                  Send
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <span className="relative z-10 flex items-center justify-center">
+                    Send
+                    <div className="ml-3 sm:ml-4 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-white rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                      <ArrowRight className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 text-[#303A4D]" />
+                    </div>
+                  </span>
                 </Button>
               </form>
             </div>
@@ -504,9 +609,9 @@ export default function Home() {
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white">
+                    <Link href="/orders" className="hover:text-white">
                       Your Orders
-                    </a>
+                    </Link>
                   </li>
                   <li>
                     <a href="#" className="hover:text-white">

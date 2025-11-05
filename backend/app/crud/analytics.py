@@ -11,7 +11,7 @@ import uuid
 
 from app.models.analytics import AdminActivityLog, ProductView, SalesAnalytics
 from app.models.product import Product
-from app.models.order import Order, OrderStatus
+from app.models.order import Order, OrderStatus, PaymentStatus
 from app.models.user import User
 from app.models.warehouse import WarehouseInventory
 from app.models.rider import Rider, DeliveryAssignment
@@ -128,11 +128,17 @@ def get_dashboard_stats(db: Session) -> dict:
         WarehouseInventory.quantity_available == 0
     ).count()
     
-    # Orders
+    # Orders - check both uppercase and lowercase status values
     total_orders = db.query(Order).count()
-    pending_orders = db.query(Order).filter(Order.status == OrderStatus.PENDING).count()
-    completed_orders = db.query(Order).filter(Order.status == OrderStatus.DELIVERED).count()
-    cancelled_orders = db.query(Order).filter(Order.status == OrderStatus.CANCELLED).count()
+    pending_orders = db.query(Order).filter(
+        Order.status.in_([OrderStatus.PENDING, "PENDING", "pending", "pending_payment"])
+    ).count()
+    completed_orders = db.query(Order).filter(
+        Order.status.in_([OrderStatus.DELIVERED, OrderStatus.DELIVERED_LOWER, "DELIVERED", "delivered"])
+    ).count()
+    cancelled_orders = db.query(Order).filter(
+        Order.status.in_([OrderStatus.CANCELLED, OrderStatus.CANCELLED_LOWER, "CANCELLED", "cancelled"])
+    ).count()
     
     # Users
     total_users = db.query(User).count()
@@ -142,25 +148,43 @@ def get_dashboard_stats(db: Session) -> dict:
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     new_users_today = db.query(User).filter(User.created_at >= today_start).count()
     
-    # Revenue
+    # Revenue - Include both delivered AND paid orders
+    # This ensures we show revenue for paid orders even if not yet delivered
+    # total_cedis is in pesewas, so divide by 100 to get cedis
+    from sqlalchemy import or_
+    delivered_statuses = [OrderStatus.DELIVERED, OrderStatus.DELIVERED_LOWER, "DELIVERED", "delivered"]
+    paid_statuses = [PaymentStatus.COMPLETED, "completed"]
+    
     total_revenue = db.query(func.sum(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        )
     ).scalar() or 0
     
     revenue_today = db.query(func.sum(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED,
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
         Order.created_at >= today_start
     ).scalar() or 0
     
     week_start = datetime.utcnow() - timedelta(days=7)
     revenue_this_week = db.query(func.sum(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED,
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
         Order.created_at >= week_start
     ).scalar() or 0
     
     month_start = datetime.utcnow() - timedelta(days=30)
     revenue_this_month = db.query(func.sum(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED,
+        or_(
+            Order.status.in_(delivered_statuses),
+            Order.payment_status.in_(paid_statuses)
+        ),
         Order.created_at >= month_start
     ).scalar() or 0
     
@@ -190,7 +214,7 @@ def get_dashboard_stats(db: Session) -> dict:
         "total_users": total_users,
         "active_users": active_users,
         "new_users_today": new_users_today,
-        "total_revenue": float(total_revenue) / 100,  # Convert from kobo to cedis
+        "total_revenue": float(total_revenue) / 100,  # Convert pesewas to cedis
         "revenue_today": float(revenue_today) / 100,
         "revenue_this_week": float(revenue_this_week) / 100,
         "revenue_this_month": float(revenue_this_month) / 100,
@@ -297,13 +321,15 @@ def get_customer_analytics(db: Session) -> dict:
     # Inactive customers
     inactive_customers = total_customers - active_customers
     
-    # Average order value
+    # Average order value - check both uppercase and lowercase
+    delivered_statuses = [OrderStatus.DELIVERED, OrderStatus.DELIVERED_LOWER, "DELIVERED", "delivered"]
+    
     avg_order_value = db.query(func.avg(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED
+        Order.status.in_(delivered_statuses)
     ).scalar() or 0
     
     # Average orders per customer
-    total_orders = db.query(Order).filter(Order.status == OrderStatus.DELIVERED).count()
+    total_orders = db.query(Order).filter(Order.status.in_(delivered_statuses)).count()
     avg_orders_per_customer = total_orders / total_customers if total_customers > 0 else 0
     
     # Customer retention rate (simplified)
@@ -311,7 +337,7 @@ def get_customer_analytics(db: Session) -> dict:
     
     # Customer lifetime value (simplified)
     total_revenue = db.query(func.sum(Order.total_cedis)).filter(
-        Order.status == OrderStatus.DELIVERED
+        Order.status.in_(delivered_statuses)
     ).scalar() or 0
     clv = (total_revenue / total_customers) if total_customers > 0 else 0
     
@@ -320,9 +346,9 @@ def get_customer_analytics(db: Session) -> dict:
         "new_customers": new_customers,
         "active_customers": active_customers,
         "inactive_customers": inactive_customers,
-        "average_order_value": float(avg_order_value) / 100,
+        "average_order_value": float(avg_order_value) / 100,  # Convert pesewas to cedis
         "average_orders_per_customer": round(avg_orders_per_customer, 2),
         "customer_retention_rate": round(retention_rate, 2),
-        "customer_lifetime_value": float(clv) / 100,
+        "customer_lifetime_value": float(clv) / 100,  # Convert pesewas to cedis
         "top_spending_customers": []  # Would need more complex query
     }

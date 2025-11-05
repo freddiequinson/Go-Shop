@@ -4,6 +4,7 @@ Inventory management and tracking
 """
 
 from sqlalchemy import Column, String, Text, Numeric, Boolean, DateTime, Enum, ForeignKey, Integer
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -49,6 +50,41 @@ class RestockStatus(str, enum.Enum):
     PARTIAL = "partial"  # Partially received
 
 
+class ZoneType(str, enum.Enum):
+    """Warehouse zone types"""
+    COLD_ROOM = "cold_room"
+    FREEZER = "freezer"
+    DRY_STORAGE = "dry_storage"
+    AMBIENT = "ambient"
+    REFRIGERATED = "refrigerated"
+
+
+class QualityCheckStatus(str, enum.Enum):
+    """Quality check status for GRN"""
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    PARTIAL = "partial"
+
+
+class WastageReason(str, enum.Enum):
+    """Reasons for wastage"""
+    EXPIRED = "expired"
+    DAMAGED = "damaged"
+    RETURNED = "returned"
+    CONTAMINATED = "contaminated"
+    SPOILED = "spoiled"
+    OTHER = "other"
+
+
+class PickListStatus(str, enum.Enum):
+    """Pick list status"""
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
 class WarehouseInventory(Base):
     """Warehouse inventory tracking"""
     __tablename__ = "warehouse_inventory"
@@ -66,20 +102,33 @@ class WarehouseInventory(Base):
     reorder_quantity = Column(Numeric(10, 2), nullable=True)  # How much to order
     
     # Location
+    warehouse_location_id = Column(String, ForeignKey("warehouse_locations.id", ondelete="SET NULL"), nullable=True)
     location_in_warehouse = Column(String(100), nullable=True)  # Shelf/bin number
     zone = Column(String(50), nullable=True)  # Warehouse zone (e.g., "Cold Storage", "Dry Goods")
     
     # Tracking
     received_date = Column(DateTime(timezone=True), nullable=True)  # Last received
+    manufacturing_date = Column(DateTime(timezone=True), nullable=True)
     expiry_date = Column(DateTime(timezone=True), nullable=True)  # For perishables
     batch_number = Column(String(100), nullable=True)
+    
+    # Perishable tracking
+    is_perishable = Column(Boolean, default=False, nullable=False)
+    storage_condition = Column(String(100), nullable=True)
     
     # Supplier info
     supplier_id = Column(String, ForeignKey("suppliers.id"), nullable=True)
     
     # Costing
-    cost_price = Column(Numeric(10, 2), nullable=True)  # Average cost
-    total_value = Column(Numeric(12, 2), nullable=True)  # quantity * cost_price
+    unit_cost = Column(Numeric(10, 2), nullable=True)
+    total_cost = Column(Numeric(12, 2), nullable=True)
+    cost_price = Column(Numeric(10, 2), nullable=True)  # Average cost (legacy)
+    total_value = Column(Numeric(12, 2), nullable=True)  # quantity * cost_price (legacy)
+    
+    # Dual quantity support
+    quantity_in_pieces = Column(Numeric(10, 2), nullable=True)
+    quantity_in_weight = Column(Numeric(10, 2), nullable=True)
+    weight_unit = Column(String(20), nullable=True)  # kg, g, lbs
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -89,6 +138,7 @@ class WarehouseInventory(Base):
     # Relationships
     movements = relationship("InventoryMovement", back_populates="inventory")
     alerts = relationship("StockAlert", back_populates="inventory")
+    warehouse_location = relationship("WarehouseLocation", back_populates="inventory_items")
 
     @property
     def quantity_total(self):
@@ -251,3 +301,220 @@ class RestockOrder(Base):
 
     def __repr__(self):
         return f"<RestockOrder(order_number={self.order_number}, status={self.status})>"
+
+
+class WarehouseLocation(Base):
+    """Warehouse location/zone management"""
+    __tablename__ = "warehouse_locations"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String(100), nullable=False)
+    code = Column(String(50), nullable=False, unique=True, index=True)
+    
+    # Zone details
+    zone_type = Column(Enum(ZoneType), nullable=False)
+    capacity = Column(Numeric(10, 2), nullable=True)
+    current_utilization = Column(Numeric(10, 2), default=0, nullable=False)
+    
+    # Environmental conditions
+    temperature_min = Column(Numeric(5, 2), nullable=True)  # Celsius
+    temperature_max = Column(Numeric(5, 2), nullable=True)  # Celsius
+    humidity_level = Column(String(50), nullable=True)
+    
+    # Additional info
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Relationships
+    inventory_items = relationship("WarehouseInventory", back_populates="warehouse_location")
+    grn_records = relationship("GoodsReceivedNote", back_populates="warehouse_location")
+
+    @property
+    def utilization_percentage(self):
+        """Calculate utilization percentage"""
+        if self.capacity and self.capacity > 0:
+            return (self.current_utilization / self.capacity) * 100
+        return 0
+
+    def __repr__(self):
+        return f"<WarehouseLocation(name={self.name}, zone={self.zone_type})>"
+
+
+class GoodsReceivedNote(Base):
+    """Goods Received Notes (GRN) for tracking supplier deliveries"""
+    __tablename__ = "goods_received_notes"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    grn_number = Column(String(50), nullable=False, unique=True, index=True)
+    
+    # References
+    supplier_id = Column(String, ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    batch_number = Column(String(100), nullable=True)
+    
+    # Dual quantity support (pieces OR weight OR both)
+    quantity_received_pieces = Column(Numeric(10, 2), nullable=True)
+    quantity_received_weight = Column(Numeric(10, 2), nullable=True)
+    weight_unit = Column(String(20), nullable=True)  # kg, g, lbs
+    
+    # Costing
+    unit_cost = Column(Numeric(10, 2), nullable=False)
+    total_cost = Column(Numeric(12, 2), nullable=False)
+    
+    # Dates
+    delivery_date = Column(DateTime(timezone=True), nullable=False)
+    manufacturing_date = Column(DateTime(timezone=True), nullable=True)
+    expiry_date = Column(DateTime(timezone=True), nullable=True)
+    
+    # Location
+    warehouse_location_id = Column(String, ForeignKey("warehouse_locations.id", ondelete="RESTRICT"), nullable=False)
+    
+    # Quality check
+    quality_check_status = Column(Enum(QualityCheckStatus), default=QualityCheckStatus.PENDING, nullable=False)
+    quality_check_by = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    quality_check_date = Column(DateTime(timezone=True), nullable=True)
+    quality_notes = Column(Text, nullable=True)
+    
+    # Images (JSON array)
+    images = Column(postgresql.JSONB, nullable=True)
+    
+    # Additional info
+    notes = Column(Text, nullable=True)
+    received_by = Column(String, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    
+    # Supplier rating (added when receiving order)
+    supplier_rating = Column(Numeric(2, 1), nullable=True)  # 1.0 to 5.0
+    supplier_feedback = Column(Text, nullable=True)
+    rated_at = Column(DateTime(timezone=True), nullable=True)
+    rated_by = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Relationships
+    warehouse_location = relationship("WarehouseLocation", back_populates="grn_records")
+
+    @property
+    def is_perishable(self):
+        """Check if product is perishable"""
+        return self.expiry_date is not None
+
+    @property
+    def days_until_expiry(self):
+        """Calculate days until expiry"""
+        if self.expiry_date:
+            delta = self.expiry_date - func.now()
+            return delta.days
+        return None
+
+    def __repr__(self):
+        return f"<GoodsReceivedNote(grn_number={self.grn_number}, status={self.quality_check_status})>"
+
+
+class WastageRecord(Base):
+    """Track wastage of products"""
+    __tablename__ = "wastage_records"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    product_id = Column(String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    batch_number = Column(String(100), nullable=True)
+    
+    # Dual quantity support
+    quantity_wasted_pieces = Column(Numeric(10, 2), nullable=True)
+    quantity_wasted_weight = Column(Numeric(10, 2), nullable=True)
+    weight_unit = Column(String(20), nullable=True)
+    
+    # Reason
+    reason = Column(Enum(WastageReason), nullable=False)
+    warehouse_location_id = Column(String, ForeignKey("warehouse_locations.id", ondelete="SET NULL"), nullable=True)
+    
+    # Cost
+    cost_value = Column(Numeric(12, 2), nullable=True)
+    
+    # Images (for documentation)
+    images = Column(postgresql.JSONB, nullable=True)
+    
+    # Details
+    notes = Column(Text, nullable=True)
+    recorded_by = Column(String, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    
+    # Timestamp
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    def __repr__(self):
+        return f"<WastageRecord(product_id={self.product_id}, reason={self.reason})>"
+
+
+class PickList(Base):
+    """Pick lists for order fulfillment"""
+    __tablename__ = "pick_lists"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    pick_list_number = Column(String(50), nullable=False, unique=True, index=True)
+    order_id = Column(String, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    
+    # Status
+    status = Column(Enum(PickListStatus), default=PickListStatus.PENDING, nullable=False)
+    assigned_to = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    priority = Column(String(20), default="medium", nullable=False)  # low, medium, high, urgent
+    
+    # Details
+    notes = Column(Text, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    items = relationship("PickListItem", back_populates="pick_list", cascade="all, delete-orphan")
+
+    @property
+    def is_complete(self):
+        """Check if all items are picked"""
+        return all(item.picked for item in self.items)
+
+    @property
+    def completion_percentage(self):
+        """Calculate completion percentage"""
+        if not self.items:
+            return 0
+        picked_count = sum(1 for item in self.items if item.picked)
+        return (picked_count / len(self.items)) * 100
+
+    def __repr__(self):
+        return f"<PickList(number={self.pick_list_number}, status={self.status})>"
+
+
+class PickListItem(Base):
+    """Individual items in a pick list"""
+    __tablename__ = "pick_list_items"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    pick_list_id = Column(String, ForeignKey("pick_lists.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    batch_number = Column(String(100), nullable=True)
+    warehouse_location_id = Column(String, ForeignKey("warehouse_locations.id", ondelete="SET NULL"), nullable=True)
+    
+    # Dual quantity support
+    quantity_to_pick_pieces = Column(Numeric(10, 2), nullable=True)
+    quantity_to_pick_weight = Column(Numeric(10, 2), nullable=True)
+    quantity_picked_pieces = Column(Numeric(10, 2), default=0, nullable=True)
+    quantity_picked_weight = Column(Numeric(10, 2), default=0, nullable=True)
+    weight_unit = Column(String(20), nullable=True)
+    
+    # Status
+    picked = Column(Boolean, default=False, nullable=False)
+    picked_at = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+
+    # Relationships
+    pick_list = relationship("PickList", back_populates="items")
+
+    def __repr__(self):
+        return f"<PickListItem(product_id={self.product_id}, picked={self.picked})>"

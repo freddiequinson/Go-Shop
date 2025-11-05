@@ -23,6 +23,7 @@ class ProductBase(BaseModel):
     cost_price: Optional[Decimal] = None
     is_perishable: Optional[bool] = False
     shelf_life_days: Optional[int] = None
+    is_published: Optional[bool] = True
 
     @validator('price_per_unit')
     def validate_price(cls, v):
@@ -68,6 +69,7 @@ class ProductUpdate(BaseModel):
     stock_quantity: Optional[Decimal] = None
     images: Optional[List[str]] = None
     is_active: Optional[bool] = None
+    is_published: Optional[bool] = None
     supplier_id: Optional[str] = None
     cost_price: Optional[Decimal] = None
     is_perishable: Optional[bool] = None
@@ -100,6 +102,9 @@ class ProductResponse(ProductBase):
     id: str
     seller_id: str
     is_active: bool
+    is_published: bool
+    created_by_type: str
+    in_warehouse: bool
     created_at: datetime
     updated_at: datetime
     supplier_id: Optional[str] = None
@@ -166,7 +171,10 @@ class ProductFilter(BaseModel):
     unit_type: Optional[UnitType] = None
     search: Optional[str] = None
     is_active: Optional[bool] = True
+    is_published: Optional[bool] = None
     seller_id: Optional[str] = None
+    created_by_type: Optional[str] = None  # 'admin' or 'supplier'
+    in_warehouse: Optional[bool] = None
 
 class ProductListResponse(BaseModel):
     products: List[ProductResponse]

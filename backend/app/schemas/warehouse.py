@@ -51,6 +51,22 @@ class WarehouseInventoryResponse(WarehouseInventoryBase):
     created_at: datetime
     updated_at: datetime
     last_counted_at: Optional[datetime] = None
+    warehouse_location_id: Optional[str] = None
+    
+    # Product details (populated via join)
+    product_name: Optional[str] = None
+    product_description: Optional[str] = None
+    is_published: Optional[bool] = None
+    created_by_type: Optional[str] = None
+    price_per_unit: Optional[Decimal] = None  # Selling price to customers
+    product_cost_price: Optional[Decimal] = None  # What we paid supplier
+    
+    # Location details (populated via join)
+    location_name: Optional[str] = None
+    location_code: Optional[str] = None
+    zone_type: Optional[str] = None
+    temperature_min: Optional[Decimal] = None
+    temperature_max: Optional[Decimal] = None
 
     @field_serializer('created_at', 'updated_at', 'received_date', 'last_counted_at', 'expiry_date')
     def serialize_datetime(self, value: Optional[datetime]) -> Optional[str]:
@@ -75,6 +91,27 @@ class InventoryAdjustment(BaseModel):
         if v == 0:
             raise ValueError('Quantity cannot be zero')
         return v
+
+
+# Allocate quantity to shop
+class AllocateToShopRequest(BaseModel):
+    product_id: str
+    quantity: Decimal
+    unit: Optional[str] = None  # 'kg', 'pieces', etc.
+    notes: Optional[str] = None
+    
+    @validator('quantity')
+    def validate_quantity(cls, v):
+        if v <= 0:
+            raise ValueError('Quantity must be greater than zero')
+        return v
+
+
+# Assign location
+class AssignLocationRequest(BaseModel):
+    warehouse_location_id: str
+    location_in_warehouse: Optional[str] = None  # Shelf/bin number
+    notes: Optional[str] = None
 
 
 # Inventory Movement schemas
@@ -222,14 +259,19 @@ class RestockOrderListResponse(BaseModel):
 class WarehouseAnalytics(BaseModel):
     total_products: int
     total_value: Decimal
+    total_stock_value: Optional[Decimal] = None  # Alias for frontend
     low_stock_count: int
+    low_stock_items: Optional[int] = None  # Alias for frontend
     out_of_stock_count: int
+    out_of_stock_items: Optional[int] = None  # Alias for frontend
     expiring_soon_count: int
     expired_count: int
     average_stock_age_days: float
     total_movements_today: int
+    movements_this_month: Optional[int] = None  # For frontend
     total_received_today: Decimal
     total_dispatched_today: Decimal
+    top_moving_products: Optional[List[dict]] = []  # For frontend
 
 
 # Inventory Filter

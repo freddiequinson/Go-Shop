@@ -1,0 +1,5 @@
+-- Add uppercase enum values to match existing data
+ALTER TYPE usertype ADD VALUE IF NOT EXISTS 'ADMIN';
+ALTER TYPE usertype ADD VALUE IF NOT EXISTS 'BUYER';
+ALTER TYPE usertype ADD VALUE IF NOT EXISTS 'SELLER';
+ALTER TYPE usertype ADD VALUE IF NOT EXISTS 'SUPPLIER';

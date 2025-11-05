@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, Package, Warehouse, Users, Truck, 
   ShoppingCart, BarChart3, Settings, Image, FileText,
-  ChevronDown, ChevronRight, Boxes, Menu, X, Shield
+  ChevronDown, ChevronRight, Boxes, Menu, X, Shield, Calendar, Tag, Gift, TrendingUp, HelpCircle
 } from "lucide-react"
 import { useState } from "react"
 
@@ -36,11 +36,9 @@ const menuItems: MenuItem[] = [
     title: "Warehouse",
     icon: Warehouse,
     children: [
+      { title: "Dashboard", href: "/admin/warehouse/dashboard", icon: LayoutDashboard },
       { title: "Inventory", href: "/admin/warehouse", icon: Warehouse },
-      { title: "Stock Alerts", href: "/admin/warehouse/alerts", icon: Warehouse },
-      { title: "Restock Orders", href: "/admin/warehouse/restock", icon: Warehouse },
-      { title: "Movements", href: "/admin/warehouse/movements", icon: Warehouse },
-      { title: "Analytics", href: "/admin/warehouse/analytics", icon: BarChart3 }
+      { title: "Supplier Marketplace", href: "/admin/warehouse/marketplace", icon: ShoppingCart }
     ]
   },
   {
@@ -48,9 +46,10 @@ const menuItems: MenuItem[] = [
     icon: ShoppingCart,
     children: [
       { title: "All Orders", href: "/admin/orders", icon: ShoppingCart },
-      { title: "Pending", href: "/admin/orders?status=pending", icon: ShoppingCart },
-      { title: "In Progress", href: "/admin/orders?status=in_progress", icon: ShoppingCart },
-      { title: "Completed", href: "/admin/orders?status=completed", icon: ShoppingCart }
+      { title: "By Products", href: "/admin/orders/by-products", icon: Package },
+      { title: "By Delivery Date", href: "/admin/orders/by-delivery-date", icon: Calendar },
+      { title: "Coupons", href: "/admin/coupons", icon: Tag },
+      { title: "Gift Cards", href: "/admin/gift-cards", icon: Gift }
     ]
   },
   {
@@ -83,31 +82,53 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Procurement",
+    icon: FileText,
+    children: [
+      { title: "Direct Orders", href: "/admin/procurement/direct-orders", icon: ShoppingCart },
+      { title: "Supply Requests", href: "/admin/procurement/requests", icon: FileText },
+      { title: "Price Comparison", href: "/admin/procurement/price-comparison", icon: BarChart3 },
+      { title: "Analytics", href: "/admin/procurement/analytics", icon: BarChart3 }
+    ]
+  },
+  {
     title: "Analytics",
     icon: BarChart3,
     children: [
-      { title: "Sales Report", href: "/admin/analytics/sales", icon: BarChart3 },
-      { title: "Product Analytics", href: "/admin/analytics/products", icon: Package },
-      { title: "Customer Insights", href: "/admin/analytics/customers", icon: Users },
-      { title: "Revenue Report", href: "/admin/analytics/revenue", icon: BarChart3 }
+      { title: "Overview", href: "/admin/analytics", icon: BarChart3 },
+      { title: "Sales Analytics", href: "/admin/analytics/sales", icon: TrendingUp },
+      { title: "Warehouse", href: "/admin/warehouse/analytics", icon: Warehouse }
     ]
   },
   {
     title: "Audit Logs",
-    href: "/admin/audit-logs",
-    icon: Shield
+    icon: Shield,
+    children: [
+      { title: "View Logs", href: "/admin/audit-logs", icon: Shield },
+      { title: "Analytics", href: "/admin/audit-logs/analytics", icon: Shield }
+    ]
+  },
+  {
+    title: "Help",
+    href: "/admin/help",
+    icon: HelpCircle
   },
   {
     title: "Settings",
-    href: "/admin/settings",
-    icon: Settings
+    icon: Settings,
+    children: [
+      { title: "General Settings", href: "/admin/settings", icon: Settings },
+      { title: "Delivery Settings", href: "/admin/delivery-settings", icon: Settings },
+      { title: "Database Cleanup", href: "/admin/cleanup", icon: Settings }
+    ]
   }
 ]
 
 export default function AdminSidebar() {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>(["Products"])
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
 
   const toggleExpand = (title: string) => {
     // Close all other dropdowns when opening a new one
@@ -118,8 +139,16 @@ export default function AdminSidebar() {
     )
   }
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
+  const toggleMobileSidebar = () => {
+    setIsMobileOpen(!isMobileOpen)
+  }
+
+  const toggleDesktopSidebar = () => {
+    setIsDesktopCollapsed(!isDesktopCollapsed)
+  }
+
+  const closeMobileSidebar = () => {
+    setIsMobileOpen(false)
   }
 
   const isActive = (href?: string) => {
@@ -131,22 +160,23 @@ export default function AdminSidebar() {
     const hasChildren = item.children && item.children.length > 0
     const isExpanded = expandedItems.includes(item.title)
     const active = isActive(item.href)
+    const collapsed = isDesktopCollapsed
 
     if (hasChildren) {
       return (
         <div key={item.title}>
           <button
             onClick={() => toggleExpand(item.title)}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-3 text-[#303A4D] hover:bg-[#FED141]/20 transition-colors rounded-lg ${
-              level > 0 && !isCollapsed ? "pl-8" : ""
+            className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-4 py-3 text-[#303A4D] hover:bg-[#FED141]/20 transition-colors rounded-lg ${
+              level > 0 && !collapsed ? "pl-8" : ""
             }`}
             title={item.title}
           >
-            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+            <div className={`flex items-center ${collapsed ? '' : 'gap-3'}`}>
               <item.icon className="w-5 h-5" />
-              {!isCollapsed && <span className="font-medium">{item.title}</span>}
+              {!collapsed && <span className="font-medium">{item.title}</span>}
             </div>
-            {!isCollapsed && (
+            {!collapsed && (
               isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
@@ -154,7 +184,7 @@ export default function AdminSidebar() {
               )
             )}
           </button>
-          {!isCollapsed && isExpanded && item.children && (
+          {!collapsed && isExpanded && item.children && (
             <div className="ml-4 mt-1 space-y-1">
               {item.children.map(child => renderMenuItem(child, level + 1))}
             </div>
@@ -167,49 +197,63 @@ export default function AdminSidebar() {
       <Link
         key={item.href}
         href={item.href!}
-        className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-lg transition-colors ${
+        onClick={closeMobileSidebar}
+        className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-lg transition-colors ${
           active
             ? "bg-[#FED141] text-[#303A4D] font-bold"
             : "text-[#303A4D] hover:bg-[#FED141]/20"
-        } ${level > 0 && !isCollapsed ? "pl-8" : ""}`}
+        } ${level > 0 && !collapsed ? "pl-8" : ""}`}
         title={item.title}
       >
         <item.icon className="w-5 h-5" />
-        {!isCollapsed && <span className={active ? "font-bold" : "font-medium"}>{item.title}</span>}
+        {!collapsed && <span className={active ? "font-bold" : "font-medium"}>{item.title}</span>}
       </Link>
     )
   }
 
   return (
     <>
-      {/* Overlay to close sidebar when clicking outside (mobile/collapsed) */}
-      {isCollapsed && (
+      {/* Overlay - shows ONLY when sidebar is open on mobile */}
+      {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
-          onClick={toggleSidebar}
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={closeMobileSidebar}
         />
       )}
 
-      {/* Mobile toggle button */}
+      {/* Mobile toggle button - always visible on mobile */}
       <button
-        onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-[#FED141] p-2 rounded-lg shadow-lg"
+        onClick={toggleMobileSidebar}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-[#FED141] p-3 rounded-lg shadow-lg"
+        aria-label="Toggle menu"
       >
-        {isCollapsed ? <Menu className="w-6 h-6" /> : <X className="w-6 h-6" />}
+        {isMobileOpen ? <X className="w-6 h-6 text-[#303A4D]" /> : <Menu className="w-6 h-6 text-[#303A4D]" />}
       </button>
 
       {/* Sidebar */}
-      <aside className={`${
-        isCollapsed ? 'w-20' : 'w-64'
-      } bg-white border-r-4 border-[#303A4D] h-screen sticky top-0 overflow-y-auto transition-all duration-300 z-40`}>
-        <div className={`${isCollapsed ? 'p-2' : 'p-6'}`}>
+      <aside className={`
+        fixed lg:sticky top-0 h-screen bg-white border-r-4 border-[#303A4D] overflow-y-auto transition-all duration-300 z-40
+        ${
+          // Mobile: slide in from left
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }
+        lg:translate-x-0
+        ${
+          // Desktop: collapsible width
+          isDesktopCollapsed ? 'lg:w-20' : 'lg:w-64'
+        }
+        w-64
+      `}>
+        <div className={`${isDesktopCollapsed ? 'lg:p-2 p-6' : 'p-6'}`}>
           <div className="flex items-center justify-between mb-6">
-            {!isCollapsed && <h2 className="text-2xl font-bold text-[#303A4D]">Admin Panel</h2>}
+            {!isDesktopCollapsed && <h2 className="text-xl lg:text-2xl font-bold text-[#303A4D]">Admin Panel</h2>}
+            {/* Desktop collapse button */}
             <button
-              onClick={toggleSidebar}
+              onClick={toggleDesktopSidebar}
               className="hidden lg:block p-2 hover:bg-[#FED141]/20 rounded-lg transition-colors"
+              aria-label="Toggle sidebar"
             >
-              {isCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+              {isDesktopCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
             </button>
           </div>
           <nav className="space-y-2">

@@ -38,8 +38,130 @@ async def create_new_rider(
 ):
     """
     Register a new rider (Admin only)
+    Auto-creates user account and sends credentials via SMS/Email
     """
+    import secrets
+    import string
+    import logging
+    from app.crud.user import create_user, get_user_by_email, get_user_by_phone, get_user_by_username
+    from app.schemas.user import UserCreate
+    from app.core.email import send_welcome_email
+    from app.core.sms import send_sms
+    
+    logger = logging.getLogger(__name__)
+    
+    # First, create user account if phone is provided
+    user_id = None
+    username = None
+    random_password = None
+    
+    if rider.phone:
+        # Check if user already exists
+        existing_user = get_user_by_phone(db, rider.phone)
+        
+        if existing_user:
+            logger.info(f"User already exists for phone {rider.phone}, using existing user")
+            user_id = existing_user.id
+        else:
+            logger.info("Creating new user account for rider...")
+            
+            # Generate username from full name (clean and simple)
+            if rider.full_name:
+                # Remove spaces, special chars, keep only alphanumeric
+                clean_name = ''.join(c.lower() for c in rider.full_name if c.isalnum())
+                base_username = clean_name[:15]  # Limit to 15 chars
+            else:
+                # Fallback to phone if no name
+                phone_digits = ''.join(c for c in rider.phone if c.isdigit())
+                base_username = f"rider{phone_digits[-6:]}"
+            
+            # Ensure unique username
+            username = base_username
+            counter = 1
+            while get_user_by_username(db, username):
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            # Generate password: Rider + last 4 digits of phone
+            last_4_digits = phone_digits[-4:] if len(phone_digits) >= 4 else "1234"
+            random_password = f"Rider{last_4_digits}"
+            
+            logger.info(f"Generated username: {username}, password: {random_password}")
+            
+            # Get rider name from form or use default
+            full_name = rider.full_name if rider.full_name else f"Rider {phone_digits[-4:]}"
+            
+            # Get email from form or use dummy
+            email = rider.email if rider.email else f"{username}@goshop.local"
+            
+            # Create user account
+            user_data = UserCreate(
+                email=email,
+                username=username,
+                full_name=full_name,
+                password=random_password,
+                phone_number=rider.phone,
+                user_type="RIDER"
+            )
+            
+            try:
+                db_user = create_user(db, user_data)
+                user_id = db_user.id
+                logger.info(f"User account created successfully with ID: {user_id}")
+                
+                # Send credentials via SMS
+                try:
+                    sms_message = f"Welcome to Go-Shop Rider! Login: goshopghana.com/login | Username: {username} | Password: {random_password}"
+                    sms_sent = send_sms(rider.phone, sms_message)
+                    if sms_sent:
+                        logger.info(f"✅ Credentials SMS sent successfully to {rider.phone}")
+                    else:
+                        logger.warning(f"⚠️ Failed to send credentials SMS to {rider.phone}")
+                except Exception as e:
+                    logger.error(f"❌ Error sending credentials SMS: {str(e)}")
+                
+                # Send credentials via email if real email provided
+                if rider.email and not rider.email.endswith("@goshop.local"):
+                    try:
+                        email_body = f"""
+                        <h2>Welcome to Go-Shop Rider Portal!</h2>
+                        <p>Dear {full_name},</p>
+                        <p>Your rider account has been created successfully. You can now log in to start accepting deliveries.</p>
+                        <h3>Login Credentials:</h3>
+                        <p><strong>Portal URL:</strong> https://goshopghana.com/login</p>
+                        <p><strong>Username:</strong> {username}</p>
+                        <p><strong>Password:</strong> {random_password}</p>
+                        <p><strong>Rider Code:</strong> Will be assigned after account creation</p>
+                        <br>
+                        <p><strong>Important:</strong> Please change your password after first login for security.</p>
+                        <p>If you have any questions, please contact our support team.</p>
+                        <br>
+                        <p>Best regards,<br>Go-Shop Ghana Team</p>
+                        """
+                        email_sent = send_welcome_email(rider.email, full_name, email_body)
+                        if email_sent:
+                            logger.info(f"✅ Credentials email sent successfully to {rider.email}")
+                        else:
+                            logger.warning(f"⚠️ Failed to send credentials email to {rider.email}")
+                    except Exception as e:
+                        logger.error(f"❌ Error sending credentials email: {str(e)}")
+                
+            except Exception as e:
+                logger.error(f"Failed to create user account: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Failed to create user account: {str(e)}"
+                )
+    
+    # Update rider data with user_id if created
+    if user_id and not rider.user_id:
+        rider.user_id = user_id
+    
+    # Create rider record (full_name and email are excluded in the CRUD function)
     db_rider = create_rider(db, rider)
+    
+    logger.info(f"Rider created successfully: {db_rider.rider_code}")
+    
     return RiderResponse.model_validate(db_rider)
 
 

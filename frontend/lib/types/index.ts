@@ -183,6 +183,9 @@ export interface UserUpdate {
 export interface Token {
   access_token: string
   token_type: string
+  user?: UserResponse
+  supplier_id?: string
+  redirect_to?: string
 }
 
 // ============= PRODUCT TYPES =============
@@ -300,35 +303,63 @@ export interface CartSummary {
 // ============= ORDER TYPES =============
 
 export interface OrderCreate {
-  delivery_address: string
-  delivery_phone: string
-  payment_method: PaymentMethod
-  notes?: string
+  delivery_address?: {
+    street: string
+    area: string
+    city: string
+    region: string
+    phone: string
+    additional_info?: string
+    latitude?: string
+    longitude?: string
+  }
+  delivery_notes?: string
+  payment_method?: PaymentMethod
+  delivery_date?: string
 }
 
 export interface OrderItemResponse {
-  id: number
-  product_id: number
+  id: string
+  order_id: string
+  product_id: string
+  product_name: string
+  product_image_url?: string
+  price_per_unit_cedis: number
+  unit_type: string
   quantity: number
-  unit_price: number
-  subtotal: number
-  product: ProductResponse
+  line_total_cedis: number
+  price_per_unit?: number
+  line_total?: number
 }
 
 export interface OrderResponse {
-  id: number
-  order_number: string
-  buyer_id: number
-  total_amount: number
+  id: string
+  user_id: string
   status: OrderStatus
-  payment_method: PaymentMethod
-  delivery_address: string
-  delivery_phone: string
-  notes?: string
+  subtotal_cedis: number
+  delivery_fee_cedis: number
+  tax_cedis: number
+  total_cedis: number
+  delivery_address?: {
+    street: string
+    area: string
+    city: string
+    region: string
+    phone: string
+    additional_info?: string
+    latitude?: string
+    longitude?: string
+  }
+  delivery_notes?: string
+  estimated_delivery_time?: string
   items: OrderItemResponse[]
   created_at: string
   updated_at: string
-  buyer?: UserResponse
+  delivered_at?: string
+  subtotal?: number
+  delivery_fee?: number
+  tax?: number
+  total?: number
 }
 
 export interface OrderStatusUpdate {
@@ -585,6 +616,49 @@ export interface ReviewResponseResponse {
   response_text: string
   created_at: string
   seller?: UserResponse
+}
+
+// ============= USER ADDRESS TYPES =============
+
+export interface UserAddressBase {
+  label: string
+  street: string
+  area: string
+  city: string
+  region: string
+  phone: string
+  latitude?: string
+  longitude?: string
+  additional_info?: string
+  is_default: boolean
+}
+
+export interface UserAddressCreate extends UserAddressBase {}
+
+export interface UserAddressUpdate {
+  label?: string
+  street?: string
+  area?: string
+  city?: string
+  region?: string
+  phone?: string
+  latitude?: string
+  longitude?: string
+  additional_info?: string
+  is_default?: boolean
+}
+
+export interface UserAddressResponse extends UserAddressBase {
+  id: string
+  user_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface UserAddressListResponse {
+  addresses: UserAddressResponse[]
+  total: number
+  default_address_id?: string
 }
 
 export interface ReviewUpdate {

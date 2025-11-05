@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Package, Plus, Check, X } from "lucide-react"
+import { Package, Plus, Check, X, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import CreateSupplyRequestModal from "@/components/procurement/CreateSupplyRequestModal"
 
 interface RestockOrder {
   id: string
@@ -20,9 +22,11 @@ interface RestockOrder {
 }
 
 export default function RestockOrdersPage() {
+  const { toast } = useToast()
   const [orders, setOrders] = useState<RestockOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState("all")
+  const [showRequestModal, setShowRequestModal] = useState(false)
 
   useEffect(() => {
     fetchOrders()
@@ -88,9 +92,29 @@ export default function RestockOrdersPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Restock Orders</h1>
-          <p className="text-[#303A4D]/70">Manage inventory restock orders</p>
+          <p className="text-[#303A4D]/70">Manage inventory restock orders and create supply requests</p>
         </div>
+        <Button
+          onClick={() => setShowRequestModal(true)}
+          className="bg-[#FED141] text-[#303A4D] hover:bg-[#FED141]/90"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Create Supply Request
+        </Button>
       </div>
+
+      {/* Supply Request Modal */}
+      <CreateSupplyRequestModal
+        isOpen={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+        onSuccess={() => {
+          setShowRequestModal(false)
+          toast({
+            title: "Success",
+            description: "Supply request created! It will appear here once accepted and delivered."
+          })
+        }}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">

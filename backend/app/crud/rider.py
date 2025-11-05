@@ -28,10 +28,13 @@ def generate_rider_code() -> str:
 # Rider CRUD operations
 def create_rider(db: Session, rider: RiderCreate) -> Rider:
     """Create a new rider"""
+    # Exclude full_name and email (they're only for user creation, not Rider model fields)
+    rider_data = rider.model_dump(exclude={'full_name', 'email'})
+    
     db_rider = Rider(
         id=str(uuid.uuid4()),
         rider_code=generate_rider_code(),
-        **rider.model_dump()
+        **rider_data
     )
     db.add(db_rider)
     db.commit()
@@ -138,12 +141,13 @@ def update_rider_status(db: Session, rider_id: str, status: RiderStatus) -> Opti
 
 
 def delete_rider(db: Session, rider_id: str) -> bool:
-    """Soft delete rider"""
+    """Delete rider (hard delete)"""
     db_rider = get_rider_by_id(db, rider_id)
     if not db_rider:
         return False
     
-    db_rider.is_active = False
+    # Hard delete - actually remove from database
+    db.delete(db_rider)
     db.commit()
     return True
 

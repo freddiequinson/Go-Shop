@@ -42,8 +42,8 @@ class GiftCard(Base):
     original_amount_cedis = Column(Integer, nullable=False)  # Original amount for tracking
     
     # Type and Status
-    card_type = Column(SQLEnum(GiftCardType), nullable=False, default=GiftCardType.EXPIRY)
-    status = Column(SQLEnum(GiftCardStatus), nullable=False, default=GiftCardStatus.ACTIVE)
+    card_type = Column(SQLEnum(GiftCardType, values_callable=lambda x: [e.value for e in x]), nullable=False, default=GiftCardType.EXPIRY)
+    status = Column(SQLEnum(GiftCardStatus, values_callable=lambda x: [e.value for e in x]), nullable=False, default=GiftCardStatus.ACTIVE)
     
     # Expiry
     expires_at = Column(DateTime, nullable=True)  # None for non-expiry cards

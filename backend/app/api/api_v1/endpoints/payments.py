@@ -306,6 +306,8 @@ async def paystack_webhook(
         
         # Handle charge.success event
         if event == "charge.success":
+            from app.utils.audit_logger import log_payment_success, log_payment_failed
+            
             reference = data.get("reference")
             status_paystack = data.get("status")
             
@@ -327,10 +329,37 @@ async def paystack_webhook(
                         payment_method=PaymentMethod.MOBILE_MONEY if "mobile" in str(data.get("channel", "")).lower() else PaymentMethod.CARD
                     )
                     
+                    # Log successful payment
+                    if transaction and payment_session.order_id:
+                        log_payment_success(
+                            db=db,
+                            user_id=payment_session.user_id,
+                            user_email=payment_session.user_email or "Unknown",
+                            order_id=payment_session.order_id,
+                            amount=data.get("amount", 0) / 100,  # Convert from kobo to cedis
+                            payment_reference=reference,
+                            payment_method=str(data.get("channel", "paystack"))
+                        )
+                    
                     print(f"   - ✅ Wallet credited!")
                     print(f"   - Transaction ID: {transaction.id if transaction else 'Already processed'}")
                 else:
                     print(f"   - ⚠️ Payment already processed or session not found")
+            elif status_paystack != "success":
+                # Log failed payment
+                from app.utils.audit_logger import log_payment_failed
+                payment_session = get_payment_session_by_reference(db, reference) if reference else None
+                
+                if payment_session:
+                    log_payment_failed(
+                        db=db,
+                        user_id=payment_session.user_id,
+                        user_email=payment_session.user_email,
+                        order_id=payment_session.order_id or "unknown",
+                        amount=data.get("amount", 0) / 100,
+                        error_message=f"Payment failed with status: {status_paystack}",
+                        payment_reference=reference
+                    )
         
         print(f"\n{'='*50}\n")
         

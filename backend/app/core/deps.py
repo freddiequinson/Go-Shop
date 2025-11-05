@@ -67,7 +67,7 @@ async def get_current_seller(
     Get current user and verify they are a seller
     """
     user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
-    if user_type not in ["seller", "admin"]:
+    if user_type not in ["SELLER", "ADMIN"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions. Seller access required."
@@ -81,9 +81,37 @@ async def get_current_admin(
     Get current user and verify they are an admin
     """
     user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
-    if user_type != "admin":
+    if user_type != "ADMIN":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions. Admin access required."
         )
     return current_user
+
+async def get_current_rider(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get current user and verify they are a rider, return Rider model
+    """
+    from app.models.rider import Rider
+    
+    user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
+    user_type_upper = str(user_type).upper()
+    
+    if user_type_upper != "RIDER":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Rider access required. Current user type: {user_type}"
+        )
+    
+    # Get rider profile
+    rider = db.query(Rider).filter(Rider.user_id == current_user.id).first()
+    if not rider:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Rider profile not found for user {current_user.email}"
+        )
+    
+    return rider

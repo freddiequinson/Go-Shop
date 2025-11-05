@@ -32,13 +32,15 @@ async def get_my_cart(
     cart_data = get_cart_with_details(db, current_user.id)
     
     if not cart_data['cart']:
-        # Return empty cart structure
+        # Return empty cart structure with current datetime
+        from datetime import datetime
+        now = datetime.utcnow()
         return CartResponse(
             id="",
             user_id=current_user.id,
             items=[],
-            created_at="",
-            updated_at="",
+            created_at=now,
+            updated_at=now,
             total_items=0,
             total_amount_cents=0,
             total_amount=0.0

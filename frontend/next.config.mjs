@@ -20,6 +20,8 @@ const nextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // Enable standalone output for Docker
+  output: 'standalone',
 }
 
 export default nextConfig

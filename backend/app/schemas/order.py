@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from datetime import datetime
 from pydantic import BaseModel, validator, field_serializer
-from app.models.order import OrderStatus
+from app.models.order import OrderStatus, PaymentStatus
 
 # Order Item schemas
 class OrderItemBase(BaseModel):
@@ -41,7 +41,12 @@ class OrderBase(BaseModel):
 
 class OrderCreate(OrderBase):
     """Create order from cart"""
-    pass
+    delivery_price: Optional[Decimal] = None
+    delivery_method: Optional[str] = None
+    delivery_distance: Optional[Decimal] = None
+    is_free_delivery: bool = False
+    coupon_code: Optional[str] = None
+    coupon_discount: Optional[Decimal] = None
 
 class OrderUpdate(BaseModel):
     status: Optional[OrderStatus] = None
@@ -51,11 +56,24 @@ class OrderUpdate(BaseModel):
 class OrderResponse(OrderBase):
     id: str
     user_id: str
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+    user_phone: Optional[str] = None
     status: OrderStatus
     subtotal_cedis: Decimal
     delivery_fee_cedis: Decimal
     tax_cedis: Decimal
     total_cedis: Decimal
+    delivery_price: Optional[Decimal] = None
+    delivery_method: Optional[str] = None
+    delivery_distance: Optional[Decimal] = None
+    is_free_delivery: Optional[str] = None
+    coupon_code: Optional[str] = None
+    coupon_discount: Optional[Decimal] = None
+    payment_status: PaymentStatus
+    payment_method: Optional[str] = None
+    payment_reference: Optional[str] = None
+    payment_completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     delivered_at: Optional[datetime] = None
@@ -79,12 +97,16 @@ class OrderResponse(OrderBase):
 # Order summary for lists
 class OrderSummary(BaseModel):
     id: str
-    status: OrderStatus
+    status: str
+    payment_status: str
+    payment_method: Optional[str] = None
     total: float
     item_count: int
     created_at: datetime
+    estimated_delivery_time: Optional[datetime] = None
+    items: Optional[List[dict]] = []
     
-    @field_serializer('created_at')
+    @field_serializer('created_at', 'estimated_delivery_time')
     def serialize_datetime(self, value: datetime) -> str:
         return value.isoformat() if value else None
 
@@ -161,3 +183,55 @@ class OrderCalculations:
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
     notes: Optional[str] = None
+
+
+# Payment-related schemas
+class OrderPaymentInitRequest(BaseModel):
+    """Request to initialize payment for an order"""
+    callback_url: Optional[str] = None
+
+
+class OrderPaymentInitResponse(BaseModel):
+    """Response from payment initialization"""
+    order_id: str
+    payment_reference: str
+    authorization_url: str
+    access_code: str
+    amount: float
+    currency: str = "GHS"
+    status: str
+
+
+class OrderPaymentVerifyResponse(BaseModel):
+    """Response from payment verification"""
+    order_id: str
+    payment_reference: str
+    status: str  # success, failed
+    amount: float
+    currency: str = "GHS"
+    payment_method: Optional[str] = None
+    message: str
+
+
+class PaymentAttemptResponse(BaseModel):
+    """Payment attempt details"""
+    id: str
+    order_id: str
+    amount: float
+    payment_reference: Optional[str] = None
+    status: PaymentStatus
+    payment_method: Optional[str] = None
+    error_message: Optional[str] = None
+    created_at: datetime
+    
+    @field_serializer('created_at')
+    def serialize_datetime(self, value: datetime) -> str:
+        return value.isoformat() if value else None
+    
+    class Config:
+        from_attributes = True
+
+
+class OrderWithPaymentAttempts(OrderResponse):
+    """Order with payment attempt history"""
+    payment_attempts: List[PaymentAttemptResponse] = []

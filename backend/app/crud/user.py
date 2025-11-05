@@ -4,7 +4,7 @@ User CRUD operations for GoShopGhana
 
 from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
@@ -20,6 +20,10 @@ def get_user_by_email(db: Session, email: str) -> Optional[User]:
 def get_user_by_username(db: Session, username: str) -> Optional[User]:
     """Get user by username"""
     return db.query(User).filter(User.username == username).first()
+
+def get_user_by_phone(db: Session, phone: str) -> Optional[User]:
+    """Get user by phone number"""
+    return db.query(User).filter(User.phone == phone).first()
 
 def get_user_by_email_or_username(db: Session, identifier: str) -> Optional[User]:
     """Get user by email or username (for login)"""
@@ -93,17 +97,30 @@ def delete_user(db: Session, user_id: str) -> bool:
     
     try:
         # Delete related records first to avoid foreign key constraint violations
+        
+        # Delete user's cart items (through cart relationship)
+        db.execute(text("DELETE FROM cart_items WHERE cart_id IN (SELECT id FROM carts WHERE user_id = :user_id)"), {"user_id": user_id})
+        
+        # Delete user's cart
+        db.execute(text("DELETE FROM carts WHERE user_id = :user_id"), {"user_id": user_id})
+        
+        # Delete transactions before deleting wallet (transactions reference wallet)
+        db.execute(text("DELETE FROM transactions WHERE wallet_id IN (SELECT id FROM wallets WHERE user_id = :user_id)"), {"user_id": user_id})
+        
         # Delete user's wallet if exists
-        db.execute(db.text("DELETE FROM wallets WHERE user_id = :user_id"), {"user_id": user_id})
+        db.execute(text("DELETE FROM wallets WHERE user_id = :user_id"), {"user_id": user_id})
         
         # Delete user's orders if exists
-        db.execute(db.text("DELETE FROM orders WHERE user_id = :user_id"), {"user_id": user_id})
+        db.execute(text("DELETE FROM orders WHERE user_id = :user_id"), {"user_id": user_id})
         
-        # Delete user's cart items if exists
-        db.execute(db.text("DELETE FROM cart_items WHERE user_id = :user_id"), {"user_id": user_id})
+        # Delete user's reviews (uses reviewer_id, not user_id)
+        db.execute(text("DELETE FROM reviews WHERE reviewer_id = :user_id"), {"user_id": user_id})
         
-        # Delete user's reviews if exists
-        db.execute(db.text("DELETE FROM reviews WHERE user_id = :user_id"), {"user_id": user_id})
+        # Delete reviews where user is the seller
+        db.execute(text("DELETE FROM reviews WHERE seller_id = :user_id"), {"user_id": user_id})
+        
+        # Delete payment sessions
+        db.execute(text("DELETE FROM payment_sessions WHERE user_id = :user_id"), {"user_id": user_id})
         
         # Now delete the user
         db.delete(db_user)

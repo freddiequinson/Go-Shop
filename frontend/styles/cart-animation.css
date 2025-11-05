@@ -1,0 +1,138 @@
+/* Cart Animation Styles */
+:root {
+  --speed: 0.8s;
+  --x-timing: cubic-bezier(.59,-0.75,.91,.5);
+  --y-timing: cubic-bezier(.15,.57,.9,1.05);
+  --scale-timing: cubic-bezier(.85,.06,.97,1.01);
+  --color-timing: cubic-bezier(.05,1.02,.97,1.01);
+}
+
+/* Cart item animation */
+.cart-item {
+  --delay: 0.1s;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  animation-name: cart-x, cart-y;
+  animation-duration: var(--speed), var(--speed);
+  animation-delay: var(--delay), var(--delay);
+  animation-timing-function: var(--x-timing), var(--y-timing);
+  animation-fill-mode: both, both;
+  animation-composition: accumulate;
+  left: var(--left);
+  top: var(--top);
+  width: var(--width);
+  height: var(--height);
+  z-index: 99999999999;
+  pointer-events: none;
+}
+
+.cart-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  animation-name: cart-scale, cart-color;
+  animation-duration: var(--speed), var(--speed);
+  animation-delay: var(--delay), var(--delay);
+  animation-timing-function: var(--scale-timing), var(--color-timing);
+  animation-fill-mode: both, both;
+}
+
+@keyframes cart-color {
+  to {
+    background: light-dark(hsl(0 0% 80% / 0.8), hsl(0 0% 90% / 0.8));
+  }
+}
+
+@keyframes cart-scale {
+  to {
+    width: 24px;
+    border-radius: 50%;
+  }
+}
+
+@keyframes cart-x {
+  to {
+    translate: var(--x) 0;
+  }
+}
+
+@keyframes cart-y {
+  to {
+    translate: 0 var(--y);
+  }
+}
+
+/* Badge animation */
+.cart-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  translate: 25% -25%;
+  min-width: 20px;
+  height: 20px;
+  background: hsl(10 90% 50%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.625rem;
+  font-family: 'Azeret Mono', monospace;
+  color: white;
+  font-weight: 300;
+  line-height: 1;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.badge-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.badge-count--current {
+  opacity: 1;
+}
+
+.badge-count--next {
+  opacity: 0;
+}
+
+/* Cart bump animation */
+@keyframes cart-bump {
+  0% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+  30% {
+    transform: translateX(var(--bump-x, 10px)) translateY(var(--bump-y, -10px)) scale(1.1);
+  }
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@keyframes badge-scale {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-bump {
+  animation: cart-bump 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+}
+
+.badge-bump {
+  animation: badge-scale 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+}

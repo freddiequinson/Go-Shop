@@ -4,7 +4,7 @@ CRUD operations for Warehouse and Inventory management
 
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, desc
 from datetime import datetime, timedelta
 from decimal import Decimal
 import uuid
@@ -473,7 +473,10 @@ def get_warehouse_analytics(db: Session) -> dict:
     """Get warehouse analytics"""
     total_products = db.query(WarehouseInventory).count()
     
-    total_value = db.query(func.sum(WarehouseInventory.total_value)).scalar() or 0
+    # Calculate total stock value from quantity * unit_cost
+    total_value = db.query(
+        func.sum(WarehouseInventory.quantity_available * WarehouseInventory.unit_cost)
+    ).scalar() or 0
     
     low_stock = db.query(WarehouseInventory).filter(
         WarehouseInventory.quantity_available <= WarehouseInventory.reorder_level
@@ -514,15 +517,203 @@ def get_warehouse_analytics(db: Session) -> dict:
         InventoryMovement.created_at >= today_start
     ).scalar() or 0
     
+    # This month's movements
+    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    movements_this_month = db.query(InventoryMovement).filter(
+        InventoryMovement.created_at >= month_start
+    ).count()
+    
+    # Top moving products (most movements this month)
+    from app.models.product import Product
+    
+    top_moving = db.query(
+        Product.name.label('product_name'),
+        func.count(InventoryMovement.id).label('movement_count')
+    ).select_from(InventoryMovement
+    ).join(WarehouseInventory, InventoryMovement.inventory_id == WarehouseInventory.id
+    ).join(Product, WarehouseInventory.product_id == Product.id
+    ).filter(
+        InventoryMovement.created_at >= month_start
+    ).group_by(
+        Product.name
+    ).order_by(
+        desc('movement_count')
+    ).limit(10).all()
+    
+    top_moving_products = [
+        {
+            "product_name": item.product_name,
+            "total_movements": item.movement_count
+        }
+        for item in top_moving
+    ]
+    
     return {
         "total_products": total_products,
         "total_value": float(total_value),
+        "total_stock_value": float(total_value),  # Add alias for frontend compatibility
         "low_stock_count": low_stock,
+        "low_stock_items": low_stock,  # Add alias for frontend compatibility
         "out_of_stock_count": out_of_stock,
+        "out_of_stock_items": out_of_stock,  # Add alias for frontend compatibility
         "expiring_soon_count": expiring_soon,
         "expired_count": expired,
         "average_stock_age_days": float(avg_age),
         "total_movements_today": movements_today,
+        "movements_this_month": movements_this_month,  # Add for frontend
         "total_received_today": float(received_today),
-        "total_dispatched_today": float(dispatched_today)
+        "total_dispatched_today": float(dispatched_today),
+        "top_moving_products": top_moving_products  # Add for frontend
     }
+
+
+# Order Fulfillment Functions
+def check_stock_availability(db: Session, product_id: str, quantity: Decimal) -> Tuple[bool, str]:
+    """
+    Check if sufficient stock is available for an order
+    Returns: (is_available, message)
+    """
+    inventory = get_or_create_inventory(db, product_id)
+    
+    if inventory.quantity_available >= quantity:
+        return True, "Stock available"
+    else:
+        available = float(inventory.quantity_available)
+        needed = float(quantity)
+        return False, f"Insufficient stock. Available: {available}, Needed: {needed}"
+
+
+def reserve_stock_for_order(
+    db: Session,
+    product_id: str,
+    quantity: Decimal,
+    order_id: str,
+    admin_id: str
+) -> Tuple[bool, str]:
+    """
+    Reserve stock for an order (move from available to reserved)
+    This is called when order is placed but not yet approved
+    """
+    inventory = get_or_create_inventory(db, product_id)
+    
+    # Check availability
+    if inventory.quantity_available < quantity:
+        return False, f"Insufficient stock. Available: {float(inventory.quantity_available)}"
+    
+    # Move from available to reserved
+    inventory.quantity_available -= quantity
+    inventory.quantity_reserved += quantity
+    
+    # Create movement record
+    movement = InventoryMovement(
+        id=str(uuid.uuid4()),
+        product_id=product_id,
+        inventory_id=inventory.id,
+        movement_type=MovementType.OUT,
+        quantity=quantity,
+        reference_type="order_reservation",
+        reference_id=order_id,
+        reason=f"Stock reserved for order {order_id}",
+        performed_by=admin_id,
+        created_at=datetime.now()
+    )
+    
+    db.add(movement)
+    db.commit()
+    db.refresh(inventory)
+    
+    return True, "Stock reserved successfully"
+
+
+def release_reserved_stock(
+    db: Session,
+    product_id: str,
+    quantity: Decimal,
+    order_id: str,
+    admin_id: str
+) -> Tuple[bool, str]:
+    """
+    Release reserved stock back to available
+    This is called when order is cancelled
+    """
+    inventory = get_or_create_inventory(db, product_id)
+    
+    # Check if enough reserved
+    if inventory.quantity_reserved < quantity:
+        return False, f"Not enough reserved stock. Reserved: {float(inventory.quantity_reserved)}"
+    
+    # Move from reserved back to available
+    inventory.quantity_reserved -= quantity
+    inventory.quantity_available += quantity
+    
+    # Create movement record
+    movement = InventoryMovement(
+        id=str(uuid.uuid4()),
+        product_id=product_id,
+        inventory_id=inventory.id,
+        movement_type=MovementType.IN,
+        quantity=quantity,
+        reference_type="order_cancellation",
+        reference_id=order_id,
+        reason=f"Stock released from cancelled order {order_id}",
+        performed_by=admin_id,
+        created_at=datetime.now()
+    )
+    
+    db.add(movement)
+    db.commit()
+    db.refresh(inventory)
+    
+    return True, "Stock released successfully"
+
+
+def deduct_stock_for_order(
+    db: Session,
+    product_id: str,
+    quantity: Decimal,
+    order_id: str,
+    admin_id: str
+) -> Tuple[bool, str]:
+    """
+    Deduct stock when order is approved
+    This removes from reserved (if reserved) or available
+    """
+    from app.models.product import Product
+    
+    inventory = get_or_create_inventory(db, product_id)
+    
+    # Try to deduct from reserved first
+    if inventory.quantity_reserved >= quantity:
+        inventory.quantity_reserved -= quantity
+        source = "reserved"
+    elif inventory.quantity_available >= quantity:
+        inventory.quantity_available -= quantity
+        source = "available"
+    else:
+        total_stock = inventory.quantity_available + inventory.quantity_reserved
+        return False, f"Insufficient stock. Total available: {float(total_stock)}, Needed: {float(quantity)}"
+    
+    # Also update product stock_quantity
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if product and product.stock_quantity is not None:
+        product.stock_quantity -= quantity
+    
+    # Create movement record
+    movement = InventoryMovement(
+        id=str(uuid.uuid4()),
+        product_id=product_id,
+        inventory_id=inventory.id,
+        movement_type=MovementType.OUT,
+        quantity=quantity,
+        reference_type="order_fulfillment",
+        reference_id=order_id,
+        reason=f"Stock deducted for approved order {order_id} (from {source})",
+        performed_by=admin_id,
+        created_at=datetime.now()
+    )
+    
+    db.add(movement)
+    db.commit()
+    db.refresh(inventory)
+    
+    return True, f"Stock deducted successfully from {source}"

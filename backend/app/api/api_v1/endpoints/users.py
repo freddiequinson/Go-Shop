@@ -6,10 +6,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.user import UserResponse, UserUpdate, UserCreate
+from app.schemas.user import UserResponse, UserUpdate, UserCreate, PasswordChange
 from app.crud.user import update_user, deactivate_user, get_all_users, delete_user, create_user
 from app.core.deps import get_current_active_user, get_current_admin
 from app.models.user import User
+from app.core.security import verify_password, get_password_hash
 
 router = APIRouter()
 
@@ -32,6 +33,9 @@ async def update_user_profile(
     Update current user profile
     """
     try:
+        # Log the incoming data for debugging
+        print(f"Updating user {current_user.id} with data: {user_update.dict(exclude_unset=True)}")
+        
         updated_user = update_user(db, current_user.id, user_update)
         if not updated_user:
             raise HTTPException(
@@ -39,9 +43,14 @@ async def update_user_profile(
                 detail="User not found"
             )
         return UserResponse.from_orm(updated_user)
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
-        # Log the error
+        # Log the full error
+        import traceback
         print(f"Error updating user profile: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         
         # Return user-friendly error message
         error_msg = str(e)
@@ -52,13 +61,39 @@ async def update_user_profile(
                 detail = "This email is already in use by another account"
             else:
                 detail = "A unique constraint was violated. Please check your input."
+        elif "validation" in error_msg.lower():
+            detail = f"Validation error: {error_msg}"
         else:
-            detail = "Failed to update profile. Please try again."
+            detail = f"Failed to update profile: {error_msg}"
         
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail
         )
+
+
+@router.post("/profile/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Change user password
+    """
+    # Verify current password
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Update password
+    current_user.hashed_password = get_password_hash(password_data.new_password)
+    db.commit()
+    db.refresh(current_user)
+    
+    return {"message": "Password changed successfully"}
 
 
 @router.delete("/profile")
@@ -93,6 +128,26 @@ async def list_all_users(
     return [UserResponse.from_orm(user) for user in users]
 
 
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user_by_id(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """
+    Get user by ID (Admin only)
+    """
+    from app.crud.user import get_user_by_id as get_user
+    
+    user = get_user(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return UserResponse.from_orm(user)
+
+
 @router.post("/", response_model=UserResponse)
 async def create_new_user(
     user: UserCreate,
@@ -103,7 +158,7 @@ async def create_new_user(
     Create a new user (Admin only)
     """
     # Check if user already exists
-    from app.crud.user import get_user_by_email, get_user_by_username
+    from app.crud.user import get_user_by_email, get_user_by_username, get_user_by_phone
     
     if get_user_by_email(db, user.email):
         raise HTTPException(
@@ -115,6 +170,12 @@ async def create_new_user(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already taken"
+        )
+    
+    if user.phone_number and get_user_by_phone(db, user.phone_number):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone number already registered"
         )
     
     # Create new user

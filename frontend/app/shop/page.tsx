@@ -2,12 +2,15 @@
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
-import { User, ShoppingBag, Search, Package } from "lucide-react"
+import { User, ShoppingBag, Search, Package, ArrowLeft } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { AddToCartModal } from "@/components/add-to-cart-modal"
 import { CartNotification } from "@/components/cart-notification"
+import { cartService } from "@/lib/api/services"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 interface Product {
   id: string
@@ -172,6 +175,8 @@ const demoProducts = [
 
 export default function ShopPage() {
   const { addItem, totalItems } = useCart()
+  const { toast } = useToast()
+  const { isAuthenticated, user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
   const [loading, setLoading] = useState(true)
@@ -180,6 +185,7 @@ export default function ShopPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [showNotification, setShowNotification] = useState(false)
   const [notificationProduct, setNotificationProduct] = useState("")
+  const [addingToCart, setAddingToCart] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -200,7 +206,7 @@ export default function ShopPage() {
         
         // Transform API products to match our interface
         const transformedProducts: Product[] = productList
-          .filter((p: any) => p.is_active && p.stock_quantity > 0) // Only show active products with stock
+          .filter((p: any) => p.is_active && p.is_published && p.stock_quantity > 0) // Only show active, published products with stock
           .map((p: any) => ({
             id: p.id,
             name: p.name,
@@ -243,19 +249,53 @@ export default function ShopPage() {
     return matchesCategory && matchesSearch
   })
 
-  const handleAddToCart = (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
-    addItem({
-      id: String(product.id),
-      name: product.name,
-      price: product.price * quantity,
-      unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
-      vendor: "Go-Shop",
-      image: product.image,
-      quantity: 1
-    })
-    setNotificationProduct(product.name)
-    setShowNotification(true)
-    setTimeout(() => setShowNotification(false), 5000)
+  const handleAddToCart = async (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to add items to cart",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setAddingToCart(true)
+      
+      // Call backend API to add to cart
+      await cartService.addToCart({
+        product_id: product.id,
+        quantity: quantity,
+      })
+      
+      // Also update local context for immediate UI feedback
+      addItem({
+        id: Number(product.id),
+        name: product.name,
+        price: product.price * quantity,
+        unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
+        vendor: "Go-Shop",
+        image: product.image
+      })
+      
+      setNotificationProduct(product.name)
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 5000)
+      
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart`,
+      })
+    } catch (error: any) {
+      console.error("Failed to add to cart:", error)
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to add item to cart",
+        variant: "destructive",
+      })
+    } finally {
+      setAddingToCart(false)
+    }
   }
 
   const getSimilarProducts = (product: Product) => {
@@ -265,20 +305,38 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-[#F4F2E6]">
       {/* Navigation */}
-      <nav className="bg-[#FED141] px-6 md:px-8 py-6">
+      <nav className="bg-[#FED141] px-4 md:px-8 py-4 md:py-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
-            ← Back
+          <Link href="/">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#303A4D] text-white hover:bg-[#3B4559] transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back to Home</span>
+              <span className="sm:hidden">Home</span>
+            </button>
           </Link>
 
           <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <Image src="/images/logo.png" alt="go-shop" width={124} height={39} />
+            <Image
+              src="/images/logo.png"
+              alt="go-shop"
+              width={96}
+              height={30}
+              className="w-20 md:w-28 object-contain"
+            />
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <button className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity">
-                <User className="w-5 h-5 text-white" />
+            <Link href={isAuthenticated ? "/profile" : "/login"}>
+              <button className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity overflow-hidden relative cursor-pointer">
+                {isAuthenticated && user?.profile_picture_url ? (
+                  <img
+                    src={user.profile_picture_url}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-5 h-5 text-white" />
+                )}
               </button>
             </Link>
             <Link href="/cart">
@@ -296,29 +354,29 @@ export default function ShopPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-[#FED141] px-6 md:px-8 py-12">
+      <section className="bg-[#FED141] px-4 md:px-8 py-8 md:py-12">
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-[#303A4D] mb-4">Shop Fresh Groceries</h1>
-          <p className="text-xl text-[#303A4D] mb-8">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#303A4D] mb-3 md:mb-4">Shop Fresh Groceries</h1>
+          <p className="text-base md:text-xl text-[#303A4D] mb-6 md:mb-8 px-4">
             Browse our selection of fresh produce from local farmers and vendors
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#303A4D]/60" />
+          <div className="max-w-2xl mx-auto relative px-4">
+            <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-[#303A4D]/60" />
             <input
               type="text"
               placeholder="Search for products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white rounded-full px-12 py-4 text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:ring-2 focus:ring-[#303A4D]"
+              className="w-full bg-white rounded-full px-10 md:px-12 py-3 md:py-4 text-sm md:text-base text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:ring-2 focus:ring-[#303A4D] shadow-sm transition-shadow duration-200 focus:shadow-md"
             />
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="px-6 md:px-8 py-12">
+      <section className="px-4 md:px-8 py-8 md:py-12">
         <div className="w-full">
           {loading && (
             <div className="text-center py-16">
@@ -338,15 +396,15 @@ export default function ShopPage() {
           {!loading && products.length > 0 && (
             <>
           {/* Category Filter */}
-          <div className="mb-8 flex flex-wrap gap-3">
+          <div className="mb-6 md:mb-8 flex flex-wrap gap-2 md:gap-3">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-full font-medium text-sm md:text-base transition-all duration-200 ${
                   selectedCategory === category
-                    ? "bg-[#303A4D] text-white"
-                    : "bg-white text-[#303A4D] hover:bg-[#FED141]"
+                    ? "bg-[#303A4D] text-white shadow-md"
+                    : "bg-white text-[#303A4D] hover:bg-[#FED141] shadow-sm hover:shadow-md"
                 }`}
               >
                 {category}
@@ -355,12 +413,12 @@ export default function ShopPage() {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
             {filteredProducts.map((product) => (
               <div key={product.id}>
                 <Link href={`/product/${product.id}`}>
-                  <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer">
-                    <div className="relative h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-4">
+                  <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer">
+                    <div className="relative h-40 md:h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-2 md:p-4">
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
@@ -374,21 +432,21 @@ export default function ShopPage() {
                           </span>
                         </div>
                       )}
-                      <div className="absolute top-4 left-4 flex gap-2">
-                        <span className="bg-white/90 backdrop-blur-sm text-[#303A4D] px-4 py-2 rounded-full text-sm font-medium">
+                      <div className="absolute top-2 left-2 md:top-4 md:left-4 flex gap-1 md:gap-2">
+                        <span className="bg-white/90 backdrop-blur-sm text-[#303A4D] px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium">
                           {product.category}
                         </span>
                         {product.onSale && (
-                          <span className="bg-[#C24628] text-white px-4 py-2 rounded-full text-sm font-bold">SALE</span>
+                          <span className="bg-[#C24628] text-white px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold">SALE</span>
                         )}
                         {product.isBundle && (
-                          <span className="bg-[#93C90F] text-white px-4 py-2 rounded-full text-sm font-bold">
+                          <span className="bg-[#93C90F] text-white px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold">
                             BUNDLE
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="p-4">
+                    <div className="p-3 md:p-4">
                       <h3 className="text-base md:text-lg font-bold text-[#303A4D] mb-2 leading-tight line-clamp-2">{product.name}</h3>
                       <div className="flex flex-col gap-1 mb-3">
                         <div className="flex items-baseline gap-1">

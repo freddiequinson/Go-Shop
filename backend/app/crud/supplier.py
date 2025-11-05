@@ -85,13 +85,18 @@ def get_suppliers(
     return suppliers, total
 
 
-def update_supplier(db: Session, supplier_id: str, supplier_update: SupplierUpdate) -> Optional[Supplier]:
-    """Update supplier"""
+def update_supplier(db: Session, supplier_id: str, supplier_update) -> Optional[Supplier]:
+    """Update supplier - accepts SupplierUpdate model or dict"""
     db_supplier = get_supplier_by_id(db, supplier_id)
     if not db_supplier:
         return None
     
-    update_data = supplier_update.model_dump(exclude_unset=True)
+    # Handle both dict and Pydantic model
+    if isinstance(supplier_update, dict):
+        update_data = supplier_update
+    else:
+        update_data = supplier_update.model_dump(exclude_unset=True)
+    
     for field, value in update_data.items():
         setattr(db_supplier, field, value)
     
@@ -101,12 +106,20 @@ def update_supplier(db: Session, supplier_id: str, supplier_update: SupplierUpda
 
 
 def delete_supplier(db: Session, supplier_id: str) -> bool:
-    """Soft delete supplier"""
+    """Hard delete supplier (permanently removes from database)"""
     db_supplier = get_supplier_by_id(db, supplier_id)
     if not db_supplier:
         return False
     
-    db_supplier.is_active = False
+    # Delete associated user account if exists (find by email)
+    if db_supplier.email:
+        from app.models.user import User
+        db_user = db.query(User).filter(User.email == db_supplier.email).first()
+        if db_user and db_user.user_type == "SUPPLIER":
+            db.delete(db_user)
+    
+    # Delete supplier
+    db.delete(db_supplier)
     db.commit()
     return True
 

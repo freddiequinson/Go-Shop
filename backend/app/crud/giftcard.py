@@ -3,6 +3,7 @@ CRUD operations for Gift Cards
 """
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime, timedelta
 import uuid
@@ -270,13 +271,13 @@ def get_giftcard_stats(db: Session) -> dict:
     
     # Calculate total values
     total_value = db.query(GiftCard).with_entities(
-        db.func.sum(GiftCard.original_amount_cedis)
+        func.sum(GiftCard.original_amount_cedis)
     ).scalar() or 0
     
     redeemed_value = db.query(GiftCard).filter(
         GiftCard.status == GiftCardStatus.REDEEMED
     ).with_entities(
-        db.func.sum(GiftCard.amount_cedis)
+        func.sum(GiftCard.amount_cedis)
     ).scalar() or 0
     
     return {

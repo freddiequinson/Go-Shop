@@ -128,10 +128,17 @@ export default function AuditLogsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Audit Logs</h1>
-        <p className="text-[#303A4D]/70">Track all system activities and changes</p>
+    <div className="p-8 bg-[#F4F2E6] min-h-screen">
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Audit Logs</h1>
+          <p className="text-[#303A4D]/70">Track all system activities and changes</p>
+        </div>
+        <a href="/admin/audit-logs/analytics">
+          <Button className="bg-[#FED141] hover:bg-[#FED141]/90 text-[#303A4D] font-bold">
+            View Analytics
+          </Button>
+        </a>
       </div>
 
       {/* Stats Cards */}

@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Package, Plus, Search, Edit, Trash2, LayoutGrid, List } from "lucide-react"
+import { Package, Plus, Search, Edit, Trash2, LayoutGrid, List, Warehouse } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
 
 interface Product {
   id: string
@@ -13,6 +14,7 @@ interface Product {
   stock_quantity: number | string
   category_id: string
   is_active: boolean
+  is_published: boolean
   unit_type: string
   images?: string[]
 }
@@ -23,6 +25,7 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
+  const [publishFilter, setPublishFilter] = useState<'all' | 'published' | 'unpublished'>('all')
 
   const formatPrice = (price: number | string | undefined) => {
     if (!price) return "0.00"
@@ -42,6 +45,7 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("access_token")
+      // Admin sees all products (admin-created and supplier products that are in warehouse)
       const response = await fetch("http://localhost:8000/api/v1/products?limit=100", {
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -86,28 +90,91 @@ export default function AdminProducts() {
     }
   }
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const togglePublish = async (productId: string, currentStatus: boolean) => {
+    try {
+      const token = localStorage.getItem("access_token")
+      const endpoint = currentStatus ? "unpublish" : "publish"
+      const response = await fetch(`http://localhost:8000/api/v1/products/${productId}/${endpoint}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        fetchProducts()
+      }
+    } catch (error) {
+      console.error("Failed to toggle publish status:", error)
+    }
+  }
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesPublish = publishFilter === 'all' || 
+      (publishFilter === 'published' && product.is_published) ||
+      (publishFilter === 'unpublished' && !product.is_published)
+    return matchesSearch && matchesPublish
+  })
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
   }
 
   const activeProducts = products.filter(p => p.is_active)
+  const publishedProducts = products.filter(p => p.is_published)
   const lowStockProducts = products.filter(p => p.stock_quantity && formatNumber(p.stock_quantity) < 10)
   const outOfStockProducts = products.filter(p => formatNumber(p.stock_quantity) === 0)
 
+  const tourSteps: TourStep[] = [
+    {
+      target: '[data-tour="products-header"]',
+      title: 'Product Management',
+      description: 'This page shows all products you\'ve created as admin. Supplier products are managed in the Suppliers section and flow through procurement to warehouse.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="products-stats"]',
+      title: 'Product Statistics',
+      description: 'Quick overview of your product inventory: total products, active products, published to shop, low stock alerts, and out of stock items.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="add-product"]',
+      title: 'Add New Product',
+      description: 'Click here to create a new product. You\'ll add images, set pricing, configure stock levels, and link to suppliers for cost tracking.',
+      position: 'left'
+    },
+    {
+      target: '[data-tour="view-toggle"]',
+      title: 'View Modes',
+      description: 'Switch between card view (visual grid) and table view (detailed list). Choose what works best for you!',
+      position: 'left'
+    },
+    {
+      target: '[data-tour="search-filter"]',
+      title: 'Search & Filter',
+      description: 'Search products by name and filter by publish status. Find exactly what you need quickly.',
+      position: 'bottom'
+    },
+    {
+      target: '[data-tour="publish-status"]',
+      title: 'Publishing to Shop',
+      description: 'Products must be PUBLISHED to appear in the customer shop. Unpublished products are drafts. Toggle publish status with one click.',
+      position: 'top'
+    }
+  ]
+
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
+    <>
+      <OnboardingTour tourId="products" steps={tourSteps} />
+      <div>
+      <div data-tour="products-header" className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Products</h1>
-          <p className="text-lg text-[#303A4D]/70">Manage your product inventory</p>
+          <h1 className="text-4xl font-bold text-[#303A4D] mb-2">Admin Products</h1>
+          <p className="text-lg text-[#303A4D]/70">Manage products created by admin (Supplier products are in Suppliers section)</p>
         </div>
         <div className="flex gap-3">
           {/* View Toggle */}
-          <div className="flex bg-white rounded-full p-1 shadow-sm">
+          <div data-tour="view-toggle" className="flex bg-white rounded-full p-1 shadow-sm">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded-full transition-colors cursor-pointer ${
@@ -127,7 +194,7 @@ export default function AdminProducts() {
           </div>
           
           <Link href="/admin/products/new">
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#FED141] text-[#303A4D] rounded-full font-bold hover:bg-[#F1B424] transition-colors cursor-pointer">
+            <button data-tour="add-product" className="flex items-center gap-2 px-6 py-3 bg-[#FED141] text-[#303A4D] rounded-full font-bold hover:bg-[#F1B424] transition-colors cursor-pointer">
               <Plus className="w-5 h-5" />
               Add Product
             </button>
@@ -136,7 +203,7 @@ export default function AdminProducts() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div data-tour="products-stats" className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-blue-500" />
@@ -147,6 +214,13 @@ export default function AdminProducts() {
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-green-500" />
+            <span className="text-sm text-[#303A4D]/60">In Shop</span>
+          </div>
+          <p className="text-3xl font-bold text-[#303A4D]">{publishedProducts.length}</p>
+        </div>
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <Package className="w-5 h-5 text-purple-500" />
             <span className="text-sm text-[#303A4D]/60">Active</span>
           </div>
           <p className="text-3xl font-bold text-[#303A4D]">{activeProducts.length}</p>
@@ -167,9 +241,9 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm mb-6">
-        <div className="relative">
+      {/* Search & Filters */}
+      <div data-tour="search-filter" className="bg-white rounded-3xl p-6 shadow-sm mb-6">
+        <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#303A4D]/40 w-5 h-5" />
           <input
             type="text"
@@ -178,6 +252,34 @@ export default function AdminProducts() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 border-2 border-[#303A4D]/20 rounded-full focus:border-[#FED141] outline-none"
           />
+        </div>
+        
+        {/* Publish Status Filter */}
+        <div data-tour="publish-status" className="flex gap-3">
+          <button
+            onClick={() => setPublishFilter('all')}
+            className={`px-4 py-2 rounded-full font-medium transition-colors ${
+              publishFilter === 'all' ? 'bg-[#303A4D] text-white' : 'bg-gray-100 text-[#303A4D] hover:bg-gray-200'
+            }`}
+          >
+            All Products
+          </button>
+          <button
+            onClick={() => setPublishFilter('published')}
+            className={`px-4 py-2 rounded-full font-medium transition-colors ${
+              publishFilter === 'published' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'
+            }`}
+          >
+            📢 Published to Shop
+          </button>
+          <button
+            onClick={() => setPublishFilter('unpublished')}
+            className={`px-4 py-2 rounded-full font-medium transition-colors ${
+              publishFilter === 'unpublished' ? 'bg-orange-600 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+            }`}
+          >
+            📦 Warehouse Only
+          </button>
         </div>
       </div>
 
@@ -230,20 +332,46 @@ export default function AdminProducts() {
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Link href={`/admin/products/${product.id}/edit`} className="flex-1">
-                  <button className="w-full bg-[#FED141]/20 hover:bg-[#FED141]/30 text-[#303A4D] rounded-full py-2 font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer">
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </button>
+              <div className="space-y-2">
+                <Link href={`/admin/warehouse?product_id=${product.id}`} className="block">
+                  <div className="bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg py-2 px-3 text-sm font-medium transition-colors flex items-center justify-between cursor-pointer">
+                    <span>📦 View in Warehouse</span>
+                    <Warehouse className="w-4 h-4" />
+                  </div>
                 </Link>
+                
                 <button
-                  onClick={() => deleteProduct(product.id)}
-                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-full py-2 font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    togglePublish(product.id, product.is_published)
+                  }}
+                  className={`w-full rounded-lg py-2 px-3 text-sm font-medium transition-colors ${
+                    product.is_published 
+                      ? 'bg-green-50 hover:bg-green-100 text-green-700' 
+                      : 'bg-orange-50 hover:bg-orange-100 text-orange-700'
+                  }`}
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
+                  {product.is_published ? '📢 Published to Shop' : '📦 Warehouse Only - Click to Publish'}
                 </button>
+                
+                <div className="flex gap-2">
+                  <Link href={`/admin/products/${product.id}/edit`} className="flex-1">
+                    <button className="w-full bg-[#FED141]/20 hover:bg-[#FED141]/30 text-[#303A4D] rounded-full py-2 font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </button>
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      deleteProduct(product.id)
+                    }}
+                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-full py-2 font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
             </Link>
@@ -336,6 +464,7 @@ export default function AdminProducts() {
           <p className="text-[#303A4D]/60">Try adjusting your search or add a new product</p>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

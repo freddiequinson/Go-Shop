@@ -71,18 +71,23 @@ def send_email(
         return False
 
 
-def send_welcome_email(email_to: str, user_name: str) -> bool:
+def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str] = None) -> bool:
     """
     Send welcome email to new user
     
     Args:
         email_to: User's email address
         user_name: User's name
+        custom_body: Optional custom HTML body (for supplier credentials, etc.)
     
     Returns:
         bool: True if email sent successfully
     """
     subject = "Welcome to Go-Shop Ghana! 🎉"
+    
+    # If custom body provided, use it directly
+    if custom_body:
+        return send_email(email_to, subject, custom_body)
     
     html_content = f"""
     <!DOCTYPE html>

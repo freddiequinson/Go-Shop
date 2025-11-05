@@ -58,7 +58,16 @@ def add_to_cart(db: Session, user_id: str, request: AddToCartRequest) -> CartIte
     existing_item = get_cart_item(db, cart.id, request.product_id)
     
     if existing_item:
-        # Update existing item quantity
+        # Update existing item quantity and price (in case price changed or was wrong)
+        # Use price_per_quantity if available (for piece/pack pricing), otherwise use price_per_unit
+        if product.price_per_quantity:
+            # Use piece/pack price if available
+            price_cents = product.price_per_quantity * 100  # Convert to cents
+        else:
+            # Fall back to weight-based price
+            price_cents = product.price_per_unit * 100  # Convert to cents
+        
+        existing_item.price_per_unit_cedis = price_cents
         existing_item.quantity += request.quantity
         existing_item.calculate_line_total()
         db.commit()
@@ -66,7 +75,13 @@ def add_to_cart(db: Session, user_id: str, request: AddToCartRequest) -> CartIte
         return existing_item
     else:
         # Create new cart item
-        price_cents = product.price_per_unit * 100  # Convert to cents
+        # Use price_per_quantity if available (for piece/pack pricing), otherwise use price_per_unit
+        if product.price_per_quantity:
+            # Use piece/pack price if available
+            price_cents = product.price_per_quantity * 100  # Convert to cents
+        else:
+            # Fall back to weight-based price
+            price_cents = product.price_per_unit * 100  # Convert to cents
         
         cart_item = CartItem(
             cart_id=cart.id,
@@ -152,6 +167,9 @@ def get_cart_with_details(db: Session, user_id: str) -> dict:
     total_cents = Decimal('0')
     
     for cart_item, product in items_with_products:
+        # Get primary image (first image in array)
+        primary_image = product.images[0] if product.images else None
+        
         item_data = {
             'id': cart_item.id,
             'cart_id': cart_item.cart_id,
@@ -161,9 +179,19 @@ def get_cart_with_details(db: Session, user_id: str) -> dict:
             'line_total_cedis': cart_item.line_total_cedis,
             'price_per_unit': cart_item.price_per_unit,
             'line_total': cart_item.line_total,
+            'subtotal': cart_item.line_total,  # For frontend compatibility
             'created_at': cart_item.created_at,
             'updated_at': cart_item.updated_at,
-            # Product details
+            # Nested product object (for frontend)
+            'product': {
+                'id': product.id,
+                'name': product.name,
+                'price_per_unit_cedis': cart_item.price_per_unit_cedis,  # Use cart item price (already in cedis)
+                'unit_type': product.unit_type.value,
+                'image_url': primary_image,
+                'primary_image_url': primary_image
+            },
+            # Flat product details (for backward compatibility)
             'product_name': product.name,
             'product_unit_type': product.unit_type.value,
             'product_minimum_quantity': product.minimum_quantity,

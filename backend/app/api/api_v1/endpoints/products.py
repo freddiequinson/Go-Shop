@@ -16,6 +16,7 @@ from app.crud.product import (
     get_categories, get_category_by_id, create_category, update_category, delete_category,
     get_products_by_seller, search_products, get_product_statistics
 )
+from app.models.warehouse import WarehouseInventory
 from app.core.deps import get_current_active_user, get_current_seller, get_current_admin
 from app.models.user import User
 import math
@@ -33,6 +34,8 @@ async def get_products_list(
     unit_type: Optional[str] = Query(None, description="Filter by unit type"),
     search: Optional[str] = Query(None, description="Search in name and description"),
     seller_id: Optional[str] = Query(None, description="Filter by seller"),
+    created_by_type: Optional[str] = Query(None, description="Filter by creator type: 'admin' or 'supplier'"),
+    in_warehouse: Optional[bool] = Query(None, description="Filter by warehouse status"),
     db: Session = Depends(get_db)
 ):
     """
@@ -46,7 +49,9 @@ async def get_products_list(
         max_price=max_price,
         unit_type=unit_type,
         search=search,
-        seller_id=seller_id
+        seller_id=seller_id,
+        created_by_type=created_by_type,
+        in_warehouse=in_warehouse
     )
     
     # Calculate offset
@@ -77,6 +82,8 @@ async def create_new_product(
     Create a new product (sellers and admins only)
     Supports Ghana market quantified sales
     """
+    from app.utils.audit_logger import log_product_created
+    
     # Validate category exists if provided
     if product.category_id:
         category = get_category_by_id(db, product.category_id)
@@ -88,6 +95,16 @@ async def create_new_product(
     
     # Create product
     db_product = create_product(db, product, current_user.id)
+    
+    # Log product creation
+    log_product_created(
+        db=db,
+        user_id=current_user.id,
+        user_email=current_user.email,
+        product_id=db_product.id,
+        product_name=db_product.name
+    )
+    
     return ProductResponse.from_orm(db_product)
 
 
@@ -168,8 +185,18 @@ async def update_product_details(
     """
     Update a product (owner or admin only)
     """
+    from app.utils.audit_logger import log_product_updated
+    
     user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
     is_admin = user_type == "admin"
+    
+    # Get original product for comparison
+    original_product = get_product_by_id(db, product_id)
+    if not original_product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
     
     # Validate category exists if being updated
     if product_update.category_id:
@@ -180,11 +207,33 @@ async def update_product_details(
                 detail="Category not found"
             )
     
+    # Track changes
+    changes = {}
+    update_data = product_update.dict(exclude_unset=True)
+    for field, new_value in update_data.items():
+        old_value = getattr(original_product, field, None)
+        if old_value != new_value:
+            changes[field] = {
+                "old": str(old_value) if old_value is not None else None,
+                "new": str(new_value) if new_value is not None else None
+            }
+    
     updated_product = update_product(db, product_id, product_update, current_user.id, is_admin)
     if not updated_product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found or you don't have permission to update it"
+        )
+    
+    # Log the update
+    if changes:
+        log_product_updated(
+            db=db,
+            user_id=current_user.id,
+            user_email=current_user.email,
+            product_id=updated_product.id,
+            product_name=updated_product.name,
+            changes=changes
         )
     
     return ProductResponse.from_orm(updated_product)
@@ -199,8 +248,20 @@ async def delete_product_endpoint(
     """
     Delete a product (owner or admin only)
     """
+    from app.utils.audit_logger import log_product_deleted
+    
     user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
     is_admin = user_type == "admin"
+    
+    # Get product details before deletion
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    product_name = product.name
     
     deleted_product = delete_product(db, product_id, current_user.id, is_admin)
     if not deleted_product:
@@ -208,6 +269,15 @@ async def delete_product_endpoint(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found or you don't have permission to delete it"
         )
+    
+    # Log product deletion
+    log_product_deleted(
+        db=db,
+        user_id=current_user.id,
+        user_email=current_user.email,
+        product_id=product_id,
+        product_name=product_name
+    )
     
     return {"message": "Product deleted successfully"}
 
@@ -302,3 +372,102 @@ async def delete_category_endpoint(
         )
     
     return {"message": "Category deleted successfully"}
+
+
+# Warehouse integration endpoints
+@router.get("/{product_id}/warehouse-stock")
+async def get_product_warehouse_stock(
+    product_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get warehouse stock information for a product
+    """
+    # Check if product exists
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    # Get warehouse inventory
+    warehouse_inv = db.query(WarehouseInventory).filter(
+        WarehouseInventory.product_id == product_id
+    ).first()
+    
+    if not warehouse_inv:
+        return {
+            "product_id": product_id,
+            "has_warehouse_record": False,
+            "quantity_available": 0,
+            "quantity_reserved": 0,
+            "quantity_total": 0
+        }
+    
+    return {
+        "product_id": product_id,
+        "has_warehouse_record": True,
+        "quantity_available": float(warehouse_inv.quantity_available),
+        "quantity_reserved": float(warehouse_inv.quantity_reserved),
+        "quantity_total": float(warehouse_inv.quantity_available + warehouse_inv.quantity_reserved),
+        "warehouse_location_id": warehouse_inv.warehouse_location_id,
+        "is_perishable": warehouse_inv.is_perishable,
+        "expiry_date": warehouse_inv.expiry_date.isoformat() if warehouse_inv.expiry_date else None,
+        "batch_number": warehouse_inv.batch_number
+    }
+
+
+@router.post("/{product_id}/publish")
+async def publish_product_to_shop(
+    product_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Publish product to shop (make visible to customers)
+    Admin only
+    """
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    product.is_published = True
+    db.commit()
+    
+    return {
+        "message": "Product published to shop successfully",
+        "product_id": product_id,
+        "is_published": True
+    }
+
+
+@router.post("/{product_id}/unpublish")
+async def unpublish_product_from_shop(
+    product_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Unpublish product from shop (hide from customers)
+    Admin only
+    """
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    product.is_published = False
+    db.commit()
+    
+    return {
+        "message": "Product unpublished from shop successfully",
+        "product_id": product_id,
+        "is_published": False
+    }

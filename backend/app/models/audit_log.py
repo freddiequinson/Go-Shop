@@ -58,9 +58,47 @@ class AuditAction(str, enum.Enum):
     ADMIN_ACCESS = "admin_access"
     SETTINGS_UPDATE = "settings_update"
     
+    # Warehouse actions
+    WAREHOUSE_INVENTORY_CREATE = "warehouse_inventory_create"
+    WAREHOUSE_INVENTORY_UPDATE = "warehouse_inventory_update"
+    WAREHOUSE_MOVEMENT_CREATE = "warehouse_movement_create"
+    WAREHOUSE_STOCK_ADJUSTMENT = "warehouse_stock_adjustment"
+    
+    # Supplier actions
+    SUPPLIER_CREATE = "supplier_create"
+    SUPPLIER_UPDATE = "supplier_update"
+    SUPPLIER_DELETE = "supplier_delete"
+    SUPPLIER_VERIFY = "supplier_verify"
+    
+    # GRN (Goods Received Note) actions
+    GRN_CREATE = "grn_create"
+    GRN_APPROVE = "grn_approve"
+    GRN_REJECT = "grn_reject"
+    GRN_UPDATE = "grn_update"
+    
+    # Pick List actions
+    PICK_LIST_CREATE = "pick_list_create"
+    PICK_LIST_START = "pick_list_start"
+    PICK_LIST_COMPLETE = "pick_list_complete"
+    PICK_LIST_CANCEL = "pick_list_cancel"
+    
+    # Wastage actions
+    WASTAGE_RECORD = "wastage_record"
+    
+    # Location actions
+    LOCATION_CREATE = "location_create"
+    LOCATION_UPDATE = "location_update"
+    LOCATION_DELETE = "location_delete"
+    
+    # Product publish actions
+    PRODUCT_PUBLISH = "product_publish"
+    PRODUCT_UNPUBLISH = "product_unpublish"
+    
     # System actions
     SYSTEM_ERROR = "system_error"
     SYSTEM_WARNING = "system_warning"
+    SYSTEM_CONFIG = "system_config"
+    API_CALL = "api_call"
 
 
 class AuditLog(Base):

@@ -64,6 +64,11 @@ class Product(Base):
     
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
+    is_published = Column(Boolean, default=True, nullable=False)  # Controls shop visibility
+    
+    # Supplier product catalog fields
+    created_by_type = Column(String(20), default='admin', nullable=False)  # 'admin' or 'supplier'
+    in_warehouse = Column(Boolean, default=False, nullable=False)  # TRUE when received via GRN
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

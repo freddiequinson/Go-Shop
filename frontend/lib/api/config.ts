@@ -21,6 +21,13 @@ export const API_ENDPOINTS = {
   users: {
     profile: '/users/profile',
   },
+  // Addresses
+  addresses: {
+    list: '/user-addresses/',
+    default: '/user-addresses/default',
+    detail: (id: string) => `/user-addresses/${id}`,
+    setDefault: (id: string) => `/user-addresses/${id}/set-default`,
+  },
   // Products
   products: {
     list: '/products/',
