@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { FileText, Package, Calendar, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-export default function NewSupplyRequestPage() {
+function NewSupplyRequestForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -436,5 +436,13 @@ export default function NewSupplyRequestPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function NewSupplyRequestPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <NewSupplyRequestForm />
+    </Suspense>
   )
 }
