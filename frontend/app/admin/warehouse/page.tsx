@@ -445,9 +445,37 @@ export default function WarehousePage() {
                       ) : (
                         <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
                           Warehouse Only
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-6">
+                      {!item.is_published ? (
+                        <button
+                          data-tour="publish-button"
+                          onClick={() => handlePublish(item.product_id)}
+                          disabled={isPublishing}
+                          className="px-4 py-2 bg-[#FED141] text-[#303A4D] rounded-full font-bold hover:bg-[#FED141]/80 transition-colors disabled:opacity-50"
+                        >
+                          {isPublishing ? "Publishing..." : "Publish to Shop"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleUnpublish(item.product_id)}
+                          disabled={isPublishing}
+                          className="px-4 py-2 bg-red-100 text-red-700 rounded-full font-bold hover:bg-red-200 transition-colors disabled:opacity-50"
+                        >
+                          {isPublishing ? "Unpublishing..." : "Unpublish"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
           </table>
         </div>
       </div>
     </div>
+    </>
   )
 }
