@@ -3,8 +3,24 @@
  * Central configuration for API client
  */
 
+// Determine base URL based on environment
+const getBaseURL = () => {
+  // If NEXT_PUBLIC_API_URL is set, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL
+  }
+  
+  // In browser, use same origin as the frontend (for production)
+  if (typeof window !== 'undefined') {
+    return window.location.origin
+  }
+  
+  // Fallback for local development
+  return 'http://localhost:8000'
+}
+
 export const API_CONFIG = {
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  baseURL: getBaseURL(),
   apiVersion: '/api/v1',
   timeout: 30000, // 30 seconds
 } as const
