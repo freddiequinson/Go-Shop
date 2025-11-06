@@ -238,6 +238,8 @@ export default function SignupPage() {
         phone_number: formData.phone || undefined,
         user_type: UserType.BUYER,
         location: location?.address || undefined,
+        latitude: location?.latitude || undefined,
+        longitude: location?.longitude || undefined,
         referral_source: formData.referralSource || undefined,
         profile_picture_url: profilePicture || undefined,
       })

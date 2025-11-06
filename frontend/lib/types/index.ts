@@ -6,9 +6,11 @@
 // ============= ENUMS =============
 
 export enum UserType {
-  BUYER = 'buyer',
-  SELLER = 'seller',
-  ADMIN = 'admin',
+  BUYER = 'BUYER',
+  SELLER = 'SELLER',
+  ADMIN = 'ADMIN',
+  SUPPLIER = 'SUPPLIER',
+  RIDER = 'RIDER',
 }
 
 export enum PremiumTier {
@@ -147,6 +149,8 @@ export interface UserCreate {
   phone_number?: string
   user_type: UserType
   location?: string
+  latitude?: string
+  longitude?: string
   phone?: string
   referral_source?: string
   profile_picture_url?: string
