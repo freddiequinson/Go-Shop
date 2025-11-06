@@ -1,7 +1,9 @@
 "use client"
 
 import { Card } from '@/components/ui/card'
-import { Calendar, Clock, Check, Zap } from 'lucide-react'
+import { Calendar, Clock, Check, Zap, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import apiClient from '@/lib/api/client'
 
 interface DeliveryDatePickerProps {
   selectedDate: string | null
@@ -12,6 +14,14 @@ interface DeliveryDatePickerProps {
   onExpressToggle: (express: boolean) => void
 }
 
+interface DeliveryDate {
+  id: string
+  date: string
+  is_available: boolean
+  max_orders: number
+  current_orders: number
+}
+
 export default function DeliveryDatePicker({
   selectedDate,
   selectedTimeSlot,
@@ -20,17 +30,42 @@ export default function DeliveryDatePicker({
   onTimeSlotSelect,
   onExpressToggle,
 }: DeliveryDatePickerProps) {
-  // Generate next 7 days
-  const generateDates = () => {
-    const dates = []
-    const today = new Date()
-    
-    for (let i = 1; i <= 7; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
+  const [deliveryDates, setDeliveryDates] = useState<DeliveryDate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchDeliveryDates()
+  }, [])
+
+  const fetchDeliveryDates = async () => {
+    try {
+      setLoading(true)
+      const response = await apiClient.get('/delivery-dates/')
       
-      dates.push({
-        value: date.toISOString().split('T')[0],
+      // Filter only available dates and sort by date
+      const availableDates = response.data
+        .filter((d: DeliveryDate) => d.is_available && new Date(d.date) > new Date())
+        .sort((a: DeliveryDate, b: DeliveryDate) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
+      
+      setDeliveryDates(availableDates)
+      setError(null)
+    } catch (error) {
+      console.error('Failed to fetch delivery dates:', error)
+      setError('Failed to load delivery dates. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Transform backend dates to display format
+  const formatDates = () => {
+    return deliveryDates.map(deliveryDate => {
+      const date = new Date(deliveryDate.date)
+      return {
+        value: deliveryDate.date.split('T')[0],
         dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
         dayNumber: date.getDate(),
         monthName: date.toLocaleDateString('en-US', { month: 'short' }),
@@ -40,10 +75,10 @@ export default function DeliveryDatePicker({
           month: 'long', 
           day: 'numeric' 
         }),
-      })
-    }
-    
-    return dates
+        isAvailable: deliveryDate.is_available,
+        spotsLeft: deliveryDate.max_orders - deliveryDate.current_orders,
+      }
+    })
   }
 
   const timeSlots = [
@@ -52,11 +87,45 @@ export default function DeliveryDatePicker({
     { value: 'evening', label: 'Evening', time: '4:00 PM - 8:00 PM', icon: '🌆' },
   ]
 
-  const dates = generateDates()
+  const dates = formatDates()
 
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-bold text-[#303A4D]">Delivery Schedule</h3>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FED141] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading delivery dates...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-red-800">Error</p>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* No Dates Available */}
+      {!loading && !error && dates.length === 0 && (
+        <div className="p-8 text-center bg-yellow-50 border-2 border-yellow-200 rounded-xl">
+          <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
+          <p className="font-bold text-yellow-800 mb-2">No Delivery Dates Available</p>
+          <p className="text-sm text-yellow-700">
+            The admin hasn't set up delivery dates yet. Please check back later or contact support.
+          </p>
+        </div>
+      )}
+
+      {/* Show content only if dates are loaded */}
+      {!loading && !error && dates.length > 0 && (
+        <>
 
       {/* Express Delivery Option */}
       <Card
@@ -161,6 +230,8 @@ export default function DeliveryDatePicker({
           {!isExpress && ' Standard delivery takes 1-3 business days.'}
         </p>
       </div>
+      </>
+      )}
     </div>
   )
 }
