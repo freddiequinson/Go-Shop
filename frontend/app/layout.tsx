@@ -1,11 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "@/lib/cart-context"
 import { AuthProvider } from "@/lib/contexts/auth-context"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
+
+// Conditionally import Analytics only on Vercel
+const Analytics = process.env.NEXT_PUBLIC_VERCEL_ENV 
+  ? require("@vercel/analytics/next").Analytics 
+  : () => null
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -40,7 +44,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             {children}
-            <Analytics />
+            {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
             <Toaster />
           </CartProvider>
         </AuthProvider>
