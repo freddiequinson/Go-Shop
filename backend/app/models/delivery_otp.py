@@ -24,7 +24,7 @@ class DeliveryOTP(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    order = relationship("Order", back_populates="delivery_otp")
+    order = relationship("Order")  # Removed back_populates to avoid circular import
     rider = relationship("Rider", back_populates="delivery_otps")
 
     def __repr__(self):
