@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import {
   Dialog,
   DialogContent,
@@ -88,7 +89,7 @@ export default function PerishablesPage() {
       setLoading(true)
       const token = localStorage.getItem("access_token")
       
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/perishables/alerts?days=${days}`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/perishables/alerts?days=${days}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -141,7 +142,7 @@ export default function PerishablesPage() {
     }
 
     try {
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/perishables/mark-wastage`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/perishables/mark-wastage`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { Package, Plus, Check, X, FileText } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import CreateSupplyRequestModal from "@/components/procurement/CreateSupplyRequestModal"
@@ -35,7 +37,7 @@ export default function RestockOrdersPage() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/restock-orders`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/restock-orders`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -54,7 +56,7 @@ export default function RestockOrdersPage() {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/restock-orders/${orderId}/status`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/restock-orders/${orderId}/status`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,

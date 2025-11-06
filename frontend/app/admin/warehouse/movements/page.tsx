@@ -1,5 +1,7 @@
 "use client"
 
+import { Card } from "@/components/ui/card"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import { useEffect, useState } from "react"
 import { TrendingUp, TrendingDown, Package } from "lucide-react"
 
@@ -27,7 +29,7 @@ export default function WarehouseMovementsPage() {
   const fetchMovements = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/movements`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/movements`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import CreateSupplyRequestModal from "@/components/procurement/CreateSupplyRequestModal"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
 
 interface InventoryItem {
@@ -44,7 +45,7 @@ export default function WarehousePage() {
   const fetchInventory = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      let url = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/inventory?per_page=50`
+      let url = `${getApiBaseUrl()}/warehouse/inventory?per_page=50`
       
       if (filter === "low_stock") {
         url += "&low_stock_only=true"
@@ -70,7 +71,7 @@ export default function WarehousePage() {
   const fetchPendingDeliveries = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-offers/admin/all-offers`, {
+      const response = await fetch(`${getApiBaseUrl()}/supply-offers/admin/all-offers`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -97,7 +98,7 @@ export default function WarehousePage() {
     setPublishingId(productId)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/products/${productId}/publish`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/products/${productId}/publish`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -131,7 +132,7 @@ export default function WarehousePage() {
     setPublishingId(productId)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/products/${productId}/unpublish`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/products/${productId}/unpublish`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -165,7 +166,7 @@ export default function WarehousePage() {
     setSyncing(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/inventory/sync-all-products`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/inventory/sync-all-products`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })

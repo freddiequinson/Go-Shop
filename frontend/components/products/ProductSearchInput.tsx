@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Search, X, Package, AlertCircle } from "lucide-react"
+import { Search, Loader2, Package, X, AlertCircle } from "lucide-react"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import ProductSearchResult from "./ProductSearchResult"
 
 interface Product {
@@ -39,7 +40,7 @@ export default function ProductSearchInput({
   const [showResults, setShowResults] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
-  const debounceTimer = useRef<NodeJS.Timeout>()
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function ProductSearchInput({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products?search=${encodeURIComponent(query)}&per_page=10&page=1`,
+        `${getApiBaseUrl()}/products?search=${encodeURIComponent(query)}&per_page=10&page=1`,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -98,7 +99,7 @@ export default function ProductSearchInput({
           products.map(async (product) => {
             try {
               const supplierResponse = await fetch(
-                `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/by-product/${encodeURIComponent(product.name)}`,
+                `${getApiBaseUrl()}/suppliers/by-product/${encodeURIComponent(product.name)}`,
                 {
                   headers: { "Authorization": `Bearer ${token}` }
                 }

@@ -2,6 +2,8 @@
 
 import type React from "react"
 
+import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import { Button } from "@/components/ui/button"
 import { Upload, X, Star, Image as ImageIcon, Plus, AlertCircle, CheckCircle, Package } from "lucide-react"
 import Link from "next/link"
@@ -160,7 +162,7 @@ export default function NewProduct() {
   const fetchSystemImages = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/image-library?is_system=true`, {
+      const response = await fetch(`${getApiBaseUrl()}/admin/image-library?is_system=true`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -175,7 +177,7 @@ export default function NewProduct() {
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers`, {
+      const response = await fetch(`${getApiBaseUrl()}/suppliers/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -190,7 +192,7 @@ export default function NewProduct() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/`, {
+      const response = await fetch(`${getApiBaseUrl()}/products/categories/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -205,7 +207,7 @@ export default function NewProduct() {
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations/`, {
+      const response = await fetch(`${getApiBaseUrl()}/warehouse/locations/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -225,7 +227,7 @@ export default function NewProduct() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/`, {
+      const response = await fetch(`${getApiBaseUrl()}/products/categories/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -290,7 +292,7 @@ export default function NewProduct() {
       
       console.log("Submitting product:", payload)
       
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/`, {
+      const response = await fetch(`${getApiBaseUrl()}/products`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
