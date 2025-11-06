@@ -47,20 +47,26 @@ async def handle_oauth_user(
     # Create new user with OAuth data
     username = email.split('@')[0] + '_' + provider + '_' + str(uuid.uuid4())[:8]
     
-    # Generate a secure random password using SHA256 hash (always 64 chars, safe for bcrypt)
-    random_uuid = str(uuid.uuid4())
-    random_password = hashlib.sha256(random_uuid.encode()).hexdigest()
+    # Create OAuth user directly without password hashing
+    # OAuth users don't need passwords - they authenticate through Google
+    from app.models.user import User
+    import uuid
     
-    user_data = UserCreate(
+    new_user = User(
+        id=str(uuid.uuid4()),
         email=email,
         username=username,
         full_name=full_name,
-        password=get_password_hash(random_password),  # Random password for OAuth users
+        password_hash="OAUTH_USER_NO_PASSWORD",  # Placeholder for OAuth users
         user_type=UserType.BUYER,
+        verification_status="verified",  # OAuth users are pre-verified
+        is_active=True,
         phone=None
     )
     
-    new_user = create_user(db, user_data)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
     return new_user
 
 
