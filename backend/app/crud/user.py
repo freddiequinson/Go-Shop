@@ -165,13 +165,15 @@ def delete_user(db: Session, user_id: str) -> bool:
             db.execute(text("DELETE FROM delivery_otps WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
             db.execute(text("DELETE FROM riders WHERE user_id = :user_id"), {"user_id": user_id})
         except Exception:
-            pass  # Rider tables might not exist or have different structure
+            db.rollback()  # Rollback failed transaction
+            db.begin()  # Start new transaction
         
         # Handle products if user is a seller
         try:
             db.execute(text("DELETE FROM products WHERE seller_id = :user_id"), {"user_id": user_id})
         except Exception:
-            pass
+            db.rollback()
+            db.begin()
         
         # Handle supply requests and related records
         try:
@@ -179,7 +181,8 @@ def delete_user(db: Session, user_id: str) -> bool:
             db.execute(text("DELETE FROM suppliers WHERE user_id = :user_id"), {"user_id": user_id})
             db.execute(text("DELETE FROM supply_requests WHERE created_by_user_id = :user_id"), {"user_id": user_id})
         except Exception:
-            pass
+            db.rollback()
+            db.begin()
         
         # Handle warehouse operations - set user references to NULL where appropriate
         try:
@@ -189,7 +192,8 @@ def delete_user(db: Session, user_id: str) -> bool:
             db.execute(text("UPDATE goods_received_notes SET rated_by = NULL WHERE rated_by = :user_id"), {"user_id": user_id})
             db.execute(text("UPDATE pick_lists SET assigned_to = NULL WHERE assigned_to = :user_id"), {"user_id": user_id})
         except Exception:
-            pass
+            db.rollback()
+            db.begin()
         
         # Handle review-related records
         db.execute(text("UPDATE reviews SET moderated_by_id = NULL WHERE moderated_by_id = :user_id"), {"user_id": user_id})
