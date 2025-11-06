@@ -6,6 +6,9 @@ import { useState, useEffect } from "react"
 import { Star, ThumbsUp, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { reviewsService } from "@/lib/api/services"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 interface Review {
   id: string
@@ -26,6 +29,8 @@ interface ProductReviewsProps {
 }
 
 export function ProductReviews({ productId, productName }: ProductReviewsProps) {
+  const { toast } = useToast()
+  const { isAuthenticated } = useAuth()
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -33,6 +38,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   const [reviewComment, setReviewComment] = useState("")
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [averageRating, setAverageRating] = useState(0)
   const [ratingDistribution, setRatingDistribution] = useState<any[]>([])
 
@@ -42,24 +48,28 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/${productId}/reviews`)
-      if (response.ok) {
-        const data = await response.json()
-        setReviews(data.reviews || [])
-        setAverageRating(data.avg_rating || 0)
-        
-        // Calculate rating distribution
-        const distribution = [5, 4, 3, 2, 1].map((star) => ({
-          star,
-          count: data.rating_distribution?.[star] || 0,
-          percentage: data.reviews?.length > 0 
-            ? ((data.rating_distribution?.[star] || 0) / data.reviews.length) * 100 
-            : 0,
-        }))
-        setRatingDistribution(distribution)
-      }
+      setLoading(true)
+      const data = await reviewsService.getProductReviews(productId as any)
+      setReviews(data.reviews as any || [])
+      setAverageRating((data as any).avg_rating || 0)
+      
+      // Calculate rating distribution
+      const ratingDist = (data as any).rating_distribution || {}
+      const distribution = [5, 4, 3, 2, 1].map((star) => ({
+        star,
+        count: ratingDist[star] || 0,
+        percentage: data.reviews?.length > 0 
+          ? ((ratingDist[star] || 0) / data.reviews.length) * 100 
+          : 0,
+      }))
+      setRatingDistribution(distribution)
     } catch (error) {
       console.error("Failed to fetch reviews:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load reviews",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -68,41 +78,79 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    try {
-      const token = localStorage.getItem("access_token")
-      if (!token) {
-        alert("Please login to submit a review")
-        return
-      }
-
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/reviews`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          rating: rating,
-          title: reviewTitle,
-          comment: reviewComment
-        })
+    if (!isAuthenticated) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to submit a review",
+        variant: "destructive",
       })
+      return
+    }
 
-      if (response.ok) {
-        alert("Review submitted successfully!")
-        setShowReviewForm(false)
-        setRating(0)
-        setReviewTitle("")
-        setReviewComment("")
-        fetchReviews() // Refresh reviews
-      } else {
-        const error = await response.json()
-        alert(error.detail || "Failed to submit review")
-      }
-    } catch (error) {
+    if (rating === 0) {
+      toast({
+        title: "Rating required",
+        description: "Please select a rating",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    try {
+      setSubmitting(true)
+      await reviewsService.createReview({
+        product_id: productId as any,
+        rating: rating,
+        comment: reviewComment,
+        ...(reviewTitle && { title: reviewTitle })
+      } as any)
+
+      toast({
+        title: "Success!",
+        description: "Your review has been submitted",
+      })
+      
+      setShowReviewForm(false)
+      setRating(0)
+      setReviewTitle("")
+      setReviewComment("")
+      fetchReviews() // Refresh reviews
+    } catch (error: any) {
       console.error("Failed to submit review:", error)
-      alert("Error submitting review")
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to submit review",
+        variant: "destructive",
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleVoteHelpful = async (reviewId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to vote",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      await reviewsService.voteReview(reviewId as any, true)
+      toast({
+        title: "Thank you!",
+        description: "Your vote has been recorded",
+      })
+      fetchReviews() // Refresh to show updated count
+    } catch (error) {
+      console.error("Failed to vote:", error)
+      toast({
+        title: "Error",
+        description: "Failed to record your vote",
+        variant: "destructive",
+      })
     }
   }
 
@@ -221,8 +269,12 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" className="bg-[#303A4D] hover:bg-[#303A4D]/90 text-white">
-                Submit Review
+              <Button 
+                type="submit" 
+                className="bg-[#303A4D] hover:bg-[#303A4D]/90 text-white"
+                disabled={submitting || rating === 0}
+              >
+                {submitting ? "Submitting..." : "Submit Review"}
               </Button>
               <Button
                 type="button"
@@ -277,7 +329,10 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                   {review.title && <h5 className="font-semibold text-[#303A4D] mb-2">{review.title}</h5>}
                   <p className="text-[#303A4D]/80 mb-4">{review.comment}</p>
 
-                  <button className="flex items-center gap-2 text-sm text-[#303A4D]/60 hover:text-[#303A4D] transition-colors">
+                  <button 
+                    onClick={() => handleVoteHelpful(review.id)}
+                    className="flex items-center gap-2 text-sm text-[#303A4D]/60 hover:text-[#303A4D] transition-colors"
+                  >
                     <ThumbsUp className="w-4 h-4" />
                     Helpful ({review.helpful_count || 0})
                   </button>
