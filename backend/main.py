@@ -54,6 +54,9 @@ async def root():
         "message": "Welcome to GoShopGhana API",
         "version": settings.VERSION,
         "docs": "/docs",
+        "redoc": "/redoc",
+        "openapi": "/openapi.json",
+        "api_docs": f"{settings.API_V1_STR}/docs",
         "status": "running"
     }
 
@@ -62,6 +65,21 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "goshopghana-api"}
+
+
+# API docs endpoints
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    """Custom Swagger UI redirect"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=f"{settings.API_V1_STR}/docs")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_html():
+    """Custom ReDoc redirect"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=f"{settings.API_V1_STR}/redoc")
 
 
 if __name__ == "__main__":

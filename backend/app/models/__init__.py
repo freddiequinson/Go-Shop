@@ -17,5 +17,6 @@ from app.models.supplier import Supplier, SupplierProduct, SupplierType, Supplie
 from app.models.supply_request import SupplyRequest, SupplyOffer, SupplyRequestStatus, SupplyOfferStatus
 from app.models.warehouse import WarehouseInventory, InventoryMovement, StockAlert, RestockOrder, MovementType, AlertType, AlertStatus, RestockStatus
 from app.models.rider import Rider, DeliveryAssignment, RiderLocation, VehicleType, RiderStatus, DeliveryStatus
+from app.models.delivery_otp import DeliveryOTP
 from app.models.image_library import ProductImageLibrary
 from app.models.analytics import AdminActivityLog, ProductView, SalesAnalytics
