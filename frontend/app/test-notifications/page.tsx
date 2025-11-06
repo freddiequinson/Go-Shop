@@ -30,7 +30,7 @@ export default function TestNotificationsPage() {
 
     setIsSendingEmail(true)
     try {
-      const response = await fetch("http://localhost:8000/api/v1/test/send-email", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/test/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function TestNotificationsPage() {
 
     setIsSendingSMS(true)
     try {
-      const response = await fetch("http://localhost:8000/api/v1/test/send-sms", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/test/send-sms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

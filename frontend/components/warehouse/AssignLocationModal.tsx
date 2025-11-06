@@ -69,7 +69,7 @@ export default function AssignLocationModal({
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/warehouse/locations/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -107,7 +107,7 @@ export default function AssignLocationModal({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/warehouse/inventory/${productId}/assign-location`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/inventory/${productId}/assign-location`,
         {
           method: "PUT",
           headers: {

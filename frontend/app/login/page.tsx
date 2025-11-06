@@ -86,7 +86,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={async () => {
                   try {
-                    const response = await fetch('http://localhost:8000/api/v1/oauth/google/login')
+                    const response = await fetch('${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/oauth/google/login')
                     const data = await response.json()
                     window.location.href = data.auth_url
                   } catch (error) {

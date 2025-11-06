@@ -56,7 +56,7 @@ This tells your frontend where to find your backend API.
 ## 🚀 How It Works
 
 ### 1. **API Client** (`lib/api/client.ts`)
-- Axios instance configured to call `http://localhost:8000/api/v1`
+- Axios instance configured to call `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}`
 - Automatically adds JWT token to all requests
 - Handles 401 errors (redirects to login)
 - Global error handling
@@ -328,7 +328,7 @@ All types are defined in `lib/types/index.ts` matching your backend schemas.
 Your backend API docs are available at:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
-- OpenAPI JSON: `http://localhost:8000/api/v1/openapi.json`
+- OpenAPI JSON: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/openapi.json`
 
 ---
 

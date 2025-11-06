@@ -67,7 +67,7 @@ export default function ProductSearchInput({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/products?search=${encodeURIComponent(query)}&per_page=10&page=1`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products?search=${encodeURIComponent(query)}&per_page=10&page=1`,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -98,7 +98,7 @@ export default function ProductSearchInput({
           products.map(async (product) => {
             try {
               const supplierResponse = await fetch(
-                `http://localhost:8000/api/v1/suppliers/by-product/${encodeURIComponent(product.name)}`,
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/by-product/${encodeURIComponent(product.name)}`,
                 {
                   headers: { "Authorization": `Bearer ${token}` }
                 }

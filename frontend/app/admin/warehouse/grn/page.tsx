@@ -113,16 +113,16 @@ function GRNContent() {
       const token = localStorage.getItem("access_token")
       
       const [grnsRes, suppliersRes, productsRes, locationsRes] = await Promise.all([
-        fetch("http://localhost:8000/api/v1/warehouse/grn/", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/grn/`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/suppliers/", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/products/", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/warehouse/locations/", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
       ])
@@ -186,7 +186,7 @@ function GRNContent() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/warehouse/grn/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/grn/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -224,7 +224,7 @@ function GRNContent() {
     const token = localStorage.getItem("access_token")
     
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/warehouse/grn/${id}/approve`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/grn/${id}/approve`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -252,7 +252,7 @@ function GRNContent() {
     const token = localStorage.getItem("access_token")
     
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/warehouse/grn/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/grn/${id}/reject?reason=${encodeURIComponent(reason)}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })

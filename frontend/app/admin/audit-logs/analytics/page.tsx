@@ -34,7 +34,7 @@ export default function AuditAnalyticsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/audit-logs/analytics/overview?days=${period}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/audit-logs/analytics/overview?days=${period}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -67,7 +67,7 @@ export default function AuditAnalyticsPage() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/audit-logs/cleanup?days=90`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/audit-logs/cleanup?days=90`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })

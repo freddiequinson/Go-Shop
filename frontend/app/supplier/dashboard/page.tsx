@@ -35,7 +35,7 @@ export default function SupplierDashboard() {
       setLoading(true)
       const token = localStorage.getItem("access_token")
       
-      const response = await fetch("http://localhost:8000/api/v1/supplier/dashboard", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/dashboard`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }

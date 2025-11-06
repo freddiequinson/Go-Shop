@@ -35,7 +35,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/products/categories/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -81,8 +81,8 @@ export default function CategoriesPage() {
     try {
       const token = localStorage.getItem("access_token")
       const url = editingCategory 
-        ? `http://localhost:8000/api/v1/products/categories/${editingCategory.id}/`
-        : "http://localhost:8000/api/v1/products/categories/"
+        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/${editingCategory.id}/`
+        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/`
       
       const payload = {
         ...formData,
@@ -125,7 +125,7 @@ export default function CategoriesPage() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/products/categories/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/${id}/`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })

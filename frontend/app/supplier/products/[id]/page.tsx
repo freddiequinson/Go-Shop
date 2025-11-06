@@ -64,7 +64,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supplier/products/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${params.id}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -96,7 +96,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supplier/requests?product_id=${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/requests?product_id=${params.id}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -115,7 +115,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supplier/products/${params.id}/toggle-status`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${params.id}/toggle-status`,
         {
           method: "PUT",
           headers: { "Authorization": `Bearer ${token}` }
@@ -146,7 +146,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supplier/products/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${params.id}`,
         {
           method: "DELETE",
           headers: { "Authorization": `Bearer ${token}` }
@@ -203,7 +203,7 @@ export default function SupplierProductDetail() {
       const token = localStorage.getItem("access_token")
       
       // Build URL with reason parameter
-      let url = `http://localhost:8000/api/v1/supplier/products/${params.id}/stock?stock_quantity=${newStock}`
+      let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${params.id}/stock?stock_quantity=${newStock}`
       if (stockReason.trim()) {
         url += `&reason=${encodeURIComponent(stockReason)}`
       }

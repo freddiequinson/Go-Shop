@@ -76,7 +76,7 @@ export default function AdjustInventoryModal({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        "http://localhost:8000/api/v1/warehouse/inventory/adjust",
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/inventory/adjust`,
         {
           method: "POST",
           headers: {

@@ -65,7 +65,7 @@ export default function RequestDetailsPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supply-requests/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/${params.id}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -85,7 +85,7 @@ export default function RequestDetailsPage() {
       setLoading(true)
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supply-requests/${params.id}/offers`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/${params.id}/offers`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -108,7 +108,7 @@ export default function RequestDetailsPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supply-requests/${params.id}/accept-offer`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/${params.id}/accept-offer`,
         {
           method: "POST",
           headers: {
@@ -155,7 +155,7 @@ export default function RequestDetailsPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/supply-requests/${params.id}/reject-offer`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/${params.id}/reject-offer`,
         {
           method: "POST",
           headers: {

@@ -105,14 +105,14 @@ export default function ProductPage() {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/products/${productId}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`)
       if (response.ok) {
         const data = await response.json()
         
         // Fetch category name
         let categoryName = "Uncategorized"
         if (data.category_id) {
-          const catResponse = await fetch(`http://localhost:8000/api/v1/products/categories/${data.category_id}/`)
+          const catResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/${data.category_id}/`)
           if (catResponse.ok) {
             const catData = await catResponse.json()
             categoryName = catData.name
@@ -152,7 +152,7 @@ export default function ProductPage() {
 
   const fetchSimilarProducts = async (categoryId: string, currentProductId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/products?limit=100`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products?limit=100`)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []

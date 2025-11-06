@@ -38,7 +38,7 @@ export default function NewSupplierProduct() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/products/categories/")
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/`)
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -142,7 +142,7 @@ export default function NewSupplierProduct() {
         images: supplierImages  // Use supplier's photos
       }
 
-      const response = await fetch("http://localhost:8000/api/v1/supplier/products", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

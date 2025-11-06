@@ -51,7 +51,7 @@ export default function EditProductPage() {
   const fetchProductData = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -83,7 +83,7 @@ export default function EditProductPage() {
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/suppliers", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers", {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -98,7 +98,7 @@ export default function EditProductPage() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/products/categories/", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/", {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -176,7 +176,7 @@ export default function EditProductPage() {
       
       console.log("Updating product:", payload)
       
-      const response = await fetch(`http://localhost:8000/api/v1/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,

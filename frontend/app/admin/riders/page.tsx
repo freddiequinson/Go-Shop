@@ -41,7 +41,7 @@ export default function RidersPage() {
   const fetchRiders = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      let url = "http://localhost:8000/api/v1/admin/riders?per_page=50"
+      let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/riders?per_page=50`
       
       if (statusFilter !== "all") {
         url += `&current_status=${statusFilter}`
@@ -78,7 +78,7 @@ export default function RidersPage() {
       
       // Fetch each user
       for (const userId of userIds) {
-        const response = await fetch(`http://localhost:8000/api/v1/users/${userId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/${userId}`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
         if (response.ok) {
@@ -97,7 +97,7 @@ export default function RidersPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/admin/riders/${riderId}/verify`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/riders/${riderId}/verify`,
         {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` }
@@ -124,10 +124,10 @@ export default function RidersPage() {
     console.log("Proceeding with delete...")
     try {
       const token = localStorage.getItem("access_token")
-      console.log("Sending DELETE request to:", `http://localhost:8000/api/v1/admin/riders/${riderId}`)
+      console.log("Sending DELETE request to:", `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/riders/${riderId}`)
       
       const response = await fetch(
-        `http://localhost:8000/api/v1/admin/riders/${riderId}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/riders/${riderId}`,
         {
           method: "DELETE",
           headers: { "Authorization": `Bearer ${token}` }

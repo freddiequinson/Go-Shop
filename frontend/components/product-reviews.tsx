@@ -42,7 +42,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/products/${productId}/reviews`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}/reviews`)
       if (response.ok) {
         const data = await response.json()
         setReviews(data.reviews || [])
@@ -75,7 +75,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         return
       }
 
-      const response = await fetch("http://localhost:8000/api/v1/reviews", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/reviews`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

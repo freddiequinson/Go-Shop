@@ -65,7 +65,7 @@ export default function SmartRestockModal({ product, onClose }: SmartRestockModa
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/warehouse/smart-restock?product_id=${product.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/smart-restock?product_id=${product.id}`,
         {
           method: "POST",
           headers: {

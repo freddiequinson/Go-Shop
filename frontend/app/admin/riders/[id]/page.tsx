@@ -70,7 +70,7 @@ export default function RiderDetailPage() {
   const fetchRiderDetails = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/riders/${riderId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/${riderId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -92,7 +92,7 @@ export default function RiderDetailPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/riders/${riderId}/deliveries`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/${riderId}/deliveries`,
         { headers: { "Authorization": `Bearer ${token}` } }
       )
       
@@ -112,7 +112,7 @@ export default function RiderDetailPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/riders/${riderId}/toggle-status`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/${riderId}/toggle-status`,
         {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` }
@@ -131,7 +131,7 @@ export default function RiderDetailPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `http://localhost:8000/api/v1/riders/${riderId}/verify`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/${riderId}/verify`,
         {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` }

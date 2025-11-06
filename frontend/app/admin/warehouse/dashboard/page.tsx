@@ -48,16 +48,16 @@ export default function WarehouseDashboard() {
       
       // Fetch all stats in parallel
       const [locationsRes, grnRes, perishablesRes, pickListsRes] = await Promise.all([
-        fetch("http://localhost:8000/api/v1/warehouse/locations/stats", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/stats`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/warehouse/grn/stats", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/grn/stats`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/warehouse/perishables/alerts?days=14", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/perishables/alerts?days=14`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch("http://localhost:8000/api/v1/warehouse/pick-lists/stats", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/pick-lists/stats`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
       ])
@@ -87,7 +87,7 @@ export default function WarehouseDashboard() {
   const fetchPendingDeliveries = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/supply-offers/admin/all-offers", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-offers/admin/all-offers`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

@@ -45,7 +45,7 @@ export default function LowStockPage() {
       // Fetch each product's details
       for (const productId of productIds) {
         try {
-          const response = await fetch(`http://localhost:8000/api/v1/products/${productId}`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
             headers: { "Authorization": `Bearer ${token}` }
           })
           
@@ -70,7 +70,7 @@ export default function LowStockPage() {
   const fetchLowStockProducts = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/warehouse/low-stock", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/low-stock`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

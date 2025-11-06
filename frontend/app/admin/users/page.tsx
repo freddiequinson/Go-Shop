@@ -45,7 +45,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/users/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -87,7 +87,7 @@ export default function UsersPage() {
     try {
       setIsSubmitting(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch("http://localhost:8000/api/v1/users/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -139,7 +139,7 @@ export default function UsersPage() {
     
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/v1/users/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/users/${userId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })
