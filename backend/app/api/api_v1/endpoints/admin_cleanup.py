@@ -6,10 +6,10 @@ Allows admins to selectively clear database records for testing/deployment
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 from app.db.database import get_db
 from app.core.deps import get_current_admin
-from app.models.user import User
+from app.models.user import User, UserType
 from app.models.order import Order, OrderItem, PaymentAttempt
 from app.models.product import Product, Category
 from app.models.warehouse import WarehouseInventory, InventoryMovement
@@ -34,11 +34,20 @@ async def preview_cleanup(
         order_count = db.query(func.count(Order.id)).scalar()
         order_items_count = db.query(func.count(OrderItem.id)).scalar()
         payment_attempts_count = db.query(func.count(PaymentAttempt.id)).scalar()
+        delivery_otps_count = db.execute(text("SELECT COUNT(*) FROM delivery_otps")).scalar()
+        delivery_assignments_count = db.execute(text("SELECT COUNT(*) FROM delivery_assignments")).scalar()
+        pick_lists_count = db.execute(text("SELECT COUNT(*) FROM pick_lists")).scalar()
+        order_conversations_count = db.execute(text("SELECT COUNT(*) FROM conversations WHERE order_id IS NOT NULL")).scalar()
+        
         preview["orders"] = {
             "orders": order_count,
             "order_items": order_items_count,
             "payment_attempts": payment_attempts_count,
-            "total": order_count + order_items_count + payment_attempts_count
+            "delivery_otps": delivery_otps_count,
+            "delivery_assignments": delivery_assignments_count,
+            "pick_lists": pick_lists_count,
+            "order_conversations": order_conversations_count,
+            "total": order_count + order_items_count + payment_attempts_count + delivery_otps_count + delivery_assignments_count + pick_lists_count + order_conversations_count
         }
     
     if "products" in targets:
@@ -67,7 +76,7 @@ async def preview_cleanup(
     if "users" in targets:
         # Count non-admin users
         user_count = db.query(func.count(User.id)).filter(
-            User.user_type != "admin"
+            User.user_type != UserType.ADMIN.value
         ).scalar()
         preview["users"] = {
             "users": user_count,
@@ -117,19 +126,35 @@ async def execute_cleanup(
         # 1. Delete Orders (includes order items via cascade)
         if "orders" in targets:
             try:
-                # Delete payment attempts first
+                # Delete all tables that reference orders (in correct order to respect FK constraints)
+                # Delete delivery-related tables
+                delivery_otps_deleted = db.execute(text("DELETE FROM delivery_otps")).rowcount
+                rider_locations_deleted = db.execute(text("DELETE FROM rider_locations WHERE order_id IS NOT NULL")).rowcount
+                delivery_assignments_deleted = db.execute(text("DELETE FROM delivery_assignments")).rowcount
+                pick_lists_deleted = db.execute(text("DELETE FROM pick_lists")).rowcount
+                
+                # Delete conversation-related tables
+                conversation_participants_deleted = db.execute(text("DELETE FROM conversation_participants WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IS NOT NULL)")).rowcount
+                messages_deleted = db.execute(text("DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IS NOT NULL)")).rowcount
+                conversations_deleted = db.execute(text("DELETE FROM conversations WHERE order_id IS NOT NULL")).rowcount
+                
+                # Delete payment attempts
                 payment_attempts_deleted = db.query(PaymentAttempt).delete()
                 
                 # Delete order items
                 order_items_deleted = db.query(OrderItem).delete()
                 
-                # Delete orders
+                # Finally delete orders
                 orders_deleted = db.query(Order).delete()
                 
                 results["deleted"]["orders"] = {
                     "orders": orders_deleted,
                     "order_items": order_items_deleted,
-                    "payment_attempts": payment_attempts_deleted
+                    "payment_attempts": payment_attempts_deleted,
+                    "delivery_otps": delivery_otps_deleted,
+                    "delivery_assignments": delivery_assignments_deleted,
+                    "pick_lists": pick_lists_deleted,
+                    "conversations": conversations_deleted
                 }
             except Exception as e:
                 results["errors"].append(f"Orders deletion error: {str(e)}")
@@ -174,7 +199,7 @@ async def execute_cleanup(
         if "users" in targets:
             try:
                 users_deleted = db.query(User).filter(
-                    User.user_type != "admin"
+                    User.user_type != UserType.ADMIN.value
                 ).delete()
                 results["deleted"]["users"] = {
                     "users": users_deleted,
@@ -222,9 +247,9 @@ async def get_database_stats(
         "inventory_movements": db.query(func.count(InventoryMovement.id)).scalar(),
         "users": {
             "total": db.query(func.count(User.id)).scalar(),
-            "admins": db.query(func.count(User.id)).filter(User.user_type == "admin").scalar(),
-            "buyers": db.query(func.count(User.id)).filter(User.user_type == "buyer").scalar(),
-            "sellers": db.query(func.count(User.id)).filter(User.user_type == "seller").scalar(),
+            "admins": db.query(func.count(User.id)).filter(User.user_type == UserType.ADMIN.value).scalar(),
+            "buyers": db.query(func.count(User.id)).filter(User.user_type == UserType.BUYER.value).scalar(),
+            "sellers": db.query(func.count(User.id)).filter(User.user_type == UserType.SELLER.value).scalar(),
         }
     }
     

@@ -110,7 +110,24 @@ def delete_user(db: Session, user_id: str) -> bool:
         # Delete user's wallet if exists
         db.execute(text("DELETE FROM wallets WHERE user_id = :user_id"), {"user_id": user_id})
         
-        # Delete user's orders if exists
+        # Delete user's orders and all related items (must be done in correct order due to FK constraints)
+        # Get all order IDs for this user first
+        order_ids_query = "SELECT id FROM orders WHERE user_id = :user_id"
+        
+        # Delete all tables that reference orders
+        db.execute(text("DELETE FROM delivery_otps WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        db.execute(text("DELETE FROM rider_locations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        db.execute(text("DELETE FROM delivery_assignments WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        db.execute(text("DELETE FROM pick_lists WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        db.execute(text("DELETE FROM payment_attempts WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        db.execute(text("DELETE FROM order_items WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        
+        # Delete conversations related to orders (if any)
+        db.execute(text("DELETE FROM conversation_participants WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
+        db.execute(text("DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
+        db.execute(text("DELETE FROM conversations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        
+        # Finally delete the orders themselves
         db.execute(text("DELETE FROM orders WHERE user_id = :user_id"), {"user_id": user_id})
         
         # Delete user's reviews (uses reviewer_id, not user_id)
