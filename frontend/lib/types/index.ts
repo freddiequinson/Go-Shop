@@ -148,6 +148,8 @@ export interface UserCreate {
   user_type: UserType
   location?: string
   phone?: string
+  referral_source?: string
+  profile_picture_url?: string
 }
 
 export interface UserLogin {

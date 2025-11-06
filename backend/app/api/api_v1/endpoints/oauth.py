@@ -46,11 +46,14 @@ async def handle_oauth_user(
     # Create new user with OAuth data
     username = email.split('@')[0] + '_' + provider + '_' + str(uuid.uuid4())[:8]
     
+    # Generate a random password (truncate to 50 chars to avoid bcrypt 72-byte limit)
+    random_password = str(uuid.uuid4())[:50]
+    
     user_data = UserCreate(
         email=email,
         username=username,
         full_name=full_name,
-        password=get_password_hash(str(uuid.uuid4())),  # Random password for OAuth users
+        password=get_password_hash(random_password),  # Random password for OAuth users
         user_type=UserType.BUYER,
         phone=None
     )

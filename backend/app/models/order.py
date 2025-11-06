@@ -104,7 +104,7 @@ class Order(Base):
     # Messaging and review relationships
     conversation = relationship("Conversation", back_populates="order", uselist=False)
     reviews = relationship("Review", back_populates="order")
-    delivery_otp = relationship("DeliveryOTP", back_populates="order", uselist=False)
+    delivery_otp = relationship("app.models.delivery_otp.DeliveryOTP", back_populates="order", uselist=False)
 
     def __repr__(self):
         return f"<Order(id={self.id}, user_id={self.user_id}, status={self.status}, total={self.total_cedis/100})>"
