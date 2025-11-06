@@ -11,8 +11,7 @@ import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { Package, MapPin, Calendar, Loader2, CheckCircle, Clock, Truck, Home } from 'lucide-react'
 import axios from 'axios'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { getApiBaseUrl } from '@/lib/api/url-helper'
 
 export default function TrackOrderPage() {
   const params = useParams()
@@ -35,7 +34,7 @@ export default function TrackOrderPage() {
 
     setIsLoading(true)
     try {
-      const response = await axios.post(`${API_URL}/api/v1/guest-orders/track`, {
+      const response = await axios.post(`${getApiBaseUrl()}/guest-orders/track`, {
         order_id: orderId,
         phone: phone,
       })

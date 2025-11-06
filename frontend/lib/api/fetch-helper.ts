@@ -3,8 +3,10 @@
  * Centralized fetch wrapper that uses environment-aware API URL
  */
 
-// Get API base URL from environment or fallback to localhost
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'
+import { getBaseURL } from './config'
+
+// Get API base URL from environment or fallback to localhost - runtime getter
+const getApiBaseUrl = () => getBaseURL() + '/api/v1'
 
 /**
  * Make an authenticated API request
@@ -35,7 +37,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   }
   
   // Make the request
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
     headers,
   })
@@ -50,7 +52,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
  */
 export function getApiUrl(endpoint: string): string {
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  return `${API_BASE_URL}${path}`
+  return `${getApiBaseUrl()}${path}`
 }
 
-export { API_BASE_URL }
+export const API_BASE_URL = getApiBaseUrl()
