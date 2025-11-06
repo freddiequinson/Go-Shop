@@ -117,7 +117,7 @@ export default function ProductPage() {
         // Fetch category name
         let categoryName = "Uncategorized"
         if (data.category_id) {
-          const catResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/${data.category_id}/`)
+          const catResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/${data.category_id}`)
           if (catResponse.ok) {
             const catData = await catResponse.json()
             categoryName = catData.name
