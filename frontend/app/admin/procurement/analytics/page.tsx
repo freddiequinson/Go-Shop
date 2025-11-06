@@ -61,7 +61,7 @@ export default function ProcurementAnalytics() {
       const daysMap = { week: 7, month: 30, quarter: 90, year: 365 }
       const days = daysMap[timeRange]
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/analytics?days=${days}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-requests/analytics?days=${days}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

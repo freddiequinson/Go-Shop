@@ -57,7 +57,7 @@ export default function AnalyticsPage() {
       }
       
       // Fetch top selling products
-      const topSellingRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/analytics/top-selling?limit=10`, {
+      const topSellingRes = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/analytics/top-selling?limit=10`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (topSellingRes.ok) {
@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
       }
 
       // Fetch most viewed products
-      const mostViewedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/analytics/most-viewed?limit=10`, {
+      const mostViewedRes = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/analytics/most-viewed?limit=10`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (mostViewedRes.ok) {
@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
       }
 
       // Fetch customer analytics
-      const customerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/analytics/customers`, {
+      const customerRes = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/analytics/customers`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (customerRes.ok) {

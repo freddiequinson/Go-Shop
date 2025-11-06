@@ -71,7 +71,7 @@ export default function WarehouseLocationsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations/`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -96,8 +96,8 @@ export default function WarehouseLocationsPage() {
     
     const token = localStorage.getItem("access_token")
     const url = editingLocation
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/${editingLocation.id}`
-      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/`
+      ? `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations/${editingLocation.id}`
+      : `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations/`
     
     const method = editingLocation ? "PUT" : "POST"
     
@@ -169,7 +169,7 @@ export default function WarehouseLocationsPage() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations/${id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })

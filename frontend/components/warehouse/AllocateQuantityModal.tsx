@@ -58,7 +58,7 @@ export default function AllocateQuantityModal({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/inventory/${productId}/allocate-to-shop`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/inventory/${productId}/allocate-to-shop`,
         {
           method: "POST",
           headers: {

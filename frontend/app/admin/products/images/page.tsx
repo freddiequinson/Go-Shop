@@ -34,7 +34,7 @@ export default function ImageLibraryPage() {
   const fetchImages = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/image-library`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/image-library`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -66,7 +66,7 @@ export default function ImageLibraryPage() {
     
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/image-library`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/image-library`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -94,7 +94,7 @@ export default function ImageLibraryPage() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/admin/image-library/${id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/image-library/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })

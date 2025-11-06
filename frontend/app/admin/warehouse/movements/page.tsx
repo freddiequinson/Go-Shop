@@ -27,7 +27,7 @@ export default function WarehouseMovementsPage() {
   const fetchMovements = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/movements`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/movements`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

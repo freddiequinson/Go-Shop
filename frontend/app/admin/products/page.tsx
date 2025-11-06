@@ -46,7 +46,7 @@ export default function AdminProducts() {
     try {
       const token = localStorage.getItem("access_token")
       // Admin sees all products (admin-created and supplier products that are in warehouse)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products?limit=100`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/products?limit=100`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -77,7 +77,7 @@ export default function AdminProducts() {
     
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/products/${productId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -94,7 +94,7 @@ export default function AdminProducts() {
     try {
       const token = localStorage.getItem("access_token")
       const endpoint = currentStatus ? "unpublish" : "publish"
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}/${endpoint}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/products/${productId}/${endpoint}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })

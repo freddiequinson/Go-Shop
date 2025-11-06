@@ -63,7 +63,7 @@ export default function ProductSupplierSearch() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/by-product/${encodeURIComponent(searchTerm)}`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/by-product/${encodeURIComponent(searchTerm)}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }

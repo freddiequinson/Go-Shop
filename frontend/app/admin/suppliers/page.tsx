@@ -31,7 +31,7 @@ export default function SuppliersPage() {
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers?per_page=50`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers?per_page=50`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -50,7 +50,7 @@ export default function SuppliersPage() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${supplierId}/verify`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${supplierId}/verify`,
         {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` }

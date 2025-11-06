@@ -35,7 +35,7 @@ export default function RestockOrdersPage() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/restock-orders`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/restock-orders`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -54,7 +54,7 @@ export default function RestockOrdersPage() {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/restock-orders/${orderId}/status`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/restock-orders/${orderId}/status`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,

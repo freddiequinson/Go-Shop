@@ -54,7 +54,7 @@ export default function SupplierRequests() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/requests?include_open=${includeOpen}`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests?include_open=${includeOpen}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -80,7 +80,7 @@ export default function SupplierRequests() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/requests/${selectedRequest.id}/offer`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests/${selectedRequest.id}/offer`,
         {
           method: "POST",
           headers: {

@@ -58,7 +58,7 @@ export default function AuditLogsPage() {
       if (searchTerm) params.append("search", searchTerm)
       params.append("limit", "200")
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/audit-logs/?${params}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/audit-logs/?${params}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -87,7 +87,7 @@ export default function AuditLogsPage() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/audit-logs/stats`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/audit-logs/stats`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

@@ -53,7 +53,7 @@ export default function SupplierLayout({
   const fetchCounts = async (token: string) => {
     try {
       // Fetch pending offers count
-      const offersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers?status=pending`, {
+      const offersRes = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers?status=pending`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (offersRes.ok) {
@@ -62,7 +62,7 @@ export default function SupplierLayout({
       }
 
       // Fetch open requests count
-      const requestsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/requests`, {
+      const requestsRes = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (requestsRes.ok) {

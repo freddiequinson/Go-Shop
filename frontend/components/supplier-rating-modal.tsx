@@ -41,7 +41,7 @@ export default function SupplierRatingModal({
   const fetchLocations = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/locations`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/locations`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {

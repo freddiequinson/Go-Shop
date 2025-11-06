@@ -81,7 +81,7 @@ export default function CreateSupplyRequestModal({
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers?limit=100`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers?limit=100`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -112,7 +112,7 @@ export default function CreateSupplyRequestModal({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${suppId}/catalog`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${suppId}/catalog`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -198,7 +198,7 @@ export default function CreateSupplyRequestModal({
         deadline: null
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-requests/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -77,8 +77,8 @@ export default function SupplierOffers() {
       const token = localStorage.getItem("access_token")
       
       const url = statusFilter 
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers?status=${statusFilter}`
-        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers`
+        ? `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers?status=${statusFilter}`
+        : `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers`
       
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
@@ -104,7 +104,7 @@ export default function SupplierOffers() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers/${selectedOffer.id}`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers/${selectedOffer.id}`,
         {
           method: "PUT",
           headers: {
@@ -150,7 +150,7 @@ export default function SupplierOffers() {
     try {
       const token = localStorage.getItem("access_token")
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-offers/${offerId}/confirm`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-offers/${offerId}/confirm`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -195,7 +195,7 @@ export default function SupplierOffers() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers/${offerId}`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers/${offerId}`,
         {
           method: "DELETE",
           headers: { "Authorization": `Bearer ${token}` }

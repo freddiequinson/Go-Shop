@@ -105,7 +105,7 @@ export default function AddRiderPage() {
       // Create rider (backend will auto-create user account and send credentials)
       const token = localStorage.getItem("access_token")
       
-      const riderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/`, {
+      const riderResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/riders/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -36,7 +36,7 @@ export default function SupplierProducts() {
       const token = localStorage.getItem("access_token")
       
       // Fetch all supplier products (including those with zero stock)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -69,7 +69,7 @@ export default function SupplierProducts() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${productId}/toggle-status`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${productId}/toggle-status`,
         {
           method: "PUT",
           headers: {
@@ -109,7 +109,7 @@ export default function SupplierProducts() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/products/${productId}`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${productId}`,
         {
           method: "DELETE",
           headers: {

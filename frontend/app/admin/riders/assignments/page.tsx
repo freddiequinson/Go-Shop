@@ -41,7 +41,7 @@ export default function RiderAssignmentsPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/orders?status=dispatched`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/orders?status=dispatched`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       

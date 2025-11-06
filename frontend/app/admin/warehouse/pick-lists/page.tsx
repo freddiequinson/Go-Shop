@@ -80,10 +80,10 @@ export default function PickListsPage() {
       const token = localStorage.getItem("access_token")
       
       const [pickListsRes, ordersRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/pick-lists/`, {
+        fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/pick-lists/`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/orders/`, {
+        fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/orders/`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
       ])
@@ -114,7 +114,7 @@ export default function PickListsPage() {
     const token = localStorage.getItem("access_token")
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/pick-lists/generate/${orderId}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/pick-lists/generate/${orderId}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -154,7 +154,7 @@ export default function PickListsPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/pick-lists/${pickListId}/items/${itemId}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/pick-lists/${pickListId}/items/${itemId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -183,7 +183,7 @@ export default function PickListsPage() {
     const token = localStorage.getItem("access_token")
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/pick-lists/${id}/complete`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/pick-lists/${id}/complete`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       })

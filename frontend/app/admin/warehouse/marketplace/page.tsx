@@ -60,7 +60,7 @@ export default function SupplierMarketplacePage() {
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers?limit=100`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers?limit=100`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       if (response.ok) {
@@ -78,7 +78,7 @@ export default function SupplierMarketplacePage() {
       const token = localStorage.getItem("access_token")
       // Fetch all products created by suppliers that are not in warehouse yet
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products?limit=200&created_by_type=supplier`,
+        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products?limit=200&created_by_type=supplier`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -100,7 +100,7 @@ export default function SupplierMarketplacePage() {
             if (product.supplier_id) {
               try {
                 const supplierResponse = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${product.supplier_id}`,
+                  `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${product.supplier_id}`,
                   { headers: { "Authorization": `Bearer ${token}` } }
                 )
                 if (supplierResponse.ok) {
@@ -216,7 +216,7 @@ export default function SupplierMarketplacePage() {
 
         console.log("Creating direct order:", payload)
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-offers/direct-order`, {
+        const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-offers/direct-order`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -276,7 +276,7 @@ export default function SupplierMarketplacePage() {
         special_requirements: requestForm.special_requirements || null
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-requests/broadcast`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-requests/broadcast`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

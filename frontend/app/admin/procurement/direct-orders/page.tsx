@@ -41,7 +41,7 @@ export default function AdminDirectOrders() {
       const token = localStorage.getItem("access_token")
       
       // Fetch all offers and filter for direct orders
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-offers/admin/all-offers`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-offers/admin/all-offers`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -82,7 +82,7 @@ export default function AdminDirectOrders() {
 
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supply-offers/${selectedOrder.id}/receive`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supply-offers/${selectedOrder.id}/receive`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
