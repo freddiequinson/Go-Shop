@@ -10,14 +10,14 @@ COPY package.json package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
-
-# Accept environment variable from build args
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Accept environment variable from build args
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # Set environment variable for build
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -29,9 +29,12 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# Accept environment variable from build args
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
