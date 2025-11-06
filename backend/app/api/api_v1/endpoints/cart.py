@@ -84,26 +84,58 @@ async def add_item_to_cart(
     Supports Ghana market quantified sales
     """
     try:
+        from app.models.product import Product
+        from app.models.cart import CartItem
+        
         cart_item = add_to_cart(db, current_user.id, request)
         
-        # Get updated cart details to return full item info
-        cart_data = get_cart_with_details(db, current_user.id)
+        # Fetch only the specific product details (optimized - single query)
+        product = db.query(Product).filter(Product.id == request.product_id).first()
         
-        # Find the added/updated item in the response
-        for item in cart_data['items']:
-            if item['product_id'] == request.product_id:
-                return CartItemResponse(**item)
+        if not product:
+            # Fallback without product details
+            return CartItemResponse(
+                id=cart_item.id,
+                cart_id=cart_item.cart_id,
+                product_id=cart_item.product_id,
+                quantity=cart_item.quantity,
+                price_per_unit_cedis=cart_item.price_per_unit_cedis,
+                line_total_cedis=cart_item.line_total_cedis,
+                price_per_unit=cart_item.price_per_unit,
+                line_total=cart_item.line_total,
+                subtotal=cart_item.line_total,
+                created_at=cart_item.created_at,
+                updated_at=cart_item.updated_at
+            )
         
-        # Fallback if not found in detailed response
+        # Get primary image
+        primary_image = product.images[0] if product.images else None
+        
+        # Return with product details
         return CartItemResponse(
             id=cart_item.id,
             cart_id=cart_item.cart_id,
             product_id=cart_item.product_id,
             quantity=cart_item.quantity,
-            price_per_unit_cents=cart_item.price_per_unit_cents,
-            line_total_cents=cart_item.line_total_cents,
+            price_per_unit_cedis=cart_item.price_per_unit_cedis,
+            line_total_cedis=cart_item.line_total_cedis,
+            price_per_unit=cart_item.price_per_unit,
+            line_total=cart_item.line_total,
+            subtotal=cart_item.line_total,
             created_at=cart_item.created_at,
-            updated_at=cart_item.updated_at
+            updated_at=cart_item.updated_at,
+            product={
+                'id': product.id,
+                'name': product.name,
+                'price_per_unit_cedis': cart_item.price_per_unit_cedis,
+                'unit_type': product.unit_type.value,
+                'image_url': primary_image,
+                'primary_image_url': primary_image
+            },
+            product_name=product.name,
+            product_unit_type=product.unit_type.value,
+            product_minimum_quantity=product.minimum_quantity,
+            product_images=product.images or []
         )
         
     except ValueError as e:

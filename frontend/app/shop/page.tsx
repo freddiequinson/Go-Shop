@@ -11,6 +11,7 @@ import { CartNotification } from "@/components/cart-notification"
 import { cartService } from "@/lib/api/services"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 interface Product {
   id: string
@@ -194,13 +195,14 @@ export default function ShopPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products?limit=100`)
+      const apiBaseUrl = getApiBaseUrl()
+      const response = await fetch(`${apiBaseUrl}/products?limit=100`)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []
         
         // Fetch categories first to map them
-        const categoriesResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/`)
+        const categoriesResponse = await fetch(`${apiBaseUrl}/products/categories/`)
         const categoriesData = categoriesResponse.ok ? await categoriesResponse.json() : []
         const categoryMap = new Map(categoriesData.map((c: any) => [c.id, c.name]))
         
