@@ -147,7 +147,22 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
             <input
               type="number"
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, Number.parseInt(e.target.value) || 1))}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '' || val === '0') {
+                  setQuantity(1)
+                } else {
+                  const num = Number.parseInt(val)
+                  if (!isNaN(num) && num > 0) {
+                    setQuantity(num)
+                  }
+                }
+              }}
+              onBlur={(e) => {
+                if (e.target.value === '' || Number.parseInt(e.target.value) < 1) {
+                  setQuantity(1)
+                }
+              }}
               className="flex-1 text-center text-2xl font-bold text-[#303A4D] bg-[#F4F2E6] rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-[#FED141]"
               min="1"
             />

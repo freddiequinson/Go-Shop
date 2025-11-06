@@ -196,7 +196,7 @@ export default function ShopPage() {
   const fetchProducts = async () => {
     try {
       const apiBaseUrl = getApiBaseUrl()
-      const response = await fetch(`${apiBaseUrl}/products?limit=100`)
+      const response = await fetch(`${apiBaseUrl}/products/?limit=100`)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []
