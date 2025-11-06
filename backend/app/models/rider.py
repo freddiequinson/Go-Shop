@@ -115,7 +115,7 @@ class Rider(Base):
     # Relationships
     deliveries = relationship("DeliveryAssignment", back_populates="rider")
     locations = relationship("RiderLocation", back_populates="rider", order_by="desc(RiderLocation.timestamp)")
-    delivery_otps = relationship("DeliveryOTP", back_populates="rider")
+    delivery_otps = relationship("DeliveryOTP")  # Removed back_populates to avoid circular import
 
     @property
     def success_rate(self):
