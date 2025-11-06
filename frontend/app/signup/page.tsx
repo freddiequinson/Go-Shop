@@ -4,7 +4,7 @@ import type React from "react"
 import { Upload, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { UserType } from "@/lib/types"
@@ -27,10 +27,24 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [countdown, setCountdown] = useState(5)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { register } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (registrationSuccess && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else if (registrationSuccess && countdown === 0) {
+      router.push('/')
+    }
+  }, [registrationSuccess, countdown, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -244,15 +258,10 @@ export default function SignupPage() {
         profile_picture_url: profilePicture || undefined,
       })
       
-      toast({
-        title: "🎉 Welcome to Go-Shop!",
-        description: `Hi ${formData.name}! Your account has been created successfully. Redirecting you to the homepage...`,
-      })
-
-      // Redirect to homepage after 2 seconds
-      setTimeout(() => {
-        router.push('/')
-      }, 2000)
+      // Mark registration as successful
+      setRegistrationSuccess(true)
+      setIsSubmitting(false)
+      setCountdown(5) // Reset countdown to 5 seconds
     } catch (error) {
       toast({
         title: "Registration Failed",
@@ -519,7 +528,7 @@ export default function SignupPage() {
             </Step>
           </Stepper>
 
-          <div className="mt-8 space-y-6">
+              <div className="mt-8 space-y-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t-2 border-[#303A4D]/20"></div>
@@ -580,6 +589,33 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+
+      {/* Success Modal Overlay */}
+      {registrationSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full animate-in zoom-in duration-500">
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center animate-in zoom-in duration-700">
+                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-[#303A4D] text-center">Welcome to Go-Shop!</h2>
+              <p className="text-lg text-[#303A4D]/70 text-center">
+                Hi {formData.name}! Your account has been created successfully.
+              </p>
+              <p className="text-sm text-[#303A4D]/60 text-center">
+                Redirecting you to the homepage in {countdown} second{countdown !== 1 ? 's' : ''}...
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
