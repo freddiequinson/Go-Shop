@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import httpx
 from typing import Optional
 import uuid
+import hashlib
 
 from app.db.database import get_db
 from app.schemas.user import Token, UserResponse, UserCreate
@@ -46,8 +47,9 @@ async def handle_oauth_user(
     # Create new user with OAuth data
     username = email.split('@')[0] + '_' + provider + '_' + str(uuid.uuid4())[:8]
     
-    # Generate a random password (truncate to 50 chars to avoid bcrypt 72-byte limit)
-    random_password = str(uuid.uuid4())[:50]
+    # Generate a secure random password using SHA256 hash (always 64 chars, safe for bcrypt)
+    random_uuid = str(uuid.uuid4())
+    random_password = hashlib.sha256(random_uuid.encode()).hexdigest()
     
     user_data = UserCreate(
         email=email,
