@@ -72,7 +72,7 @@ export default function DeliveryDetail({ params }: { params: Promise<{ id: strin
     try {
       setLoading(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/deliveries/${unwrappedParams.id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/riders/deliveries/${unwrappedParams.id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -123,7 +123,7 @@ export default function DeliveryDetail({ params }: { params: Promise<{ id: strin
   const handleRequestOTP = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/deliveries/${unwrappedParams.id}/request-otp`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/riders/deliveries/${unwrappedParams.id}/request-otp`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -166,7 +166,7 @@ export default function DeliveryDetail({ params }: { params: Promise<{ id: strin
     try {
       setVerifying(true)
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/riders/deliveries/${unwrappedParams.id}/complete?otp_code=${otpCode}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/riders/deliveries/${unwrappedParams.id}/complete?otp_code=${otpCode}`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

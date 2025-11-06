@@ -147,7 +147,7 @@ export default function WarehouseProductDetailPage() {
   const fetchInventoryDetails = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/inventory/${productId}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/inventory/${productId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -177,7 +177,7 @@ export default function WarehouseProductDetailPage() {
     setLoadingMovements(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/inventory/${productId}/movements`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/inventory/${productId}/movements`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -197,7 +197,7 @@ export default function WarehouseProductDetailPage() {
     setPublishing(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/products/${productId}/publish`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/products/${productId}/publish`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -232,7 +232,7 @@ export default function WarehouseProductDetailPage() {
     setPublishing(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/warehouse/products/${productId}/unpublish`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/warehouse/products/${productId}/unpublish`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       })

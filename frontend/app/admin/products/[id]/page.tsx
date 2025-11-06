@@ -75,7 +75,7 @@ export default function ProductDetailPage() {
       const token = localStorage.getItem("access_token")
       
       // Fetch product
-      const productResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
+      const productResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/${productId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -87,7 +87,7 @@ export default function ProductDetailPage() {
         
         // Fetch category if exists
         if (productData.category_id) {
-          const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/${productData.category_id}/`, {
+          const categoryResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/${productData.category_id}/`, {
             headers: { "Authorization": `Bearer ${token}` }
           })
           if (categoryResponse.ok) {
@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
         
         // Fetch supplier if exists
         if (productData.supplier_id) {
-          const supplierResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${productData.supplier_id}`, {
+          const supplierResponse = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${productData.supplier_id}`, {
             headers: { "Authorization": `Bearer ${token}` }
           })
           if (supplierResponse.ok) {
@@ -117,7 +117,7 @@ export default function ProductDetailPage() {
     
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}/`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/${productId}/`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })

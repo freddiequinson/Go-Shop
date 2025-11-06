@@ -111,7 +111,7 @@ export default function SupplierDetailPage() {
   const fetchSupplierDetails = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${params.id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${params.id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -132,13 +132,13 @@ export default function SupplierDetailPage() {
       
       // Fetch all product types for this supplier
       const [catalogRes, warehouseRes, linkedRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${params.id}/catalog`, {
+        fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${params.id}/catalog`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${params.id}/warehouse-products`, {
+        fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${params.id}/warehouse-products`, {
           headers: { "Authorization": `Bearer ${token}` }
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${params.id}/products`, {
+        fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${params.id}/products`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
       ])
@@ -167,7 +167,7 @@ export default function SupplierDetailPage() {
   const fetchSupplierOffers = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/supplier/offers?supplier_id=${params.id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers?supplier_id=${params.id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -182,7 +182,7 @@ export default function SupplierDetailPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/products/categories/")
+      const response = await fetch("${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/")
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -198,7 +198,7 @@ export default function SupplierDetailPage() {
     setActionLoading(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${supplier.id}/toggle-status`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${supplier.id}/toggle-status`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       })
@@ -227,7 +227,7 @@ export default function SupplierDetailPage() {
     setActionLoading(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/suppliers/${supplier.id}`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/suppliers/${supplier.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       })
