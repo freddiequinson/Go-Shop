@@ -10,6 +10,9 @@ import { AddToCartModal } from "@/components/add-to-cart-modal"
 import { CartNotification } from "@/components/cart-notification"
 import { useParams } from "next/navigation"
 import { ProductReviews } from "@/components/product-reviews"
+import { cartService } from "@/lib/api/services"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 interface Product {
   id: string
@@ -90,6 +93,8 @@ export default function ProductPage() {
   const productId = params.id as string
 
   const { addItem, totalItems } = useCart()
+  const { toast } = useToast()
+  const { isAuthenticated } = useAuth()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -184,18 +189,43 @@ export default function ProductPage() {
     }
   }
 
-  const handleAddToCart = (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
-    addItem({
-      id: String(product.id),
-      name: product.name,
-      price: product.price * quantity,
-      unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
-      vendor: "Go-Shop",
-      image: product.image,
-      quantity: 1
-    })
-    setShowNotification(true)
-    setTimeout(() => setShowNotification(false), 5000)
+  const handleAddToCart = async (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to add items to cart",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      // Call backend API to add to cart
+      await cartService.addToCart({
+        product_id: product.id,
+        quantity: quantity,
+      })
+
+      // Also update local cart for immediate UI feedback
+      addItem({
+        id: String(product.id),
+        name: product.name,
+        price: product.price * quantity,
+        unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
+        vendor: "Go-Shop",
+        image: product.image,
+        quantity: 1
+      })
+
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 5000)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
+      })
+    }
   }
 
   if (loading) {
