@@ -33,7 +33,8 @@ async def handle_oauth_user(
     email: str,
     full_name: str,
     provider: str,
-    provider_id: str
+    provider_id: str,
+    profile_picture_url: Optional[str] = None
 ) -> User:
     """
     Create or get user from OAuth provider
@@ -58,7 +59,8 @@ async def handle_oauth_user(
         user_type=UserType.BUYER,
         verification_status="verified",  # OAuth users are pre-verified
         is_active=True,
-        phone=None
+        phone=None,
+        profile_picture_url=profile_picture_url  # Store Google profile picture
     )
     
     db.add(new_user)
@@ -136,7 +138,8 @@ async def google_callback(callback_data: OAuthCallback, db: Session = Depends(ge
         email=user_info.get("email"),
         full_name=user_info.get("name"),
         provider="google",
-        provider_id=user_info.get("id")
+        provider_id=user_info.get("id"),
+        profile_picture_url=user_info.get("picture")  # Get Google profile picture
     )
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

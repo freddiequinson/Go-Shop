@@ -275,13 +275,15 @@ export default function Home() {
             <p className="text-lg md:text-xl text-[#303A4D] text-center md:text-left">
               Get all your groceries without all the hassle
             </p>
-            <Button
-              size="lg"
-              className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-6 md:px-8 py-5 md:py-6 text-base md:text-lg font-medium h-auto"
-            >
-              Find where to buy
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <Link href="/shop">
+              <Button
+                size="lg"
+                className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-6 md:px-8 py-5 md:py-6 text-base md:text-lg font-medium h-auto"
+              >
+                Find where to buy
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
           </div>
 
           {/* Decorative Circle Background */}
