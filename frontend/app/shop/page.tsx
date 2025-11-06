@@ -175,7 +175,7 @@ const demoProducts = [
 ]
 
 export default function ShopPage() {
-  const { addItem, totalItems } = useCart()
+  const { addItem, totalItems, refreshCart } = useCart()
   const { toast } = useToast()
   const { isAuthenticated, user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
@@ -270,15 +270,8 @@ export default function ShopPage() {
         quantity: quantity,
       })
       
-      // Also update local context for immediate UI feedback
-      addItem({
-        id: Number(product.id),
-        name: product.name,
-        price: product.price * quantity,
-        unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
-        vendor: "Go-Shop",
-        image: product.image
-      })
+      // Refresh cart from backend to get accurate count
+      await refreshCart()
       
       setNotificationProduct(product.name)
       setShowNotification(true)

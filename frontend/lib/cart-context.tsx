@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
+import { cartService } from "./api/services"
 
 export interface CartItem {
   id: number
@@ -21,12 +22,51 @@ interface CartContextType {
   clearCart: () => void
   totalItems: number
   totalPrice: number
+  refreshCart: () => Promise<void>
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch cart from backend on mount
+  useEffect(() => {
+    refreshCart()
+  }, [])
+
+  const refreshCart = async () => {
+    try {
+      // Check if user is authenticated by checking for token
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+      if (!token) {
+        setItems([])
+        setIsLoading(false)
+        return
+      }
+
+      const cartData = await cartService.getCart()
+      
+      // Transform backend cart items to match our CartItem interface
+      const transformedItems: CartItem[] = cartData.items.map((item: any) => ({
+        id: Number(item.product_id),
+        name: item.product?.name || item.product_name || 'Unknown Product',
+        price: Number(item.price_per_unit_cedis || item.price_per_unit || 0) / 100, // Convert from cents
+        unit: item.product?.unit_type || 'kg',
+        vendor: 'Go-Shop',
+        image: item.product?.image_url || item.product?.primary_image_url || '/placeholder.svg',
+        quantity: Number(item.quantity)
+      }))
+      
+      setItems(transformedItems)
+    } catch (error) {
+      console.error('Failed to fetch cart:', error)
+      setItems([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const addItem = (item: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {
@@ -58,7 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice, refreshCart }}>
       {children}
     </CartContext.Provider>
   )

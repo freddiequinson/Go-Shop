@@ -92,7 +92,7 @@ export default function ProductPage() {
   const params = useParams()
   const productId = params.id as string
 
-  const { addItem, totalItems } = useCart()
+  const { addItem, totalItems, refreshCart } = useCart()
   const { toast } = useToast()
   const { isAuthenticated } = useAuth()
   const [product, setProduct] = useState<Product | null>(null)
@@ -206,16 +206,8 @@ export default function ProductPage() {
         quantity: quantity,
       })
 
-      // Also update local cart for immediate UI feedback
-      addItem({
-        id: String(product.id),
-        name: product.name,
-        price: product.price * quantity,
-        unit: purchaseType === "weight" ? `${quantity}${product.unit_type}` : `x${quantity}`,
-        vendor: "Go-Shop",
-        image: product.image,
-        quantity: 1
-      })
+      // Refresh cart from backend to get accurate count
+      await refreshCart()
 
       setShowNotification(true)
       setTimeout(() => setShowNotification(false), 5000)
