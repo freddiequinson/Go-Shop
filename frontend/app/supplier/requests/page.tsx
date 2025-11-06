@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Package, Calendar, MapPin, DollarSign, Send, Filter } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
 
 interface SupplyRequest {
@@ -54,7 +55,7 @@ export default function SupplierRequests() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests?include_open=${includeOpen}`,
+        `${getApiBaseUrl()}/supplier/requests?include_open=${includeOpen}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -80,7 +81,7 @@ export default function SupplierRequests() {
       const token = localStorage.getItem("access_token")
       
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests/${selectedRequest.id}/offer`,
+        `${getApiBaseUrl()}/supplier/requests/${selectedRequest.id}/offer`,
         {
           method: "POST",
           headers: {

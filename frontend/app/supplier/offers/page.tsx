@@ -12,6 +12,7 @@ import { Package, Calendar, DollarSign, Edit, Trash2, CheckCircle, XCircle, Cloc
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 interface SupplyOffer {
   id: string
@@ -77,8 +78,8 @@ export default function SupplierOffers() {
       const token = localStorage.getItem("access_token")
       
       const url = statusFilter 
-        ? `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers?status=${statusFilter}`
-        : `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/offers`
+        ? `${getApiBaseUrl()}/supplier/offers?status=${statusFilter}`
+        : `${getApiBaseUrl()}/supplier/offers`
       
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }

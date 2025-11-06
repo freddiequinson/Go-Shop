@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Star, TrendingUp, Package, Award } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 interface SupplierProfile {
   id: string
@@ -37,7 +38,7 @@ export default function SupplierProfile() {
       const token = localStorage.getItem("access_token")
 
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/profile`,
+        `${getApiBaseUrl()}/supplier/profile`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
