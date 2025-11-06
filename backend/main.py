@@ -3,9 +3,11 @@ GoShopGhana FastAPI Backend
 Main application entry point
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.config import settings
 from app.api.api_v1.api import api_router
@@ -28,9 +30,19 @@ app = FastAPI(
     version=settings.VERSION,
     description="GoShopGhana - Social Commerce Platform for Ghana",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan,
-    redirect_slashes=False  # Disable automatic trailing slash redirects to prevent HTTP downgrade
+    lifespan=lifespan
 )
+
+# Middleware to force HTTPS in redirects
+class ForceHTTPSRedirectMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # If it's a redirect, ensure it uses HTTPS
+        if response.status_code in (301, 302, 303, 307, 308):
+            location = response.headers.get("location")
+            if location and location.startswith("http://"):
+                response.headers["location"] = location.replace("http://", "https://", 1)
+        return response
 
 # Set up CORS
 app.add_middleware(
@@ -40,6 +52,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add HTTPS redirect middleware (must be before audit middleware)
+app.add_middleware(ForceHTTPSRedirectMiddleware)
 
 # Add audit logging middleware
 app.add_middleware(AuditLoggingMiddleware)
