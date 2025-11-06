@@ -118,18 +118,48 @@ def delete_user(db: Session, user_id: str) -> bool:
         # Get all order IDs for this user first
         order_ids_query = "SELECT id FROM orders WHERE user_id = :user_id"
         
-        # Delete all tables that reference orders
-        db.execute(text("DELETE FROM delivery_otps WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
-        db.execute(text("DELETE FROM rider_locations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
-        db.execute(text("DELETE FROM delivery_assignments WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
-        db.execute(text("DELETE FROM pick_lists WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
-        db.execute(text("DELETE FROM payment_attempts WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        # Delete all tables that reference orders (wrap in try-except for tables that may not exist)
+        # Use savepoints to handle errors without aborting the entire transaction
+        try:
+            db.execute(text("SAVEPOINT before_delivery_otps"))
+            db.execute(text("DELETE FROM delivery_otps WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            db.execute(text("ROLLBACK TO SAVEPOINT before_delivery_otps"))
+        
+        try:
+            db.execute(text("SAVEPOINT before_rider_locations"))
+            db.execute(text("DELETE FROM rider_locations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            db.execute(text("ROLLBACK TO SAVEPOINT before_rider_locations"))
+        
+        try:
+            db.execute(text("SAVEPOINT before_delivery_assignments"))
+            db.execute(text("DELETE FROM delivery_assignments WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            db.execute(text("ROLLBACK TO SAVEPOINT before_delivery_assignments"))
+        
+        try:
+            db.execute(text("SAVEPOINT before_pick_lists"))
+            db.execute(text("DELETE FROM pick_lists WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            db.execute(text("ROLLBACK TO SAVEPOINT before_pick_lists"))
+        
+        try:
+            db.execute(text("SAVEPOINT before_payment_attempts"))
+            db.execute(text("DELETE FROM payment_attempts WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            db.execute(text("ROLLBACK TO SAVEPOINT before_payment_attempts"))
+        
+        # Delete order_items - this is critical
         db.execute(text("DELETE FROM order_items WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
         
         # Delete conversations related to orders (if any)
-        db.execute(text("DELETE FROM conversation_participants WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
-        db.execute(text("DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
-        db.execute(text("DELETE FROM conversations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        try:
+            db.execute(text("DELETE FROM conversation_participants WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
+            db.execute(text("DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE order_id IN (" + order_ids_query + "))"), {"user_id": user_id})
+            db.execute(text("DELETE FROM conversations WHERE order_id IN (" + order_ids_query + ")"), {"user_id": user_id})
+        except Exception:
+            pass
         
         # Finally delete the orders themselves
         db.execute(text("DELETE FROM orders WHERE user_id = :user_id"), {"user_id": user_id})
@@ -157,43 +187,43 @@ def delete_user(db: Session, user_id: str) -> bool:
         # Delete user addresses
         db.execute(text("DELETE FROM user_addresses WHERE user_id = :user_id"), {"user_id": user_id})
         
-        # Handle rider-related records if user is a rider
+        # Handle rider-related records if user is a rider (use savepoints)
         try:
+            db.execute(text("SAVEPOINT before_rider_ops"))
             db.execute(text("UPDATE delivery_assignments SET assigned_by = NULL WHERE assigned_by = :user_id"), {"user_id": user_id})
             db.execute(text("DELETE FROM rider_locations WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
             db.execute(text("DELETE FROM delivery_assignments WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
             db.execute(text("DELETE FROM delivery_otps WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
             db.execute(text("DELETE FROM riders WHERE user_id = :user_id"), {"user_id": user_id})
         except Exception:
-            db.rollback()  # Rollback failed transaction
-            db.begin()  # Start new transaction
+            db.execute(text("ROLLBACK TO SAVEPOINT before_rider_ops"))
         
         # Handle products if user is a seller
         try:
+            db.execute(text("SAVEPOINT before_products"))
             db.execute(text("DELETE FROM products WHERE seller_id = :user_id"), {"user_id": user_id})
         except Exception:
-            db.rollback()
-            db.begin()
+            db.execute(text("ROLLBACK TO SAVEPOINT before_products"))
         
         # Handle supply requests and related records
         try:
+            db.execute(text("SAVEPOINT before_suppliers"))
             db.execute(text("DELETE FROM supply_offers WHERE supplier_id IN (SELECT id FROM suppliers WHERE user_id = :user_id)"), {"user_id": user_id})
             db.execute(text("DELETE FROM suppliers WHERE user_id = :user_id"), {"user_id": user_id})
             db.execute(text("DELETE FROM supply_requests WHERE created_by_user_id = :user_id"), {"user_id": user_id})
         except Exception:
-            db.rollback()
-            db.begin()
+            db.execute(text("ROLLBACK TO SAVEPOINT before_suppliers"))
         
         # Handle warehouse operations - set user references to NULL where appropriate
         try:
+            db.execute(text("SAVEPOINT before_warehouse"))
             db.execute(text("UPDATE inventory_movements SET performed_by = NULL WHERE performed_by = :user_id"), {"user_id": user_id})
             db.execute(text("UPDATE inventory_discrepancies SET resolved_by = NULL WHERE resolved_by = :user_id"), {"user_id": user_id})
             db.execute(text("UPDATE goods_received_notes SET quality_check_by = NULL WHERE quality_check_by = :user_id"), {"user_id": user_id})
             db.execute(text("UPDATE goods_received_notes SET rated_by = NULL WHERE rated_by = :user_id"), {"user_id": user_id})
             db.execute(text("UPDATE pick_lists SET assigned_to = NULL WHERE assigned_to = :user_id"), {"user_id": user_id})
         except Exception:
-            db.rollback()
-            db.begin()
+            db.execute(text("ROLLBACK TO SAVEPOINT before_warehouse"))
         
         # Handle review-related records
         db.execute(text("UPDATE reviews SET moderated_by_id = NULL WHERE moderated_by_id = :user_id"), {"user_id": user_id})
