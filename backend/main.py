@@ -28,7 +28,8 @@ app = FastAPI(
     version=settings.VERSION,
     description="GoShopGhana - Social Commerce Platform for Ghana",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False  # Disable automatic trailing slash redirects to prevent HTTP downgrade
 )
 
 # Set up CORS
