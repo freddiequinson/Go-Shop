@@ -289,7 +289,7 @@ async def send_coupon(
     from typing import Optional
     
     # Get the coupon
-    coupon = crud_coupon.get_coupon(db, coupon_id)
+    coupon = crud_coupon.get_coupon_by_id(db, coupon_id)
     if not coupon:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

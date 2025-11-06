@@ -86,13 +86,13 @@ export default function AdminGiftCardsPage() {
   const [selectedCardForSend, setSelectedCardForSend] = useState<GiftCard | null>(null)
 
   useEffect(() => {
-    if (!authLoading && (!isAuthenticated || user?.user_type !== 'admin')) {
+    if (!authLoading && (!isAuthenticated || user?.user_type !== 'ADMIN')) {
       router.push('/login')
     }
-  }, [isAuthenticated, user, authLoading, router])
+  }, [isAuthenticated, user, authLoading])
 
   useEffect(() => {
-    if (isAuthenticated && user?.user_type === 'admin') {
+    if (isAuthenticated && user?.user_type === 'ADMIN') {
       fetchGiftCards()
       fetchStats()
     }

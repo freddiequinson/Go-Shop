@@ -46,7 +46,7 @@ interface CouponStats {
 }
 
 export default function CouponsPage() {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   
@@ -60,12 +60,15 @@ export default function CouponsPage() {
   const [selectedCouponForSend, setSelectedCouponForSend] = useState<Coupon | null>(null)
 
   useEffect(() => {
+    // Wait for auth to load before checking
+    if (authLoading) return
+    
     if (!isAuthenticated) {
       router.push("/login")
       return
     }
     
-    if (user?.user_type?.toUpperCase() !== "ADMIN") {
+    if (user?.user_type !== "ADMIN") {
       router.push("/")
       toast({
         title: "Access Denied",
@@ -77,7 +80,7 @@ export default function CouponsPage() {
     
     loadCoupons()
     loadStats()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, authLoading])
 
   const loadCoupons = async () => {
     try {
