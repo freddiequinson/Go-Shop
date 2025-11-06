@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { User, Lock, Building, Phone, Mail, MapPin, Save } from "lucide-react"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 interface SupplierProfile {
   id: string
@@ -51,7 +52,7 @@ export default function SupplierSettings() {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/profile`, {
+      const response = await fetch(`${getApiBaseUrl()}/supplier/profile`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
 
@@ -96,7 +97,7 @@ export default function SupplierSettings() {
         location: location
       }
 
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/profile`, {
+      const response = await fetch(`${getApiBaseUrl()}/supplier/profile`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -173,7 +174,7 @@ export default function SupplierSettings() {
         return
       }
 
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/credentials?${params}`, {
+      const response = await fetch(`${getApiBaseUrl()}/supplier/credentials?${params}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`

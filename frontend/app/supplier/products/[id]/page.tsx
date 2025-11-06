@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 interface Product {
   id: string
@@ -96,7 +97,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/requests?product_id=${params.id}`,
+        `${getApiBaseUrl()}/supplier/requests?product_id=${params.id}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -115,7 +116,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${params.id}/toggle-status`,
+        `${getApiBaseUrl()}/supplier/products/${params.id}/toggle-status`,
         {
           method: "PUT",
           headers: { "Authorization": `Bearer ${token}` }
@@ -146,7 +147,7 @@ export default function SupplierProductDetail() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${params.id}`,
+        `${getApiBaseUrl()}/supplier/products/${params.id}`,
         {
           method: "DELETE",
           headers: { "Authorization": `Bearer ${token}` }
@@ -203,7 +204,7 @@ export default function SupplierProductDetail() {
       const token = localStorage.getItem("access_token")
       
       // Build URL with reason parameter
-      let url = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${params.id}/stock?stock_quantity=${newStock}`
+      let url = `${getApiBaseUrl()}/supplier/products/${params.id}/stock?stock_quantity=${newStock}`
       if (stockReason.trim()) {
         url += `&reason=${encodeURIComponent(stockReason)}`
       }

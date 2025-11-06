@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
 
 export default function EditSupplierProduct() {
   const router = useRouter()
@@ -39,7 +40,7 @@ export default function EditSupplierProduct() {
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${params.id}`,
+        `${getApiBaseUrl()}/supplier/products/${params.id}`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }
@@ -75,7 +76,7 @@ export default function EditSupplierProduct() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/")
+      const response = await fetch(`${getApiBaseUrl()}/products/categories/`)
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -127,7 +128,7 @@ export default function EditSupplierProduct() {
         images: images
       }
 
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/supplier/products/${params.id}`, {
+      const response = await fetch(`${getApiBaseUrl()}/supplier/products/${params.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
