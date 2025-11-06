@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Copy, Tag, TrendingUp, Calendar, Users } from "lucide-react"
+import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Copy, Tag, TrendingUp, Calendar, Users, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/auth-context"
 import apiClient from "@/lib/api/client"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
+import SendModal from "@/components/admin/SendModal"
 
 interface Coupon {
   id: string
@@ -55,6 +56,8 @@ export default function CouponsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null)
   const [filter, setFilter] = useState<"all" | "active" | "expired">("all")
+  const [sendModalOpen, setSendModalOpen] = useState(false)
+  const [selectedCouponForSend, setSelectedCouponForSend] = useState<Coupon | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -409,6 +412,20 @@ export default function CouponsPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {coupon.is_active && (
+                            <Button
+                              onClick={() => {
+                                setSelectedCouponForSend(coupon)
+                                setSendModalOpen(true)
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="text-[#FED141] hover:text-[#FED141]/80"
+                              title="Send"
+                            >
+                              <Send className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button
                             onClick={() => toggleCouponStatus(coupon.id)}
                             variant="ghost"
@@ -457,6 +474,26 @@ export default function CouponsPage() {
         </div>
       </div>
       </div>
+
+      {/* Send Modal */}
+      {selectedCouponForSend && (
+        <SendModal
+          isOpen={sendModalOpen}
+          onClose={() => {
+            setSendModalOpen(false)
+            setSelectedCouponForSend(null)
+          }}
+          itemId={selectedCouponForSend.id}
+          itemType="coupon"
+          itemCode={selectedCouponForSend.code}
+          onSendSuccess={() => {
+            toast({
+              title: "Success",
+              description: "Coupon sent successfully!"
+            })
+          }}
+        />
+      )}
     </>
   )
 }

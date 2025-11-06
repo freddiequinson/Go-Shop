@@ -268,3 +268,119 @@ async def duplicate_coupon(
     )
     
     return crud_coupon.create_coupon(db, coupon_data)
+
+
+@router.post("/{coupon_id}/send")
+async def send_coupon(
+    coupon_id: str,
+    recipient_email: str = None,
+    recipient_phone: str = None,
+    recipient_user_id: str = None,
+    message: str = None,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Send coupon via email or SMS (Admin only)
+    """
+    from app.core.email import send_email
+    from app.services.hubtel_sms import HubtelSMSService
+    from app.crud.user import get_user_by_id
+    from typing import Optional
+    
+    # Get the coupon
+    coupon = crud_coupon.get_coupon(db, coupon_id)
+    if not coupon:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Coupon not found"
+        )
+    
+    # If recipient_user_id is provided, get user details
+    if recipient_user_id:
+        recipient_user = get_user_by_id(db, recipient_user_id)
+        if not recipient_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Recipient user not found"
+            )
+        recipient_email = recipient_email or recipient_user.email
+        recipient_phone = recipient_phone or recipient_user.phone_number
+    
+    if not recipient_email and not recipient_phone:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either email or phone number must be provided"
+        )
+    
+    results = {"email": None, "sms": None}
+    
+    # Determine discount description
+    discount_desc = ""
+    if coupon.benefit_type == "discount":
+        if coupon.discount_type == "percentage":
+            discount_desc = f"{coupon.discount_value}% off"
+        else:
+            discount_desc = f"GH₵{coupon.discount_value / 100:.2f} off"
+    elif coupon.benefit_type == "free_delivery":
+        discount_desc = "Free Delivery"
+    elif coupon.benefit_type == "wallet_credit":
+        discount_desc = f"GH₵{coupon.wallet_credit_amount / 100:.2f} wallet credit"
+    
+    # Send via email
+    if recipient_email:
+        try:
+            custom_message = message or "You've received a special coupon from GoShopGhana!"
+            html_content = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background-color: #FED141; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                        <h1 style="color: #303A4D; margin: 0;">🎟️ Special Coupon from GoShopGhana</h1>
+                    </div>
+                    <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                        <p style="font-size: 16px; color: #303A4D;">{custom_message}</p>
+                        <div style="background-color: white; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #FED141;">
+                            <p style="margin: 0; color: #666;">Coupon Code:</p>
+                            <h2 style="margin: 10px 0; color: #303A4D; font-size: 28px; letter-spacing: 2px;">{coupon.code}</h2>
+                            <p style="margin: 10px 0 0 0; color: #666;">Benefit: <strong style="color: #303A4D;">{discount_desc}</strong></p>
+                            {f'<p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">{coupon.description}</p>' if coupon.description else ''}
+                        </div>
+                        <p style="font-size: 14px; color: #666;">
+                            To use this coupon, visit <a href="https://goshopghana.com" style="color: #FED141;">goshopghana.com</a> 
+                            and enter the code during checkout.
+                        </p>
+                        {f'<p style="font-size: 14px; color: #666;">Valid until: {coupon.valid_until.strftime("%B %d, %Y")}</p>' if coupon.valid_until else ''}
+                        {f'<p style="font-size: 14px; color: #666;">Minimum order: GH₵{coupon.min_order_amount / 100:.2f}</p>' if coupon.min_order_amount else ''}
+                    </div>
+                </body>
+            </html>
+            """
+            
+            email_sent = send_email(
+                email_to=recipient_email,
+                subject="🎟️ You've Received a GoShopGhana Coupon!",
+                html_content=html_content
+            )
+            results["email"] = "sent" if email_sent else "failed"
+        except Exception as e:
+            results["email"] = f"error: {str(e)}"
+    
+    # Send via SMS
+    if recipient_phone:
+        try:
+            sms_service = HubtelSMSService()
+            sms_message = f"You've received a GoShopGhana Coupon! Code: {coupon.code} | {discount_desc}. Use at goshopghana.com"
+            
+            sms_response = await sms_service.send_sms(
+                recipient=recipient_phone,
+                message=sms_message
+            )
+            results["sms"] = "sent" if sms_response.get("status") == "success" else "failed"
+        except Exception as e:
+            results["sms"] = f"error: {str(e)}"
+    
+    return {
+        "message": "Coupon sent",
+        "results": results,
+        "coupon_code": coupon.code
+    }

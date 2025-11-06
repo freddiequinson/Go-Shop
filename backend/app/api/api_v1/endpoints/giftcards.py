@@ -327,3 +327,108 @@ async def get_giftcard_stats_endpoint(
     stats = get_giftcard_stats(db)
     
     return GiftCardStats(**stats)
+
+
+@router.post("/{giftcard_id}/send")
+async def send_giftcard(
+    giftcard_id: str,
+    recipient_email: Optional[str] = None,
+    recipient_phone: Optional[str] = None,
+    recipient_user_id: Optional[str] = None,
+    message: Optional[str] = None,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Send gift card via email or SMS (Admin only)
+    """
+    from app.core.email import send_email
+    from app.services.hubtel_sms import HubtelSMSService
+    from app.crud.user import get_user_by_id
+    
+    # Get the gift card
+    giftcard = get_giftcard_by_id(db, giftcard_id)
+    if not giftcard:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Gift card not found"
+        )
+    
+    # If recipient_user_id is provided, get user details
+    if recipient_user_id:
+        recipient_user = get_user_by_id(db, recipient_user_id)
+        if not recipient_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Recipient user not found"
+            )
+        recipient_email = recipient_email or recipient_user.email
+        recipient_phone = recipient_phone or recipient_user.phone_number
+    
+    if not recipient_email and not recipient_phone:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either email or phone number must be provided"
+        )
+    
+    results = {"email": None, "sms": None}
+    
+    # Send via email
+    if recipient_email:
+        try:
+            custom_message = message or "You've received a gift card from GoShopGhana!"
+            html_content = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background-color: #FED141; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                        <h1 style="color: #303A4D; margin: 0;">🎁 Gift Card from GoShopGhana</h1>
+                    </div>
+                    <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                        <p style="font-size: 16px; color: #303A4D;">{custom_message}</p>
+                        <div style="background-color: white; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #FED141;">
+                            <p style="margin: 0; color: #666;">Gift Card Code:</p>
+                            <h2 style="margin: 10px 0; color: #303A4D; font-size: 28px; letter-spacing: 2px;">{giftcard.code}</h2>
+                            {f'<p style="margin: 0; color: #666;">PIN:</p><h3 style="margin: 10px 0; color: #303A4D;">{giftcard.pin}</h3>' if giftcard.pin else ''}
+                            <p style="margin: 10px 0 0 0; color: #666;">Amount: <strong style="color: #303A4D;">GH₵{giftcard.amount / 100:.2f}</strong></p>
+                        </div>
+                        <p style="font-size: 14px; color: #666;">
+                            To redeem this gift card, visit <a href="https://goshopghana.com" style="color: #FED141;">goshopghana.com</a> 
+                            and enter the code during checkout.
+                        </p>
+                        {f'<p style="font-size: 14px; color: #666;">Expires: {giftcard.expires_at.strftime("%B %d, %Y")}</p>' if giftcard.expires_at else ''}
+                    </div>
+                </body>
+            </html>
+            """
+            
+            email_sent = send_email(
+                email_to=recipient_email,
+                subject="🎁 You've Received a GoShopGhana Gift Card!",
+                html_content=html_content
+            )
+            results["email"] = "sent" if email_sent else "failed"
+        except Exception as e:
+            results["email"] = f"error: {str(e)}"
+    
+    # Send via SMS
+    if recipient_phone:
+        try:
+            sms_service = HubtelSMSService()
+            sms_message = f"You've received a GoShopGhana Gift Card! Code: {giftcard.code}"
+            if giftcard.pin:
+                sms_message += f" | PIN: {giftcard.pin}"
+            sms_message += f" | Amount: GH₵{giftcard.amount / 100:.2f}. Redeem at goshopghana.com"
+            
+            sms_response = await sms_service.send_sms(
+                recipient=recipient_phone,
+                message=sms_message
+            )
+            results["sms"] = "sent" if sms_response.get("status") == "success" else "failed"
+        except Exception as e:
+            results["sms"] = f"error: {str(e)}"
+    
+    return {
+        "message": "Gift card sent",
+        "results": results,
+        "giftcard_code": giftcard.code
+    }

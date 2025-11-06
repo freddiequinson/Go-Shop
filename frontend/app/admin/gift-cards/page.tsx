@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Gift, Plus, Search, Filter, Download, X, Loader2, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle, Clock } from "lucide-react"
+import { Gift, Plus, Search, Filter, Download, X, Loader2, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle, Clock, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import apiClient from "@/lib/api/client"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
+import SendModal from "@/components/admin/SendModal"
 
 interface GiftCard {
   id: string
@@ -81,6 +82,8 @@ export default function AdminGiftCardsPage() {
   })
   const [isCreating, setIsCreating] = useState(false)
   const [createdCards, setCreatedCards] = useState<GiftCard[]>([])
+  const [sendModalOpen, setSendModalOpen] = useState(false)
+  const [selectedCardForSend, setSelectedCardForSend] = useState<GiftCard | null>(null)
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || user?.user_type !== 'admin')) {
@@ -448,16 +451,32 @@ export default function AdminGiftCardsPage() {
                         {new Date(card.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {card.status.toLowerCase() === 'active' && (
-                          <Button
-                            onClick={() => handleCancelCard(card.id)}
-                            variant="outline"
-                            size="sm"
-                            className="border-red-300 text-red-600 hover:bg-red-50"
-                          >
-                            Cancel
-                          </Button>
-                        )}
+                        <div className="flex gap-2 justify-end">
+                          {card.status.toLowerCase() === 'active' && (
+                            <>
+                              <Button
+                                onClick={() => {
+                                  setSelectedCardForSend(card)
+                                  setSendModalOpen(true)
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="border-[#FED141] text-[#303A4D] hover:bg-[#FED141]/10"
+                              >
+                                <Send className="w-4 h-4 mr-1" />
+                                Send
+                              </Button>
+                              <Button
+                                onClick={() => handleCancelCard(card.id)}
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -466,6 +485,26 @@ export default function AdminGiftCardsPage() {
             </table>
           </div>
         </Card>
+
+        {/* Send Modal */}
+        {selectedCardForSend && (
+          <SendModal
+            isOpen={sendModalOpen}
+            onClose={() => {
+              setSendModalOpen(false)
+              setSelectedCardForSend(null)
+            }}
+            itemId={selectedCardForSend.id}
+            itemType="giftcard"
+            itemCode={selectedCardForSend.code}
+            onSendSuccess={() => {
+              toast({
+                title: "Success",
+                description: "Gift card sent successfully!"
+              })
+            }}
+          />
+        )}
 
         {/* Create Gift Card Modal */}
         {showCreateModal && (
