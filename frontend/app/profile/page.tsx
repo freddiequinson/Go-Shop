@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ShoppingBag } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { ordersService, paymentsService } from "@/lib/api/services"
@@ -93,7 +94,12 @@ export default function ProfilePage() {
               <span className="font-semibold">Back to Home</span>
             </Link>
             <h1 className="text-2xl font-bold text-[#303A4D]">My Profile</h1>
-            <div className="w-32" />
+            <Link href="/shop">
+              <Button className="bg-[#303A4D] hover:bg-[#3B4559] text-white">
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                Continue Shopping
+              </Button>
+            </Link>
           </div>
         </div>
       </header>

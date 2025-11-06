@@ -43,13 +43,25 @@ function GoogleCallbackContent() {
         // CRITICAL FIX: Update AuthContext by refreshing user data
         await refreshUser()
         
-        // Get user name from response
+        // Get user name and profile picture from response
         const userName = response.data.user?.full_name || 'there'
+        const hasProfilePicture = !!response.data.user?.profile_picture_url
         
         toast({
           title: "🎉 Welcome to GoShop Ghana!",
           description: `Hi ${userName}! You've successfully signed in with Google. Start shopping for fresh groceries!`,
         })
+        
+        // Show profile picture reminder if missing
+        if (!hasProfilePicture) {
+          setTimeout(() => {
+            toast({
+              title: "📸 Complete Your Profile",
+              description: "Add a profile picture to personalize your account. Visit your profile page to upload one!",
+              duration: 6000,
+            })
+          }, 2000)
+        }
         
         // Small delay to ensure state updates before redirect
         setTimeout(() => {
