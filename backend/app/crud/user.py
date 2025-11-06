@@ -97,9 +97,13 @@ def delete_user(db: Session, user_id: str) -> bool:
     
     try:
         # Delete related records first to avoid foreign key constraint violations
+        # Note: Some deletions are wrapped in try-except to handle tables that may not exist
         
         # Delete user's cart items (through cart relationship)
-        db.execute(text("DELETE FROM cart_items WHERE cart_id IN (SELECT id FROM carts WHERE user_id = :user_id)"), {"user_id": user_id})
+        try:
+            db.execute(text("DELETE FROM cart_items WHERE cart_id IN (SELECT id FROM carts WHERE user_id = :user_id)"), {"user_id": user_id})
+        except Exception:
+            pass  # Table might not exist
         
         # Delete user's cart
         db.execute(text("DELETE FROM carts WHERE user_id = :user_id"), {"user_id": user_id})
@@ -154,27 +158,38 @@ def delete_user(db: Session, user_id: str) -> bool:
         db.execute(text("DELETE FROM user_addresses WHERE user_id = :user_id"), {"user_id": user_id})
         
         # Handle rider-related records if user is a rider
-        db.execute(text("UPDATE delivery_assignments SET assigned_by = NULL WHERE assigned_by = :user_id"), {"user_id": user_id})
-        db.execute(text("DELETE FROM rider_documents WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
-        db.execute(text("DELETE FROM rider_locations WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
-        db.execute(text("DELETE FROM delivery_assignments WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
-        db.execute(text("DELETE FROM delivery_otps WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
-        db.execute(text("DELETE FROM riders WHERE user_id = :user_id"), {"user_id": user_id})
+        try:
+            db.execute(text("UPDATE delivery_assignments SET assigned_by = NULL WHERE assigned_by = :user_id"), {"user_id": user_id})
+            db.execute(text("DELETE FROM rider_locations WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
+            db.execute(text("DELETE FROM delivery_assignments WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
+            db.execute(text("DELETE FROM delivery_otps WHERE rider_id IN (SELECT id FROM riders WHERE user_id = :user_id)"), {"user_id": user_id})
+            db.execute(text("DELETE FROM riders WHERE user_id = :user_id"), {"user_id": user_id})
+        except Exception:
+            pass  # Rider tables might not exist or have different structure
         
         # Handle products if user is a seller
-        db.execute(text("DELETE FROM products WHERE seller_id = :user_id"), {"user_id": user_id})
+        try:
+            db.execute(text("DELETE FROM products WHERE seller_id = :user_id"), {"user_id": user_id})
+        except Exception:
+            pass
         
         # Handle supply requests and related records
-        db.execute(text("DELETE FROM supply_offers WHERE supplier_id IN (SELECT id FROM suppliers WHERE user_id = :user_id)"), {"user_id": user_id})
-        db.execute(text("DELETE FROM suppliers WHERE user_id = :user_id"), {"user_id": user_id})
-        db.execute(text("DELETE FROM supply_requests WHERE created_by_user_id = :user_id"), {"user_id": user_id})
+        try:
+            db.execute(text("DELETE FROM supply_offers WHERE supplier_id IN (SELECT id FROM suppliers WHERE user_id = :user_id)"), {"user_id": user_id})
+            db.execute(text("DELETE FROM suppliers WHERE user_id = :user_id"), {"user_id": user_id})
+            db.execute(text("DELETE FROM supply_requests WHERE created_by_user_id = :user_id"), {"user_id": user_id})
+        except Exception:
+            pass
         
         # Handle warehouse operations - set user references to NULL where appropriate
-        db.execute(text("UPDATE inventory_movements SET performed_by = NULL WHERE performed_by = :user_id"), {"user_id": user_id})
-        db.execute(text("UPDATE inventory_discrepancies SET resolved_by = NULL WHERE resolved_by = :user_id"), {"user_id": user_id})
-        db.execute(text("UPDATE goods_received_notes SET quality_check_by = NULL WHERE quality_check_by = :user_id"), {"user_id": user_id})
-        db.execute(text("UPDATE goods_received_notes SET rated_by = NULL WHERE rated_by = :user_id"), {"user_id": user_id})
-        db.execute(text("UPDATE pick_lists SET assigned_to = NULL WHERE assigned_to = :user_id"), {"user_id": user_id})
+        try:
+            db.execute(text("UPDATE inventory_movements SET performed_by = NULL WHERE performed_by = :user_id"), {"user_id": user_id})
+            db.execute(text("UPDATE inventory_discrepancies SET resolved_by = NULL WHERE resolved_by = :user_id"), {"user_id": user_id})
+            db.execute(text("UPDATE goods_received_notes SET quality_check_by = NULL WHERE quality_check_by = :user_id"), {"user_id": user_id})
+            db.execute(text("UPDATE goods_received_notes SET rated_by = NULL WHERE rated_by = :user_id"), {"user_id": user_id})
+            db.execute(text("UPDATE pick_lists SET assigned_to = NULL WHERE assigned_to = :user_id"), {"user_id": user_id})
+        except Exception:
+            pass
         
         # Handle review-related records
         db.execute(text("UPDATE reviews SET moderated_by_id = NULL WHERE moderated_by_id = :user_id"), {"user_id": user_id})
