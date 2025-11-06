@@ -49,9 +49,6 @@ async def handle_oauth_user(
     
     # Create OAuth user directly without password hashing
     # OAuth users don't need passwords - they authenticate through Google
-    from app.models.user import User
-    import uuid
-    
     new_user = User(
         id=str(uuid.uuid4()),
         email=email,
