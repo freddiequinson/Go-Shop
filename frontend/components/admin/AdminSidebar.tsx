@@ -119,6 +119,7 @@ const menuItems: MenuItem[] = [
     children: [
       { title: "General Settings", href: "/admin/settings", icon: Settings },
       { title: "Delivery Settings", href: "/admin/delivery-settings", icon: Settings },
+      { title: "Delivery Dates", href: "/admin/delivery-dates", icon: Calendar },
       { title: "Database Cleanup", href: "/admin/cleanup", icon: Settings }
     ]
   }
