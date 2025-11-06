@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Package, Plus, Check, X, Eye, Image as ImageIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -65,7 +65,7 @@ interface Location {
   code: string
 }
 
-export default function GRNPage() {
+function GRNContent() {
   const searchParams = useSearchParams()
   const supplierIdFromUrl = searchParams.get('supplier_id')
   
@@ -841,5 +841,20 @@ export default function GRNPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function GRNPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Package className="w-12 h-12 text-[#FED141] mx-auto mb-4 animate-pulse" />
+          <p className="text-[#303A4D] font-medium">Loading GRN...</p>
+        </div>
+      </div>
+    }>
+      <GRNContent />
+    </Suspense>
   )
 }
