@@ -11,12 +11,13 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { messagesService } from "@/lib/api/services"
+import { MessageType } from "@/lib/types"
 
 export default function MessagesPage() {
   const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedConversation, setSelectedConversation] = useState("1")
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageInput, setMessageInput] = useState("")
   const [conversations, setConversations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,10 +34,17 @@ export default function MessagesPage() {
       
       try {
         setLoading(true)
-        const data = await messagesService.getConversations()
-        setConversations(data)
+        const response = await messagesService.getConversations()
+        // Extract conversations array from response object
+        const conversationsData = response.conversations || []
+        setConversations(conversationsData)
+        // Auto-select first conversation if available
+        if (conversationsData.length > 0 && !selectedConversation) {
+          setSelectedConversation(String(conversationsData[0].id))
+        }
       } catch (error) {
         console.error('Error fetching conversations:', error)
+        setConversations([]) // Set empty array on error
       } finally {
         setLoading(false)
       }
@@ -45,84 +53,48 @@ export default function MessagesPage() {
     fetchConversations()
   }, [isAuthenticated])
 
-  const hardcodedConversations = [
-    {
-      id: "1",
-      name: "Ama Osei",
-      avatar: "A",
-      lastMessage: "Thanks for the tomatoes recommendation!",
-      timestamp: "2m ago",
-      unread: 2,
-      online: true,
-    },
-    {
-      id: "2",
-      name: "Kwame Mensah",
-      avatar: "K",
-      lastMessage: "Are you joining the market visit on Friday?",
-      timestamp: "1h ago",
-      unread: 0,
-      online: false,
-    },
-    {
-      id: "3",
-      name: "Accra Fresh Market",
-      avatar: "AF",
-      lastMessage: "New bulk buying opportunity available!",
-      timestamp: "3h ago",
-      unread: 1,
-      online: true,
-    },
-  ]
+  const [messages, setMessages] = useState<any[]>([])
+  const [loadingMessages, setLoadingMessages] = useState(false)
 
-  const messages = [
-    {
-      id: "1",
-      senderId: "other",
-      senderName: "Ama Osei",
-      content: "Hi! I saw your post about the tomatoes. Are they still available?",
-      timestamp: "10:30 AM",
-    },
-    {
-      id: "2",
-      senderId: "me",
-      senderName: "You",
-      content: "Yes! I got them from Makola Market. GH₵8/kg, very fresh!",
-      timestamp: "10:32 AM",
-    },
-    {
-      id: "3",
-      senderId: "other",
-      senderName: "Ama Osei",
-      content: "That's a great price! Can you share the vendor's contact?",
-      timestamp: "10:35 AM",
-    },
-    {
-      id: "4",
-      senderId: "me",
-      senderName: "You",
-      content: "Her name is Auntie Grace, stall 45 in the vegetable section.",
-      timestamp: "10:36 AM",
-    },
-    {
-      id: "5",
-      senderId: "other",
-      senderName: "Ama Osei",
-      content: "Thanks for the tomatoes recommendation!",
-      timestamp: "10:38 AM",
-    },
-  ]
+  // Fetch messages when conversation is selected
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!selectedConversation || !isAuthenticated) return
+      
+      try {
+        setLoadingMessages(true)
+        const response = await messagesService.getMessages(parseInt(selectedConversation))
+        setMessages(response.messages || [])
+      } catch (error) {
+        console.error('Error fetching messages:', error)
+        setMessages([])
+      } finally {
+        setLoadingMessages(false)
+      }
+    }
+
+    fetchMessages()
+  }, [selectedConversation, isAuthenticated])
 
   const filteredConversations = conversations.filter((conv) =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    conv.title?.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (messageInput.trim()) {
-      // API call would go here
-      console.log("Sending message:", messageInput)
-      setMessageInput("")
+    if (messageInput.trim() && selectedConversation) {
+      try {
+        await messagesService.sendMessage(parseInt(selectedConversation), {
+          content: messageInput,
+          message_type: MessageType.TEXT,
+        })
+        setMessageInput("")
+        // Refresh messages
+        const response = await messagesService.getMessages(parseInt(selectedConversation))
+        setMessages(response.messages || [])
+      } catch (error) {
+        console.error('Error sending message:', error)
+      }
     }
   }
 
@@ -159,38 +131,46 @@ export default function MessagesPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2">
-              {filteredConversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedConversation(conv.id)}
-                  className={`w-full p-4 rounded-lg text-left transition-colors ${
-                    selectedConversation === conv.id ? "bg-[#FED141]/20" : "hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-[#FED141] flex items-center justify-center text-[#303A4D] font-bold">
-                        {conv.avatar}
+              {loading ? (
+                <div className="text-center py-8 text-[#303A4D]/60">Loading conversations...</div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="text-center py-8 text-[#303A4D]/60">No conversations yet</div>
+              ) : (
+                filteredConversations.map((conv) => {
+                  const initials = conv.title?.substring(0, 2).toUpperCase() || '??'
+                  return (
+                    <button
+                      key={conv.id}
+                      onClick={() => setSelectedConversation(String(conv.id))}
+                      className={`w-full p-4 rounded-lg text-left transition-colors ${
+                        selectedConversation === String(conv.id) ? "bg-[#FED141]/20" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative">
+                          <div className="w-12 h-12 rounded-full bg-[#FED141] flex items-center justify-center text-[#303A4D] font-bold">
+                            {initials}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-semibold text-[#303A4D] truncate">{conv.title || 'Conversation'}</h4>
+                            <span className="text-xs text-[#303A4D]/60">
+                              {conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[#303A4D]/60 truncate">{conv.type}</p>
+                        </div>
+                        {conv.unread_count > 0 && (
+                          <div className="w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
+                            {conv.unread_count}
+                          </div>
+                        )}
                       </div>
-                      {conv.online && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-semibold text-[#303A4D] truncate">{conv.name}</h4>
-                        <span className="text-xs text-[#303A4D]/60">{conv.timestamp}</span>
-                      </div>
-                      <p className="text-sm text-[#303A4D]/60 truncate">{conv.lastMessage}</p>
-                    </div>
-                    {conv.unread > 0 && (
-                      <div className="w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
-                        {conv.unread}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    </button>
+                  )
+                })
+              )}
             </div>
           </Card>
 
@@ -201,18 +181,15 @@ export default function MessagesPage() {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full bg-[#FED141] flex items-center justify-center text-[#303A4D] font-bold">
-                    {conversations.find((c) => c.id === selectedConversation)?.avatar}
+                    {conversations.find((c) => c.id === selectedConversation)?.title?.substring(0, 2).toUpperCase() || '??'}
                   </div>
-                  {conversations.find((c) => c.id === selectedConversation)?.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                  )}
                 </div>
                 <div>
                   <h3 className="font-bold text-[#303A4D]">
-                    {conversations.find((c) => c.id === selectedConversation)?.name}
+                    {conversations.find((c) => c.id === selectedConversation)?.title || 'Conversation'}
                   </h3>
                   <p className="text-xs text-[#303A4D]/60">
-                    {conversations.find((c) => c.id === selectedConversation)?.online ? "Online" : "Offline"}
+                    {conversations.find((c) => c.id === selectedConversation)?.type || ''}
                   </p>
                 </div>
               </div>
@@ -223,22 +200,33 @@ export default function MessagesPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.senderId === "me" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] ${message.senderId === "me" ? "order-2" : "order-1"}`}>
-                    <div
-                      className={`rounded-2xl px-4 py-3 ${
-                        message.senderId === "me"
-                          ? "bg-[#303A4D] text-white rounded-br-none"
-                          : "bg-gray-100 text-[#303A4D] rounded-bl-none"
-                      }`}
-                    >
-                      <p>{message.content}</p>
+              {loadingMessages ? (
+                <div className="text-center py-8 text-[#303A4D]/60">Loading messages...</div>
+              ) : messages.length === 0 ? (
+                <div className="text-center py-8 text-[#303A4D]/60">No messages yet. Start the conversation!</div>
+              ) : (
+                messages.map((message) => {
+                  const isCurrentUser = message.sender_id === user?.id
+                  return (
+                    <div key={message.id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[70%] ${isCurrentUser ? "order-2" : "order-1"}`}>
+                        <div
+                          className={`rounded-2xl px-4 py-3 ${
+                            isCurrentUser
+                              ? "bg-[#303A4D] text-white rounded-br-none"
+                              : "bg-gray-100 text-[#303A4D] rounded-bl-none"
+                          }`}
+                        >
+                          <p>{message.content}</p>
+                        </div>
+                        <p className="text-xs text-[#303A4D]/60 mt-1 px-2">
+                          {message.created_at ? new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-[#303A4D]/60 mt-1 px-2">{message.timestamp}</p>
-                  </div>
-                </div>
-              ))}
+                  )
+                })
+              )}
             </div>
 
             {/* Message Input */}
