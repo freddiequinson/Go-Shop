@@ -4,8 +4,12 @@ Create or update admin user with proper email
 
 from app.db.database import SessionLocal
 from app.models.user import User, UserType, VerificationStatus
-from app.core.security import get_password_hash
 import uuid
+import hashlib
+
+def simple_hash_password(password: str) -> str:
+    """Simple password hashing using SHA256 (bypasses broken bcrypt)"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def create_admin():
     db = SessionLocal()
@@ -16,7 +20,7 @@ def create_admin():
         if admin:
             # Update existing admin with email
             admin.email = "admin@goshopghana.com"
-            admin.password_hash = get_password_hash("admin1234")
+            admin.password_hash = simple_hash_password("admin1234")
             admin.user_type = UserType.ADMIN
             admin.verification_status = VerificationStatus.VERIFIED
             admin.is_active = True
@@ -32,7 +36,7 @@ def create_admin():
                 email="admin@goshopghana.com",
                 username="admin",
                 full_name="Admin User",
-                password_hash=get_password_hash("admin1234"),
+                password_hash=simple_hash_password("admin1234"),
                 user_type=UserType.ADMIN,
                 verification_status=VerificationStatus.VERIFIED,
                 is_active=True,

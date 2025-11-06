@@ -18,6 +18,11 @@ from app.core.security import create_access_token, get_password_hash
 from app.core.config import settings
 from app.models.user import User, UserType
 from pydantic import BaseModel
+from app.core.email import send_welcome_email
+from app.core.sms import send_welcome_sms
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -66,6 +71,14 @@ async def handle_oauth_user(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Send welcome email to OAuth users (don't block if it fails)
+    try:
+        send_welcome_email(new_user.email, new_user.full_name or new_user.username)
+        logger.info(f"Welcome email sent to OAuth user {new_user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send welcome email to OAuth user {new_user.email}: {str(e)}")
+    
     return new_user
 
 
