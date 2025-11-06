@@ -3,8 +3,8 @@
  * Central configuration for API client
  */
 
-// Determine base URL based on environment
-const getBaseURL = () => {
+// Determine base URL based on environment - must be a function to work at runtime
+export const getBaseURL = (): string => {
   // If NEXT_PUBLIC_API_URL is set, use it
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL
@@ -12,7 +12,9 @@ const getBaseURL = () => {
   
   // In browser, use same origin as the frontend (for production)
   if (typeof window !== 'undefined') {
-    return window.location.origin
+    // Force HTTPS in production
+    const origin = window.location.origin
+    return origin.replace(/^http:/, 'https:')
   }
   
   // Fallback for local development
@@ -20,10 +22,12 @@ const getBaseURL = () => {
 }
 
 export const API_CONFIG = {
-  baseURL: getBaseURL(),
+  get baseURL() {
+    return getBaseURL()
+  },
   apiVersion: '/api/v1',
   timeout: 30000, // 30 seconds
-} as const
+}
 
 export const API_ENDPOINTS = {
   // Authentication
