@@ -78,25 +78,25 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
   const showBothOptions = hasWeightPrice && hasQuantityPrice
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 relative animate-in fade-in zoom-in duration-200 max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors z-10"
         >
           <X className="w-4 h-4 text-[#303A4D]" />
         </button>
 
-        <div className="flex gap-4 mb-6">
-          <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-[#FED141]/20 flex-shrink-0">
+        <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden bg-[#FED141]/20 flex-shrink-0">
             <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#303A4D] mb-1">{product.name}</h3>
-            <p className="text-sm text-[#303A4D]/60">{product.vendor}</p>
-            <p className="text-lg font-bold text-[#303A4D] mt-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg sm:text-xl font-bold text-[#303A4D] mb-1 line-clamp-2">{product.name}</h3>
+            <p className="text-xs sm:text-sm text-[#303A4D]/60 truncate">{product.vendor}</p>
+            <p className="text-base sm:text-lg font-bold text-[#303A4D] mt-1 sm:mt-2">
               GH₵{currentPrice.toFixed(2)}{" "}
-              <span className="text-sm font-normal text-[#303A4D]/60">
+              <span className="text-xs sm:text-sm font-normal text-[#303A4D]/60">
                 {purchaseType === "weight" ? `per ${product.unit_type || 'kg'}` : 'per piece'}
               </span>
             </p>
@@ -105,12 +105,12 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
 
         {/* Purchase Type Selection - Only show if both options available */}
         {showBothOptions && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-[#303A4D] mb-3">Purchase by:</label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-medium text-[#303A4D] mb-2 sm:mb-3">Purchase by:</label>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <button
                 onClick={() => setPurchaseType("quantity")}
-                className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all ${
                   purchaseType === "quantity"
                     ? "bg-[#FED141] text-[#303A4D] ring-2 ring-[#303A4D]"
                     : "bg-[#F4F2E6] text-[#303A4D]/60 hover:bg-[#FED141]/30"
@@ -120,7 +120,7 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
               </button>
               <button
                 onClick={() => setPurchaseType("weight")}
-                className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all ${
                   purchaseType === "weight"
                     ? "bg-[#FED141] text-[#303A4D] ring-2 ring-[#303A4D]"
                     : "bg-[#F4F2E6] text-[#303A4D]/60 hover:bg-[#FED141]/30"
@@ -133,27 +133,27 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
         )}
 
         {/* Quantity Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-[#303A4D] mb-3">
+        <div className="mb-4 sm:mb-6">
+          <label className="block text-xs sm:text-sm font-medium text-[#303A4D] mb-2 sm:mb-3">
             {purchaseType === "quantity" ? "Quantity (pieces):" : `Weight (${product.unit_type || 'kg'}):`}
           </label>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-12 h-12 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors"
+              className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors"
             >
-              <Minus className="w-5 h-5 text-[#303A4D]" />
+              <Minus className="w-4 h-4 sm:w-5 sm:h-5 text-[#303A4D]" />
             </button>
             <input
               type="number"
               value={quantity}
               onChange={(e) => {
                 const val = e.target.value
-                if (val === '' || val === '0') {
-                  setQuantity(1)
+                if (val === '') {
+                  setQuantity(0)
                 } else {
                   const num = Number.parseInt(val)
-                  if (!isNaN(num) && num > 0) {
+                  if (!isNaN(num) && num >= 0) {
                     setQuantity(num)
                   }
                 }
@@ -163,30 +163,30 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
                   setQuantity(1)
                 }
               }}
-              className="flex-1 text-center text-2xl font-bold text-[#303A4D] bg-[#F4F2E6] rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-[#FED141]"
+              className="flex-1 min-w-0 text-center text-xl sm:text-2xl font-bold text-[#303A4D] bg-[#F4F2E6] rounded-xl py-2 sm:py-3 px-2 focus:outline-none focus:ring-2 focus:ring-[#FED141]"
               min="1"
             />
             <button
               onClick={() => setQuantity(quantity + 1)}
-              className="w-12 h-12 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors"
+              className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full bg-[#F4F2E6] flex items-center justify-center hover:bg-[#FED141] transition-colors"
             >
-              <Plus className="w-5 h-5 text-[#303A4D]" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-[#303A4D]" />
             </button>
           </div>
         </div>
 
         {/* Total Price */}
-        <div className="bg-[#F4F2E6] rounded-xl p-4 mb-6">
+        <div className="bg-[#F4F2E6] rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex justify-between items-center">
-            <span className="text-[#303A4D]/60">Total:</span>
-            <span className="text-2xl font-bold text-[#303A4D]">GH₵{totalPrice.toFixed(2)}</span>
+            <span className="text-sm sm:text-base text-[#303A4D]/60">Total:</span>
+            <span className="text-xl sm:text-2xl font-bold text-[#303A4D]">GH₵{totalPrice.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Add to Cart Button */}
         <Button
           onClick={handleAdd}
-          className="w-full bg-[#303A4D] hover:bg-[#303A4D]/90 text-white rounded-full py-6 font-bold text-lg"
+          className="w-full bg-[#303A4D] hover:bg-[#303A4D]/90 text-white rounded-full py-4 sm:py-6 font-bold text-base sm:text-lg"
         >
           Add to Cart
         </Button>

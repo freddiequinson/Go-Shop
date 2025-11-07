@@ -389,7 +389,7 @@ async def send_giftcard(
                             <p style="margin: 0; color: #666;">Gift Card Code:</p>
                             <h2 style="margin: 10px 0; color: #303A4D; font-size: 28px; letter-spacing: 2px;">{giftcard.code}</h2>
                             {f'<p style="margin: 0; color: #666;">PIN:</p><h3 style="margin: 10px 0; color: #303A4D;">{giftcard.pin}</h3>' if giftcard.pin else ''}
-                            <p style="margin: 10px 0 0 0; color: #666;">Amount: <strong style="color: #303A4D;">GH₵{giftcard.amount / 100:.2f}</strong></p>
+                            <p style="margin: 10px 0 0 0; color: #666;">Amount: <strong style="color: #303A4D;">GH₵{giftcard.amount:.2f}</strong></p>
                         </div>
                         <p style="font-size: 14px; color: #666;">
                             To redeem this gift card, visit <a href="https://goshopghana.com" style="color: #FED141;">goshopghana.com</a> 
@@ -417,7 +417,7 @@ async def send_giftcard(
             sms_message = f"You've received a GoShopGhana Gift Card! Code: {giftcard.code}"
             if giftcard.pin:
                 sms_message += f" | PIN: {giftcard.pin}"
-            sms_message += f" | Amount: GH₵{giftcard.amount / 100:.2f}. Redeem at goshopghana.com"
+            sms_message += f" | Amount: GH₵{giftcard.amount:.2f}. Redeem at goshopghana.com"
             
             sms_response = await sms_service.send_sms(
                 recipient=recipient_phone,
