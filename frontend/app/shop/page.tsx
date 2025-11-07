@@ -190,19 +190,29 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const perPage = 20
+
+  // Debounce search query to reduce API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   useEffect(() => {
     fetchProducts()
     fetchCategories()
-  }, [currentPage, searchQuery])
+  }, [currentPage, debouncedSearchQuery])
 
   // Reset to page 1 when search query changes
   useEffect(() => {
-    if (currentPage !== 1) {
+    if (currentPage !== 1 && debouncedSearchQuery) {
       setCurrentPage(1)
     }
-  }, [searchQuery])
+  }, [debouncedSearchQuery])
 
   const fetchProducts = async () => {
     try {
@@ -210,9 +220,9 @@ export default function ShopPage() {
       const apiBaseUrl = getApiBaseUrl()
       let url = `${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`
       
-      // Add search query if exists
-      if (searchQuery.trim()) {
-        url += `&search=${encodeURIComponent(searchQuery)}`
+      // Add search query if exists (using debounced value)
+      if (debouncedSearchQuery.trim()) {
+        url += `&search=${encodeURIComponent(debouncedSearchQuery)}`
       }
       
       const response = await fetch(url)

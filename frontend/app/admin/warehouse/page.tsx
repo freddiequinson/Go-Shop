@@ -31,6 +31,7 @@ export default function WarehousePage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [publishingId, setPublishingId] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
@@ -41,17 +42,26 @@ export default function WarehousePage() {
   const perPage = 20
   const { toast } = useToast()
 
+  // Debounce search term to reduce API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   useEffect(() => {
     fetchInventory()
     fetchPendingDeliveries()
-  }, [filter, currentPage, searchTerm])
+  }, [filter, currentPage, debouncedSearchTerm])
 
   // Reset to page 1 when search term changes
   useEffect(() => {
-    if (currentPage !== 1 && searchTerm) {
+    if (currentPage !== 1 && debouncedSearchTerm) {
       setCurrentPage(1)
     }
-  }, [searchTerm])
+  }, [debouncedSearchTerm])
 
   const fetchInventory = async () => {
     try {
@@ -65,9 +75,9 @@ export default function WarehousePage() {
         url += "&out_of_stock_only=true"
       }
       
-      // Add search query if exists
-      if (searchTerm.trim()) {
-        url += `&search=${encodeURIComponent(searchTerm)}`
+      // Add search query if exists (using debounced value)
+      if (debouncedSearchTerm.trim()) {
+        url += `&search=${encodeURIComponent(debouncedSearchTerm)}`
       }
 
       const response = await fetch(url, {

@@ -25,11 +25,13 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
   const [publishFilter, setPublishFilter] = useState<'all' | 'published' | 'unpublished'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
+  const [stats, setStats] = useState({ active: 0, published: 0, lowStock: 0, outOfStock: 0 })
   const perPage = 20
 
   const formatPrice = (price: number | string | undefined) => {
@@ -43,16 +45,29 @@ export default function AdminProducts() {
     return typeof num === 'string' ? parseFloat(num) : num
   }
 
+  // Debounce search term to reduce API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   useEffect(() => {
     fetchProducts()
-  }, [currentPage, searchTerm])
+  }, [currentPage, debouncedSearchTerm])
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
 
   // Reset to page 1 when search term changes
   useEffect(() => {
-    if (currentPage !== 1 && searchTerm) {
+    if (currentPage !== 1 && debouncedSearchTerm) {
       setCurrentPage(1)
     }
-  }, [searchTerm])
+  }, [debouncedSearchTerm])
 
   const fetchProducts = async () => {
     try {
@@ -61,9 +76,9 @@ export default function AdminProducts() {
       // Admin sees all products (admin-created and supplier products that are in warehouse)
       let url = `${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`
       
-      // Add search query if exists
-      if (searchTerm.trim()) {
-        url += `&search=${encodeURIComponent(searchTerm)}`
+      // Add search query if exists (using debounced value)
+      if (debouncedSearchTerm.trim()) {
+        url += `&search=${encodeURIComponent(debouncedSearchTerm)}`
       }
       
       const response = await fetch(url, {
@@ -137,14 +152,33 @@ export default function AdminProducts() {
     return matchesPublish
   })
 
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("access_token")
+      // Fetch all products to calculate stats
+      const response = await fetch(`${getApiBaseUrl()}/products?per_page=1000`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const allProducts = Array.isArray(data) ? data : data.products || []
+        
+        setStats({
+          active: allProducts.filter((p: any) => p.is_active).length,
+          published: allProducts.filter((p: any) => p.is_published).length,
+          lowStock: allProducts.filter((p: any) => p.stock_quantity && formatNumber(p.stock_quantity) < 10).length,
+          outOfStock: allProducts.filter((p: any) => formatNumber(p.stock_quantity) === 0).length
+        })
+      }
+    } catch (error) {
+      console.error("Failed to fetch stats:", error)
+    }
+  }
+
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
   }
-
-  const activeProducts = products.filter(p => p.is_active)
-  const publishedProducts = products.filter(p => p.is_published)
-  const lowStockProducts = products.filter(p => p.stock_quantity && formatNumber(p.stock_quantity) < 10)
-  const outOfStockProducts = products.filter(p => formatNumber(p.stock_quantity) === 0)
 
   const tourSteps: TourStep[] = [
     {
@@ -238,28 +272,28 @@ export default function AdminProducts() {
             <Package className="w-5 h-5 text-green-500" />
             <span className="text-sm text-[#303A4D]/60">In Shop</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{publishedProducts.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{stats.published}</p>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-purple-500" />
             <span className="text-sm text-[#303A4D]/60">Active</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{activeProducts.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{stats.active}</p>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-yellow-500" />
             <span className="text-sm text-[#303A4D]/60">Low Stock</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{lowStockProducts.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{stats.lowStock}</p>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-red-500" />
             <span className="text-sm text-[#303A4D]/60">Out of Stock</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{outOfStockProducts.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{stats.outOfStock}</p>
         </div>
       </div>
 
