@@ -98,25 +98,32 @@ export default function DeliveryDetail({ params }: { params: Promise<{ id: strin
   }
 
   const handleNavigate = () => {
+    // Check multiple possible locations for coordinates
+    let lat, lng
+
     if (order?.delivery_address) {
       const address = order.delivery_address
-      let lat, lng
-
       if (typeof address === 'object') {
         lat = address.latitude
         lng = address.longitude
       }
+    }
+    
+    // Fallback to order-level coordinates
+    if (!lat || !lng) {
+      lat = order?.latitude
+      lng = order?.longitude
+    }
 
-      if (lat && lng) {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-        window.open(url, '_blank')
-      } else {
-        toast({
-          title: "Error",
-          description: "Location coordinates not available",
-          variant: "destructive"
-        })
-      }
+    if (lat && lng) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+      window.open(url, '_blank')
+    } else {
+      toast({
+        title: "Error",
+        description: "Location coordinates not available for this delivery",
+        variant: "destructive"
+      })
     }
   }
 
@@ -368,7 +375,7 @@ export default function DeliveryDetail({ params }: { params: Promise<{ id: strin
           </Card>
 
           {/* Complete Delivery Button */}
-          {order.status === 'dispatched' && (
+          {(order.status === 'dispatched' || order.delivery_status === 'out_for_delivery') && (
             <Button 
               onClick={handleRequestOTP}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-5 sm:py-6 text-base sm:text-lg"

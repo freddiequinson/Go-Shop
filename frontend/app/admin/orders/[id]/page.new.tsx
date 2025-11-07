@@ -216,7 +216,10 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            {order.payment_status === 'completed' && order.delivery_status === 'pending' && (
+            {order.payment_status === 'completed' && 
+             order.delivery_status !== 'packaged' &&
+             order.delivery_status !== 'out_for_delivery' &&
+             order.delivery_status !== 'delivered' && (
               <Button 
                 onClick={handlePackageOrder}
                 disabled={actionLoading}

@@ -235,7 +235,9 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
           <div className="flex gap-3">
             {/* Show Package button ONLY if payment completed and not yet packaged */}
             {order.payment_status === 'completed' && 
-             (order.delivery_status === 'pending' || !order.delivery_status) && (
+             order.delivery_status !== 'packaged' &&
+             order.delivery_status !== 'out_for_delivery' &&
+             order.delivery_status !== 'delivered' && (
               <Button 
                 onClick={handlePackageOrder}
                 disabled={actionLoading}
