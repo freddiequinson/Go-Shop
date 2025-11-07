@@ -45,14 +45,28 @@ export default function AdminProducts() {
 
   useEffect(() => {
     fetchProducts()
-  }, [currentPage])
+  }, [currentPage, searchTerm])
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    if (currentPage !== 1 && searchTerm) {
+      setCurrentPage(1)
+    }
+  }, [searchTerm])
 
   const fetchProducts = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem("access_token")
       // Admin sees all products (admin-created and supplier products that are in warehouse)
-      const response = await fetch(`${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`, {
+      let url = `${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`
+      
+      // Add search query if exists
+      if (searchTerm.trim()) {
+        url += `&search=${encodeURIComponent(searchTerm)}`
+      }
+      
+      const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -115,12 +129,12 @@ export default function AdminProducts() {
     }
   }
 
+  // Filter by publish status only (search is handled by backend)
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesPublish = publishFilter === 'all' || 
       (publishFilter === 'published' && product.is_published) ||
       (publishFilter === 'unpublished' && !product.is_published)
-    return matchesSearch && matchesPublish
+    return matchesPublish
   })
 
   if (loading) {

@@ -44,7 +44,14 @@ export default function WarehousePage() {
   useEffect(() => {
     fetchInventory()
     fetchPendingDeliveries()
-  }, [filter, currentPage])
+  }, [filter, currentPage, searchTerm])
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    if (currentPage !== 1 && searchTerm) {
+      setCurrentPage(1)
+    }
+  }, [searchTerm])
 
   const fetchInventory = async () => {
     try {
@@ -56,6 +63,11 @@ export default function WarehousePage() {
         url += "&low_stock_only=true"
       } else if (filter === "out_of_stock") {
         url += "&out_of_stock_only=true"
+      }
+      
+      // Add search query if exists
+      if (searchTerm.trim()) {
+        url += `&search=${encodeURIComponent(searchTerm)}`
       }
 
       const response = await fetch(url, {

@@ -195,13 +195,27 @@ export default function ShopPage() {
   useEffect(() => {
     fetchProducts()
     fetchCategories()
-  }, [currentPage])
+  }, [currentPage, searchQuery])
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    }
+  }, [searchQuery])
 
   const fetchProducts = async () => {
     try {
       setLoading(true)
       const apiBaseUrl = getApiBaseUrl()
-      const response = await fetch(`${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`)
+      let url = `${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`
+      
+      // Add search query if exists
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery)}`
+      }
+      
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []
@@ -256,10 +270,10 @@ export default function ShopPage() {
     // Categories are now fetched in fetchProducts
   }
 
+  // Filter by category only (search is handled by backend)
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
+    return matchesCategory
   })
 
   const handleAddToCart = async (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
