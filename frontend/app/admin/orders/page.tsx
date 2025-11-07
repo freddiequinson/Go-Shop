@@ -277,12 +277,14 @@ export default function OrdersManagement() {
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          order.delivery_status === 'delivered' ? 'bg-green-100 text-green-700' :
-                          order.delivery_status === 'out_for_delivery' ? 'bg-blue-100 text-blue-700' :
-                          order.delivery_status === 'packaged' ? 'bg-purple-100 text-purple-700' :
+                          order.status?.toLowerCase() === 'delivered' ? 'bg-green-100 text-green-700' :
+                          order.status?.toLowerCase() === 'dispatched' ? 'bg-blue-100 text-blue-700' :
+                          order.status?.toLowerCase() === 'preparing' ? 'bg-purple-100 text-purple-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
-                          {order.delivery_status?.replace('_', ' ') || 'Pending'}
+                          {order.status?.toLowerCase() === 'preparing' ? 'Packaged' :
+                           order.status?.toLowerCase() === 'dispatched' ? 'Out for Delivery' :
+                           order.status?.replace('_', ' ') || 'Pending'}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm text-[#303A4D]/60">
