@@ -14,7 +14,7 @@ from app.schemas.warehouse import (
     StockAlertCreate, StockAlertUpdate, StockAlertResponse,
     RestockOrderCreate, RestockOrderUpdate, RestockOrderResponse, RestockOrderListResponse,
     WarehouseAnalytics, InventoryFilter, StockTakeRequest, StockTakeResponse,
-    AllocateToShopRequest, AssignLocationRequest
+    AllocateToShopRequest, AssignLocationRequest, InventoryListResponse
 )
 from app.crud.warehouse import (
     get_or_create_inventory, get_inventory_by_product, get_all_inventory,
@@ -32,7 +32,7 @@ router = APIRouter()
 
 
 # Inventory Endpoints
-@router.get("/inventory", response_model=List[WarehouseInventoryResponse])
+@router.get("/inventory", response_model=InventoryListResponse)
 async def list_inventory(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -41,12 +41,14 @@ async def list_inventory(
     low_stock_only: bool = Query(False),
     out_of_stock_only: bool = Query(False),
     expiring_soon_only: bool = Query(False),
+    search: Optional[str] = Query(None, description="Search in product name"),
     current_user: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
     """
-    Get all inventory with filtering (Admin only)
+    Get all inventory with filtering and search (Admin only)
     Includes product details for publish/unpublish functionality
+    Returns paginated response with total count
     """
     from app.models.product import Product
     
@@ -69,6 +71,11 @@ async def list_inventory(
         # Skip supplier products - they should only show after GRN is received
         if product and product.created_by_type == 'supplier' and not product.in_warehouse:
             continue
+        
+        # Apply search filter if provided
+        if search and product:
+            if search.lower() not in product.name.lower():
+                continue
             
         inv_dict = WarehouseInventoryResponse.model_validate(inv).model_dump()
         if product:
@@ -78,7 +85,17 @@ async def list_inventory(
             inv_dict['created_by_type'] = product.created_by_type
         result.append(WarehouseInventoryResponse(**inv_dict))
     
-    return result
+    # Calculate pagination
+    result_count = len(result)
+    pages = math.ceil(result_count / per_page) if result_count > 0 else 1
+    
+    return InventoryListResponse(
+        items=result,
+        total=result_count,
+        page=page,
+        per_page=per_page,
+        pages=pages
+    )
 
 
 @router.get("/inventory/{product_id}", response_model=WarehouseInventoryResponse)

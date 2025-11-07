@@ -340,7 +340,7 @@ export default function WarehousePage() {
             <Package className="w-5 h-5 text-blue-500" />
             <span className="text-sm text-[#303A4D]/60">Total Items</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{inventory.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{totalItems}</p>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">

@@ -76,6 +76,15 @@ class WarehouseInventoryResponse(WarehouseInventoryBase):
         from_attributes = True
 
 
+class InventoryListResponse(BaseModel):
+    """Paginated inventory list response"""
+    items: List[WarehouseInventoryResponse]
+    total: int
+    page: int
+    per_page: int
+    pages: int
+
+
 # Inventory Adjustment
 class InventoryAdjustment(BaseModel):
     product_id: str
