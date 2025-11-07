@@ -177,14 +177,21 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
   }
 
   const getDeliveryStatusBadge = (status: string) => {
+    const statusLower = status?.toLowerCase()
     const colors: any = {
       delivered: "bg-green-500 text-white",
+      dispatched: "bg-blue-500 text-white",
       out_for_delivery: "bg-blue-500 text-white",
+      preparing: "bg-purple-500 text-white",
       packaged: "bg-purple-500 text-white",
-      pending: "bg-gray-500 text-white"
+      pending: "bg-gray-500 text-white",
+      pending_payment: "bg-yellow-500 text-white"
     }
-    return <Badge className={colors[status] || "bg-gray-500 text-white"}>
-      {status?.replace('_', ' ')}
+    const displayText = statusLower === 'preparing' ? 'packaged' : 
+                       statusLower === 'dispatched' ? 'out for delivery' :
+                       statusLower?.replace('_', ' ')
+    return <Badge className={colors[statusLower] || "bg-gray-500 text-white"}>
+      {displayText}
     </Badge>
   }
 
@@ -235,9 +242,12 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
           <div className="flex gap-3">
             {/* Show Package button ONLY if payment completed and not yet packaged */}
             {order.payment_status === 'completed' && 
-             order.delivery_status !== 'packaged' &&
-             order.delivery_status !== 'out_for_delivery' &&
-             order.delivery_status !== 'delivered' && (
+             order.status !== 'preparing' &&
+             order.status !== 'PREPARING' &&
+             order.status !== 'dispatched' &&
+             order.status !== 'DISPATCHED' &&
+             order.status !== 'delivered' &&
+             order.status !== 'DELIVERED' && (
               <Button 
                 onClick={handlePackageOrder}
                 disabled={actionLoading}
@@ -259,7 +269,7 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
             )}
 
             {/* Show Assign Rider button if packaged */}
-            {order.delivery_status === 'packaged' && (
+            {(order.status === 'preparing' || order.status === 'PREPARING') && (
               <Button 
                 onClick={() => setShowRiderModal(true)}
                 disabled={actionLoading}
@@ -449,7 +459,7 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
                 <div>
                   <label className="text-sm text-[#303A4D]/60">Delivery Status</label>
                   <div className="mt-1">
-                    {getDeliveryStatusBadge(order.delivery_status || 'pending')}
+                    {getDeliveryStatusBadge(order.status || 'pending')}
                   </div>
                 </div>
 

@@ -217,9 +217,12 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
           {/* Action Buttons */}
           <div className="flex gap-3">
             {order.payment_status === 'completed' && 
-             order.delivery_status !== 'packaged' &&
-             order.delivery_status !== 'out_for_delivery' &&
-             order.delivery_status !== 'delivered' && (
+             order.status !== 'preparing' &&
+             order.status !== 'PREPARING' &&
+             order.status !== 'dispatched' &&
+             order.status !== 'DISPATCHED' &&
+             order.status !== 'delivered' &&
+             order.status !== 'DELIVERED' && (
               <Button 
                 onClick={handlePackageOrder}
                 disabled={actionLoading}
@@ -230,7 +233,7 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
               </Button>
             )}
 
-            {order.delivery_status === 'packaged' && (
+            {(order.status === 'preparing' || order.status === 'PREPARING') && (
               <Button 
                 onClick={() => setShowRiderModal(true)}
                 disabled={actionLoading}
