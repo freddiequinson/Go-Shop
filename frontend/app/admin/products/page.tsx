@@ -27,6 +27,10 @@ export default function AdminProducts() {
   const [searchTerm, setSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
   const [publishFilter, setPublishFilter] = useState<'all' | 'published' | 'unpublished'>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const perPage = 20
 
   const formatPrice = (price: number | string | undefined) => {
     if (!price) return "0.00"
@@ -41,13 +45,14 @@ export default function AdminProducts() {
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+  }, [currentPage])
 
   const fetchProducts = async () => {
     try {
+      setLoading(true)
       const token = localStorage.getItem("access_token")
       // Admin sees all products (admin-created and supplier products that are in warehouse)
-      const response = await fetch(`${getApiBaseUrl()}/products?limit=100`, {
+      const response = await fetch(`${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`, {
         headers: { "Authorization": `Bearer ${token}` }
       })
       
@@ -59,6 +64,8 @@ export default function AdminProducts() {
           setProducts(data)
         } else if (data.products && Array.isArray(data.products)) {
           setProducts(data.products)
+          setTotalPages(data.pages || 1)
+          setTotalProducts(data.total || data.products.length)
         } else if (data.items && Array.isArray(data.items)) {
           setProducts(data.items)
         } else {
@@ -463,6 +470,69 @@ export default function AdminProducts() {
           <Package className="w-16 h-16 text-[#303A4D]/20 mx-auto mb-4" />
           <p className="text-xl font-bold text-[#303A4D]">No Products Found</p>
           <p className="text-[#303A4D]/60">Try adjusting your search or add a new product</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && filteredProducts.length > 0 && totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-between bg-white rounded-3xl p-6">
+          <div className="text-sm text-[#303A4D]/60">
+            Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalProducts)} of {totalProducts} products
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-full font-medium transition-all ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+              }`}
+            >
+              Previous
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum
+                if (totalPages <= 5) {
+                  pageNum = i + 1
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i
+                } else {
+                  pageNum = currentPage - 2 + i
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-10 h-10 rounded-full font-medium transition-all ${
+                      currentPage === pageNum
+                        ? 'bg-[#303A4D] text-white'
+                        : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-full font-medium transition-all ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+              }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
       </div>

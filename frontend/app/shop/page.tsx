@@ -187,19 +187,30 @@ export default function ShopPage() {
   const [showNotification, setShowNotification] = useState(false)
   const [notificationProduct, setNotificationProduct] = useState("")
   const [addingToCart, setAddingToCart] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const perPage = 20
 
   useEffect(() => {
     fetchProducts()
     fetchCategories()
-  }, [])
+  }, [currentPage])
 
   const fetchProducts = async () => {
     try {
+      setLoading(true)
       const apiBaseUrl = getApiBaseUrl()
-      const response = await fetch(`${apiBaseUrl}/products/?limit=100`)
+      const response = await fetch(`${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []
+        
+        // Set pagination data
+        if (data.pages) {
+          setTotalPages(data.pages)
+          setTotalProducts(data.total || 0)
+        }
         
         // Fetch categories first to map them
         const categoriesResponse = await fetch(`${apiBaseUrl}/products/categories/`)
@@ -479,6 +490,64 @@ export default function ShopPage() {
             </div>
           )}
             </>
+          )}
+
+          {/* Pagination */}
+          {!loading && filteredProducts.length > 0 && totalPages > 1 && (
+            <div className="mt-12 flex items-center justify-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`px-6 py-3 rounded-full font-medium transition-all ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#303A4D] hover:bg-[#FED141] border-2 border-[#303A4D]/20'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum
+                  if (totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i
+                  } else {
+                    pageNum = currentPage - 2 + i
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-12 h-12 rounded-full font-bold transition-all ${
+                        currentPage === pageNum
+                          ? 'bg-[#303A4D] text-white'
+                          : 'bg-white text-[#303A4D] hover:bg-[#FED141] border-2 border-[#303A4D]/20'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`px-6 py-3 rounded-full font-medium transition-all ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#303A4D] hover:bg-[#FED141] border-2 border-[#303A4D]/20'
+                }`}
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       </section>

@@ -35,17 +35,22 @@ export default function WarehousePage() {
   const [publishingId, setPublishingId] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [pendingDeliveries, setPendingDeliveries] = useState<number>(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+  const perPage = 20
   const { toast } = useToast()
 
   useEffect(() => {
     fetchInventory()
     fetchPendingDeliveries()
-  }, [filter])
+  }, [filter, currentPage])
 
   const fetchInventory = async () => {
     try {
+      setLoading(true)
       const token = localStorage.getItem("access_token")
-      let url = `${getApiBaseUrl()}/warehouse/inventory?per_page=50`
+      let url = `${getApiBaseUrl()}/warehouse/inventory?page=${currentPage}&per_page=${perPage}`
       
       if (filter === "low_stock") {
         url += "&low_stock_only=true"
@@ -59,7 +64,15 @@ export default function WarehousePage() {
       
       if (response.ok) {
         const data = await response.json()
-        setInventory(data)
+        if (Array.isArray(data)) {
+          setInventory(data)
+        } else if (data.items) {
+          setInventory(data.items)
+          setTotalPages(data.pages || 1)
+          setTotalItems(data.total || data.items.length)
+        } else {
+          setInventory(data)
+        }
       }
     } catch (error) {
       console.error("Failed to fetch inventory:", error)
@@ -475,6 +488,69 @@ export default function WarehousePage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && inventory.length > 0 && totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between bg-white rounded-3xl p-6">
+            <div className="text-sm text-[#303A4D]/60">
+              Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalItems)} of {totalItems} items
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum
+                  if (totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i
+                  } else {
+                    pageNum = currentPage - 2 + i
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 rounded-full font-medium transition-all ${
+                        currentPage === pageNum
+                          ? 'bg-[#303A4D] text-white'
+                          : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#303A4D] hover:bg-[#FED141] border border-[#303A4D]/20'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
     </>
