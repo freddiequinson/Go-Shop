@@ -155,22 +155,39 @@ export default function AdminProducts() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      // Fetch all products to calculate stats
-      const response = await fetch(`${getApiBaseUrl()}/products?per_page=1000`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      })
+      let allProducts: any[] = []
+      let currentPage = 1
+      let totalPages = 1
       
-      if (response.ok) {
-        const data = await response.json()
-        const allProducts = Array.isArray(data) ? data : data.products || []
-        
-        setStats({
-          active: allProducts.filter((p: any) => p.is_active).length,
-          published: allProducts.filter((p: any) => p.is_published).length,
-          lowStock: allProducts.filter((p: any) => p.stock_quantity && formatNumber(p.stock_quantity) < 10).length,
-          outOfStock: allProducts.filter((p: any) => formatNumber(p.stock_quantity) === 0).length
+      // Fetch all products in batches (max 100 per page)
+      while (currentPage <= totalPages) {
+        const response = await fetch(`${getApiBaseUrl()}/products?page=${currentPage}&per_page=100`, {
+          headers: { "Authorization": `Bearer ${token}` }
         })
+        
+        if (response.ok) {
+          const data = await response.json()
+          const products = Array.isArray(data) ? data : data.products || []
+          allProducts = [...allProducts, ...products]
+          
+          // Update total pages from first response
+          if (currentPage === 1 && data.pages) {
+            totalPages = data.pages
+          }
+          
+          currentPage++
+        } else {
+          break
+        }
       }
+      
+      // Calculate stats from all products
+      setStats({
+        active: allProducts.filter((p: any) => p.is_active).length,
+        published: allProducts.filter((p: any) => p.is_published).length,
+        lowStock: allProducts.filter((p: any) => p.stock_quantity && formatNumber(p.stock_quantity) < 10).length,
+        outOfStock: allProducts.filter((p: any) => formatNumber(p.stock_quantity) === 0).length
+      })
     } catch (error) {
       console.error("Failed to fetch stats:", error)
     }
@@ -265,7 +282,7 @@ export default function AdminProducts() {
             <Package className="w-5 h-5 text-blue-500" />
             <span className="text-sm text-[#303A4D]/60">Total Products</span>
           </div>
-          <p className="text-3xl font-bold text-[#303A4D]">{products.length}</p>
+          <p className="text-3xl font-bold text-[#303A4D]">{totalProducts}</p>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
