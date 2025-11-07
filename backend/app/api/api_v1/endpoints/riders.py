@@ -65,6 +65,9 @@ async def create_new_rider(
         else:
             logger.info("Creating new user account for rider...")
             
+            # Extract phone digits (needed for username and password)
+            phone_digits = ''.join(c for c in rider.phone if c.isdigit())
+            
             # Generate username from full name (clean and simple)
             if rider.full_name:
                 # Remove spaces, special chars, keep only alphanumeric
@@ -72,7 +75,6 @@ async def create_new_rider(
                 base_username = clean_name[:15]  # Limit to 15 chars
             else:
                 # Fallback to phone if no name
-                phone_digits = ''.join(c for c in rider.phone if c.isdigit())
                 base_username = f"rider{phone_digits[-6:]}"
             
             # Ensure unique username
