@@ -24,6 +24,7 @@ export default function AdminProducts() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
@@ -71,7 +72,12 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-      setLoading(true)
+      // Only show full page loading on initial load
+      if (products.length === 0) {
+        setLoading(true)
+      } else {
+        setSearching(true)
+      }
       const token = localStorage.getItem("access_token")
       // Admin sees all products (admin-created and supplier products that are in warehouse)
       let url = `${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`
@@ -106,6 +112,7 @@ export default function AdminProducts() {
       setProducts([])
     } finally {
       setLoading(false)
+      setSearching(false)
     }
   }
 
@@ -454,7 +461,17 @@ export default function AdminProducts() {
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-sm overflow-hidden relative">
+          {/* Loading overlay */}
+          {searching && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 border-3 border-[#FED141] border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-[#303A4D] font-medium">Searching...</span>
+              </div>
+            </div>
+          )}
+          
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#F4F2E6]">
@@ -530,11 +547,20 @@ export default function AdminProducts() {
         </div>
       )}
 
-      {filteredProducts.length === 0 && (
+      {filteredProducts.length === 0 && !searching && (
         <div className="bg-white rounded-3xl p-12 text-center mt-6">
           <Package className="w-16 h-16 text-[#303A4D]/20 mx-auto mb-4" />
-          <p className="text-xl font-bold text-[#303A4D]">No Products Found</p>
-          <p className="text-[#303A4D]/60">Try adjusting your search or add a new product</p>
+          <p className="text-xl font-bold text-[#303A4D]">
+            {debouncedSearchTerm || publishFilter !== 'all' ? 'No Products Found' : 'No Products Yet'}
+          </p>
+          <p className="text-[#303A4D]/60">
+            {debouncedSearchTerm 
+              ? `No products match "${debouncedSearchTerm}". Try a different search term.`
+              : publishFilter !== 'all'
+              ? `No ${publishFilter} products found. Try changing the filter.`
+              : 'Get started by adding your first product'
+            }
+          </p>
         </div>
       )}
 
