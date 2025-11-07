@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, Package, Warehouse, Users, Truck, 
   ShoppingCart, BarChart3, Settings, Image, FileText,
-  ChevronDown, ChevronRight, Boxes, Menu, X, Shield, Calendar, Tag, Gift, TrendingUp, HelpCircle
+  ChevronDown, ChevronRight, Boxes, Menu, X, Shield, Calendar, Tag, Gift, TrendingUp, HelpCircle, MessageSquare
 } from "lucide-react"
 import { useState } from "react"
 
@@ -61,6 +61,11 @@ const menuItems: MenuItem[] = [
       { title: "Sellers", href: "/admin/users?type=seller", icon: Users },
       { title: "Activity Logs", href: "/admin/users/activity", icon: FileText }
     ]
+  },
+  {
+    title: "Messages",
+    href: "/admin/messages",
+    icon: MessageSquare
   },
   {
     title: "Suppliers",

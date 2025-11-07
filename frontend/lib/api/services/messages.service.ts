@@ -16,6 +16,14 @@ import type {
 
 export const messagesService = {
   /**
+   * Create support conversation with admin
+   */
+  async createSupportConversation(): Promise<ConversationResponse> {
+    const response = await apiClient.post<ConversationResponse>('/messages/conversations/support')
+    return response.data
+  },
+
+  /**
    * Create new conversation
    */
   async createConversation(data: ConversationCreate): Promise<ConversationResponse> {

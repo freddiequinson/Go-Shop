@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db, get_current_user
-from app.models.user import User
-from app.models.message import ConversationType
+from app.models.user import User, UserType
+from app.models.message import ConversationType, MessageType
 from app.crud.message import conversation_crud, message_crud
 from app.schemas.message import (
     ConversationCreate, ConversationResponse, ConversationUpdate,
@@ -17,11 +17,52 @@ from app.schemas.message import (
     MessageRead, UserMessagingStats, ConversationStats,
     GhanaMarketMessage, BubbleGroupMessage, OrderChatMessage
 )
+from app.utils.auto_responses import AutoResponseEngine
 
 router = APIRouter()
 
 
 # Conversation endpoints
+@router.post("/conversations/support", response_model=ConversationResponse)
+def create_support_conversation(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Create a support conversation with an admin
+    Automatically finds an available admin and creates a direct conversation
+    """
+    # Find an admin user
+    admin = db.query(User).filter(User.user_type == UserType.ADMIN).first()
+    
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No admin available for support"
+        )
+    
+    # Create conversation data
+    conversation_data = ConversationCreate(
+        conversation_type=ConversationType.DIRECT,
+        title=f"Support Chat - {current_user.full_name or current_user.email}",
+        participant_ids=[current_user.id, admin.id]
+    )
+    
+    conversation = conversation_crud.create_conversation(
+        db=db,
+        conversation_data=conversation_data,
+        creator_id=current_user.id
+    )
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not create support conversation"
+        )
+    
+    return conversation
+
+
 @router.post("/conversations", response_model=ConversationResponse)
 def create_conversation(
     conversation_data: ConversationCreate,
@@ -217,6 +258,7 @@ def send_message(
     - Supports text, images, files, location data
     - Ghana market context (local terms, market location)
     - Automatic notifications to participants
+    - Auto-responses for common customer queries
     """
     
     # Ensure conversation_id matches
@@ -233,6 +275,58 @@ def send_message(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cannot send message to this conversation"
         )
+    
+    # Send automated response if user is a customer (not admin/support)
+    if current_user.user_type == UserType.BUYER and message_data.content_type == "text":
+        print(f"Checking auto-response for user type: {current_user.user_type}")
+        # Get conversation message count AFTER creating the message
+        messages = message_crud.get_conversation_messages(
+            db=db,
+            conversation_id=conversation_id,
+            user_id=current_user.id,
+            skip=0,
+            limit=100
+        )
+        
+        message_count = len(messages) - 1  # Exclude the just-sent message
+        print(f"Message count: {message_count}, should_send: {AutoResponseEngine.should_send_auto_response(message_count)}")
+        
+        # Only send auto-response for first few messages (including the one just sent)
+        if AutoResponseEngine.should_send_auto_response(message_count):
+            auto_response = AutoResponseEngine.get_auto_response(message_data.content)
+            print(f"Auto-response generated: {auto_response is not None}")
+            
+            if auto_response:
+                # Get first admin user to send auto-response from
+                admin_user = db.query(User).filter(User.user_type == UserType.ADMIN).first()
+                print(f"Admin user found: {admin_user is not None}")
+                
+                if admin_user:
+                    # Create automated response message
+                    auto_message_data = MessageCreate(
+                        conversation_id=conversation_id,
+                        content=auto_response["content"],
+                        message_type=MessageType.SYSTEM,
+                        content_type="text"
+                    )
+                    
+                    try:
+                        # Send from admin user
+                        auto_message = message_crud.create_message(
+                            db=db,
+                            message_data=auto_message_data,
+                            sender_id=admin_user.id
+                        )
+                        print(f"✅ Auto-response sent successfully: {auto_message.id}")
+                    except Exception as e:
+                        # Don't fail the original message if auto-response fails
+                        print(f"❌ Failed to send auto-response: {e}")
+                else:
+                    print("❌ No admin user found to send auto-response from")
+            else:
+                print("❌ No auto-response generated for message content")
+        else:
+            print(f"❌ Auto-response skipped - message count {message_count} exceeds limit")
     
     return message
 

@@ -7,7 +7,7 @@ import { Star, ThumbsUp, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { reviewsService } from "@/lib/api/services/reviews.service"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { getUserFriendlyErrorMessage, getErrorTitle } from "@/lib/utils/error-messages"
 

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { CartProvider } from "@/lib/cart-context"
 import { AuthProvider } from "@/lib/contexts/auth-context"
+import { OnboardingProvider } from "@/lib/contexts/onboarding-context"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
@@ -42,11 +43,13 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          <CartProvider>
-            {children}
-            {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
-            <Toaster />
-          </CartProvider>
+          <OnboardingProvider>
+            <CartProvider>
+              {children}
+              {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
+              <Toaster />
+            </CartProvider>
+          </OnboardingProvider>
         </AuthProvider>
       </body>
     </html>

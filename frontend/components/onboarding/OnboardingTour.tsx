@@ -138,8 +138,9 @@ export default function OnboardingTour({ tourId, steps, onComplete }: Onboarding
   // Calculate tooltip position
   const getTooltipStyle = (): React.CSSProperties => {
     const padding = 20
-    const tooltipHeight = 200 // Approximate tooltip height
-    const tooltipWidth = 400 // Approximate tooltip width
+    const isMobile = window.innerWidth < 768
+    const tooltipHeight = isMobile ? 280 : 200 // Approximate tooltip height
+    const tooltipWidth = isMobile ? Math.min(window.innerWidth - 40, 350) : 400 // Approximate tooltip width
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
     
@@ -254,17 +255,17 @@ export default function OnboardingTour({ tourId, steps, onComplete }: Onboarding
       {/* Tooltip */}
       <div
         style={getTooltipStyle()}
-        className="bg-white rounded-2xl shadow-2xl border-4 border-[#FED141] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300"
+        className="bg-white rounded-2xl shadow-2xl border-4 border-[#FED141] w-full max-w-md mx-4 md:mx-0 animate-in fade-in slide-in-from-bottom-4 duration-300"
       >
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#FED141] rounded-lg flex items-center justify-center">
-                <Lightbulb className="w-5 h-5 text-[#303A4D]" />
+          <div className="flex items-start justify-between mb-3 md:mb-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FED141] rounded-lg flex items-center justify-center">
+                <Lightbulb className="w-4 h-4 md:w-5 md:h-5 text-[#303A4D]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-[#303A4D]">{step.title}</h3>
+                <h3 className="text-base md:text-lg font-bold text-[#303A4D]">{step.title}</h3>
                 <p className="text-xs text-[#303A4D]/60">
                   Step {currentStep + 1} of {steps.length}
                 </p>
@@ -279,7 +280,7 @@ export default function OnboardingTour({ tourId, steps, onComplete }: Onboarding
           </div>
 
           {/* Description */}
-          <p className="text-[#303A4D]/80 mb-6 leading-relaxed">{step.description}</p>
+          <p className="text-sm md:text-base text-[#303A4D]/80 mb-4 md:mb-6 leading-relaxed">{step.description}</p>
 
           {/* Progress dots */}
           <div className="flex items-center justify-center gap-2 mb-6">
@@ -298,20 +299,20 @@ export default function OnboardingTour({ tourId, steps, onComplete }: Onboarding
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-2 md:gap-3">
             <div className="flex items-center gap-2">
               {currentStep > 0 && (
                 <button
                   onClick={handlePrevious}
-                  className="px-4 py-2 bg-gray-100 text-[#303A4D] rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+                  className="px-3 md:px-4 py-2 bg-gray-100 text-[#303A4D] rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 md:gap-2 text-sm md:text-base"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Back
+                  <span className="hidden sm:inline">Back</span>
                 </button>
               )}
               <button
                 onClick={handleNext}
-                className="px-6 py-2 bg-[#FED141] text-[#303A4D] font-bold rounded-lg hover:bg-[#FED141]/90 transition-colors flex items-center gap-2"
+                className="px-4 md:px-6 py-2 bg-[#FED141] text-[#303A4D] font-bold rounded-lg hover:bg-[#FED141]/90 transition-colors flex items-center gap-1 md:gap-2 text-sm md:text-base"
               >
                 {currentStep < steps.length - 1 ? (
                   <>

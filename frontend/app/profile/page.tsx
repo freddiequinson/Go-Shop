@@ -13,6 +13,8 @@ import { ProfileSidebar } from "@/components/profile/ProfileSidebar"
 import { OverviewTab } from "@/components/profile/OverviewTab"
 import { SecurityTab } from "@/components/profile/SecurityTab"
 import { AddressesTab } from "@/components/profile/AddressesTab"
+import OnboardingTour from "@/components/onboarding/OnboardingTour"
+import { profileTourSteps } from "@/lib/onboarding-tours/user-tours"
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
@@ -85,8 +87,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F4F2E6]">
+      <OnboardingTour tourId="profile-tour" steps={profileTourSteps} />
       {/* Header */}
-      <header className="bg-[#FED141] border-b border-[#303A4D]/10">
+      <header className="bg-[#FED141] border-b border-[#303A4D]/10" data-tour="profile-header">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 text-[#303A4D] hover:opacity-80">
@@ -107,11 +110,13 @@ export default function ProfilePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Profile Sidebar */}
-          <ProfileSidebar user={user} onLogout={handleLogout} />
+          <div data-tour="edit-profile">
+            <ProfileSidebar user={user} onLogout={handleLogout} />
+          </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" data-tour="profile-tabs">
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
@@ -119,12 +124,12 @@ export default function ProfilePage() {
               </TabsList>
 
               {/* Overview Tab */}
-              <TabsContent value="overview">
+              <TabsContent value="overview" data-tour="wallet-balance">
                 <OverviewTab stats={stats} loadingStats={loadingStats} />
               </TabsContent>
 
               {/* Security Tab */}
-              <TabsContent value="security">
+              <TabsContent value="security" data-tour="recent-orders">
                 <SecurityTab />
               </TabsContent>
 
