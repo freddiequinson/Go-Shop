@@ -57,7 +57,9 @@ export default function AdminMessagesPage() {
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const response = await messagesService.getMessages(Number(conversationId))
+      // Handle both UUID strings and numeric IDs
+      const convId = conversationId.includes('-') ? conversationId : Number(conversationId)
+      const response = await messagesService.getMessages(convId as any)
       setMessages(response.messages || [])
       
       // Messages are automatically marked as read when fetched
@@ -76,10 +78,12 @@ export default function AdminMessagesPage() {
 
     try {
       setSending(true)
-      await messagesService.sendMessage(selectedConversation.id, {
+      // Handle both UUID strings and numeric IDs
+      const convId = String(selectedConversation.id)
+      await messagesService.sendMessage(convId as any, {
         content: newMessage,
-        message_type: "TEXT" as any,
-      })
+        conversation_id: convId,
+      } as any)
 
       setNewMessage("")
       await fetchMessages(String(selectedConversation.id))

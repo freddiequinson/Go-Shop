@@ -43,9 +43,16 @@ export default function DeliveryDatePicker({
       setLoading(true)
       const response = await apiClient.get('/delivery-dates/')
       
-      // Filter only available dates and sort by date
+      // Calculate minimum delivery date (48 hours from now)
+      const now = new Date()
+      const minDeliveryDate = new Date(now.getTime() + (48 * 60 * 60 * 1000))
+      
+      // Filter only available dates that are at least 48 hours away
       const availableDates = response.data
-        .filter((d: DeliveryDate) => d.is_available && new Date(d.date) > new Date())
+        .filter((d: DeliveryDate) => {
+          const deliveryDate = new Date(d.date)
+          return d.is_available && deliveryDate >= minDeliveryDate
+        })
         .sort((a: DeliveryDate, b: DeliveryDate) => 
           new Date(a.date).getTime() - new Date(b.date).getTime()
         )
@@ -117,8 +124,11 @@ export default function DeliveryDatePicker({
         <div className="p-8 text-center bg-yellow-50 border-2 border-yellow-200 rounded-xl">
           <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
           <p className="font-bold text-yellow-800 mb-2">No Delivery Dates Available</p>
-          <p className="text-sm text-yellow-700">
-            The admin hasn't set up delivery dates yet. Please check back later or contact support.
+          <p className="text-sm text-yellow-700 mb-2">
+            No delivery slots are available that are at least 48 hours from now.
+          </p>
+          <p className="text-xs text-yellow-600">
+            The admin may need to add more delivery dates, or all current dates are within the 48-hour preparation window. Please check back later or contact support.
           </p>
         </div>
       )}
@@ -159,10 +169,13 @@ export default function DeliveryDatePicker({
 
       {/* Date Selection */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <Calendar className="w-5 h-5 text-[#303A4D]" />
           <h4 className="font-bold text-[#303A4D]">Select Delivery Date</h4>
         </div>
+        <p className="text-sm text-[#303A4D]/60 mb-4">
+          ℹ️ Delivery dates must be at least 48 hours from now to ensure proper preparation
+        </p>
         <div className="grid grid-cols-7 gap-2">
           {dates.map((date) => (
             <Card

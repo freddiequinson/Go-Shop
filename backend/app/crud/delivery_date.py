@@ -25,12 +25,17 @@ def get_all_delivery_dates(db: Session, skip: int = 0, limit: int = 100) -> List
 
 
 def get_available_delivery_dates(db: Session, limit: int = 3) -> List[DeliveryDate]:
-    """Get next available delivery dates for users (only future dates)"""
-    today = date.today()
+    """Get next available delivery dates for users (only dates 48+ hours from now)"""
+    from datetime import datetime, timedelta
+    
+    # Calculate minimum delivery date (48 hours from now)
+    min_delivery_datetime = datetime.now() + timedelta(hours=48)
+    min_delivery_date = min_delivery_datetime.date()
+    
     return (
         db.query(DeliveryDate)
         .filter(
-            DeliveryDate.date > today,
+            DeliveryDate.date >= min_delivery_date,
             DeliveryDate.is_available == True
         )
         .order_by(DeliveryDate.date)
