@@ -8,16 +8,40 @@ import { useCart } from "@/lib/cart-context"
 import { CartDropdown } from "@/components/cart-dropdown"
 import Link from "next/link"
 import { useAuth } from "@/lib/contexts/auth-context"
-import SplitText from "@/components/SplitText"
-import RotatingText from "@/components/RotatingText"
+import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "motion/react"
+
+// Dynamically import animation components with error handling
+const SplitText = dynamic(() => import("@/components/SplitText"), {
+  ssr: false,
+  loading: () => <span className="opacity-0">Loading...</span>,
+})
+
+const RotatingText = dynamic(() => import("@/components/RotatingText"), {
+  ssr: false,
+  loading: () => <span className="opacity-0">Loading...</span>,
+})
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const [animationError, setAnimationError] = useState(false)
   const { items } = useCart()
   const { isAuthenticated, user } = useAuth()
+
+  // Error boundary for animations
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (event.message?.includes('is not a function') || event.message?.includes('Segmenter')) {
+        console.error('Animation error caught:', event.message)
+        setAnimationError(true)
+        event.preventDefault()
+      }
+    }
+    window.addEventListener('error', handleError)
+    return () => window.removeEventListener('error', handleError)
+  }, [])
 
   // Close mobile menu when screen size changes to desktop
   useEffect(() => {
@@ -225,50 +249,66 @@ export default function Home() {
       <section className="relative bg-[#FED141] px-6 md:px-8 pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden w-full">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-8 md:mb-12">
-            <SplitText
-              text="Fresh Groceries"
-              tag="h1"
-              className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4"
-              delay={40}
-              duration={1.2}
-              ease="power2.out"
-              splitType="chars"
-              from={{ opacity: 0, y: 40 }}
-              to={{ opacity: 1, y: 0 }}
-              threshold={0}
-              rootMargin="0px"
-              textAlign="center"
-            />
-            <SplitText
-              text="from the Market"
-              tag="h2"
-              className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight"
-              delay={40}
-              duration={1.2}
-              ease="power2.out"
-              splitType="chars"
-              from={{ opacity: 0, y: 40 }}
-              to={{ opacity: 1, y: 0 }}
-              threshold={0}
-              rootMargin="0px"
-              textAlign="center"
-            />
-            <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight inline-flex items-center justify-center">
-              <span className="mr-4">To</span>
-              <RotatingText
-                texts={heroSlides.map(slide => slide.text)}
-                mainClassName="inline-flex"
-                staggerFrom="last"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "-120%" }}
-                staggerDuration={0.035}
-                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                rotationInterval={4500}
-                onNext={(index) => setCurrentSlide(index)}
-              />
-            </h2>
+            {animationError ? (
+              <>
+                <h1 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4">
+                  Fresh Groceries
+                </h1>
+                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
+                  from the Market
+                </h2>
+                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
+                  To Your Home
+                </h2>
+              </>
+            ) : (
+              <>
+                <SplitText
+                  text="Fresh Groceries"
+                  tag="h1"
+                  className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4"
+                  delay={40}
+                  duration={1.2}
+                  ease="power2.out"
+                  splitType="chars"
+                  from={{ opacity: 0, y: 40 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0}
+                  rootMargin="0px"
+                  textAlign="center"
+                />
+                <SplitText
+                  text="from the Market"
+                  tag="h2"
+                  className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight"
+                  delay={40}
+                  duration={1.2}
+                  ease="power2.out"
+                  splitType="chars"
+                  from={{ opacity: 0, y: 40 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0}
+                  rootMargin="0px"
+                  textAlign="center"
+                />
+                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight inline-flex items-center justify-center">
+                  <span className="mr-4">To</span>
+                  <RotatingText
+                    texts={heroSlides.map(slide => slide.text)}
+                    mainClassName="inline-flex"
+                    staggerFrom="last"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-120%" }}
+                    staggerDuration={0.035}
+                    splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    rotationInterval={4500}
+                    onNext={(index) => setCurrentSlide(index)}
+                  />
+                </h2>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
