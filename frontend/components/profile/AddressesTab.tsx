@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { getUserFriendlyErrorMessage, getErrorTitle } from "@/lib/utils/error-messages"
 import { userAddressesService } from "@/lib/api/services"
 import type { UserAddressResponse, UserAddressCreate } from "@/lib/types"
 
@@ -63,8 +64,8 @@ export function AddressesTab() {
     } catch (error) {
       console.error("Error fetching addresses:", error)
       toast({
-        title: "Error",
-        description: "Failed to load addresses",
+        title: "Unable to Load Addresses",
+        description: "We couldn't load your saved addresses. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -146,8 +147,8 @@ export function AddressesTab() {
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast({
-        title: "Error",
-        description: "Geolocation is not supported by your browser",
+        title: "Location Not Available",
+        description: "Your browser doesn't support location services. Please enter your address manually.",
         variant: "destructive",
       })
       return
@@ -165,8 +166,8 @@ export function AddressesTab() {
       },
       (error) => {
         toast({
-          title: "Error",
-          description: "Failed to get your location. Please enable location access.",
+          title: "Location Access Denied",
+          description: "Please enable location access in your browser settings to use this feature.",
           variant: "destructive",
         })
       }
@@ -233,8 +234,8 @@ export function AddressesTab() {
       resetForm()
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.response?.data?.detail || "Failed to save address",
+        title: getErrorTitle(error),
+        description: getUserFriendlyErrorMessage(error),
         variant: "destructive",
       })
     } finally {
@@ -273,8 +274,8 @@ export function AddressesTab() {
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete address",
+        title: "Unable to Delete",
+        description: "We couldn't delete this address. Please try again.",
         variant: "destructive",
       })
     }
@@ -291,8 +292,8 @@ export function AddressesTab() {
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to set default address",
+        title: "Unable to Update",
+        description: "We couldn't set this as your default address. Please try again.",
         variant: "destructive",
       })
     }
@@ -641,8 +642,8 @@ export function AddressesTab() {
                         setShowMapModal(false)
                       } else {
                         toast({
-                          title: "Error",
-                          description: "Please enter valid coordinates",
+                          title: "Invalid Coordinates",
+                          description: "Please enter valid latitude and longitude values",
                           variant: "destructive",
                         })
                       }

@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { UserType } from "@/lib/types"
+import { getUserFriendlyErrorMessage, getErrorTitle } from "@/lib/utils/error-messages"
 import Stepper, { Step } from "@/components/Stepper"
 import { useRouter } from "next/navigation"
 
@@ -58,8 +59,8 @@ export default function SignupPage() {
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         toast({
-          title: "File too large",
-          description: "Profile picture must be less than 2MB",
+          title: "Image Too Large",
+          description: "Please choose an image smaller than 2MB",
           variant: "destructive",
         })
         return
@@ -67,8 +68,8 @@ export default function SignupPage() {
 
       if (!file.type.startsWith('image/')) {
         toast({
-          title: "Invalid file type",
-          description: "Please upload an image file",
+          title: "Invalid File Type",
+          description: "Please upload a valid image file (JPG, PNG, or GIF)",
           variant: "destructive",
         })
         return
@@ -92,8 +93,8 @@ export default function SignupPage() {
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast({
-        title: "Geolocation not supported",
-        description: "Your browser doesn't support geolocation",
+        title: "Location Not Available",
+        description: "Your browser doesn't support location services. You can skip this step.",
         variant: "destructive",
       })
       return
@@ -133,8 +134,8 @@ export default function SignupPage() {
       (error) => {
         setIsGettingLocation(false)
         toast({
-          title: "Location access denied",
-          description: "Please enable location access to set your delivery address",
+          title: "Location Access Denied",
+          description: "Please enable location access in your browser settings, or skip this step and add your address later.",
           variant: "destructive",
         })
       }
@@ -146,24 +147,24 @@ export default function SignupPage() {
       case 1: // Basic Info
         if (!formData.name.trim()) {
           toast({
-            title: "Name required",
-            description: "Please enter your full name",
+            title: "Name Required",
+            description: "Please enter your full name to continue",
             variant: "destructive",
           })
           return false
         }
         if (!formData.username.trim()) {
           toast({
-            title: "Username required",
-            description: "Please enter a username",
+            title: "Username Required",
+            description: "Please choose a username for your account",
             variant: "destructive",
           })
           return false
         }
         if (!formData.email.trim()) {
           toast({
-            title: "Email required",
-            description: "Please enter your email address",
+            title: "Email Required",
+            description: "Please enter your email address to continue",
             variant: "destructive",
           })
           return false
@@ -172,8 +173,8 @@ export default function SignupPage() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
           toast({
-            title: "Invalid email",
-            description: "Please enter a valid email address",
+            title: "Invalid Email",
+            description: "Please enter a valid email address (e.g., name@example.com)",
             variant: "destructive",
           })
           return false
@@ -189,32 +190,32 @@ export default function SignupPage() {
       case 4: // Password
         if (!formData.password) {
           toast({
-            title: "Password required",
-            description: "Please create a password",
+            title: "Password Required",
+            description: "Please create a password to secure your account",
             variant: "destructive",
           })
           return false
         }
         if (formData.password.length < 6) {
           toast({
-            title: "Password too short",
-            description: "Password must be at least 6 characters",
+            title: "Password Too Short",
+            description: "Your password must be at least 6 characters long for security",
             variant: "destructive",
           })
           return false
         }
         if (formData.password !== formData.confirmPassword) {
           toast({
-            title: "Passwords don't match",
-            description: "Please make sure your passwords match",
+            title: "Passwords Don't Match",
+            description: "Please make sure both password fields are identical",
             variant: "destructive",
           })
           return false
         }
         if (!termsAccepted) {
           toast({
-            title: "Terms required",
-            description: "Please accept the terms and conditions",
+            title: "Terms & Conditions",
+            description: "Please accept the Terms of Service and Privacy Policy to continue",
             variant: "destructive",
           })
           return false
@@ -264,8 +265,8 @@ export default function SignupPage() {
       setCountdown(5) // Reset countdown to 5 seconds
     } catch (error) {
       toast({
-        title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Could not create account. Please try again.",
+        title: getErrorTitle(error),
+        description: getUserFriendlyErrorMessage(error),
         variant: "destructive",
       })
       setIsSubmitting(false)
@@ -549,8 +550,8 @@ export default function SignupPage() {
                 } catch (error) {
                   console.error('OAuth error:', error)
                   toast({
-                    title: "OAuth Error",
-                    description: "Could not initiate Google sign up. Please try again.",
+                    title: "Google Sign Up Unavailable",
+                    description: "We couldn't connect to Google right now. Please try again or sign up with email.",
                     variant: "destructive",
                   })
                 }

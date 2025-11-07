@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { getUserFriendlyErrorMessage, getErrorTitle } from "@/lib/utils/error-messages"
 import { usersService } from "@/lib/api/services"
 
 export function SecurityTab() {
@@ -24,19 +25,22 @@ export function SecurityTab() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (passwordData.new_password !== passwordData.confirm_password) {
+    const newPassword = passwordData.new_password
+    const confirmPassword = passwordData.confirm_password
+
+    if (newPassword !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "New passwords do not match",
+        title: "Passwords Don't Match",
+        description: "Please make sure both password fields match",
         variant: "destructive",
       })
       return
     }
 
-    if (passwordData.new_password.length < 6) {
+    if (newPassword.length < 6) {
       toast({
-        title: "Error",
-        description: "New password must be at least 6 characters",
+        title: "Password Too Short",
+        description: "Your new password must be at least 6 characters long for security",
         variant: "destructive",
       })
       return
@@ -62,8 +66,8 @@ export function SecurityTab() {
       })
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.response?.data?.detail || "Failed to change password",
+        title: getErrorTitle(error),
+        description: getUserFriendlyErrorMessage(error),
         variant: "destructive",
       })
     } finally {

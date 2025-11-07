@@ -21,7 +21,7 @@ router = APIRouter()
 
 
 # Review CRUD endpoints
-@router.post("/reviews", response_model=ReviewResponse)
+@router.post("", response_model=ReviewResponse)
 def create_review(
     review_data: ReviewCreate,
     db: Session = Depends(get_db),
@@ -58,7 +58,7 @@ def create_review(
     return review
 
 
-@router.get("/reviews/{review_id}", response_model=ReviewResponse)
+@router.get("/{review_id}", response_model=ReviewResponse)
 def get_review(
     review_id: str,
     db: Session = Depends(get_db)
@@ -76,7 +76,7 @@ def get_review(
     return review
 
 
-@router.put("/reviews/{review_id}", response_model=ReviewResponse)
+@router.put("/{review_id}", response_model=ReviewResponse)
 def update_review(
     review_id: str,
     update_data: ReviewUpdate,
@@ -101,7 +101,7 @@ def update_review(
     return review
 
 
-@router.delete("/reviews/{review_id}")
+@router.delete("/{review_id}")
 def delete_review(
     review_id: str,
     db: Session = Depends(get_db),
@@ -246,7 +246,7 @@ def get_my_reviews(
 
 
 # Review responses
-@router.post("/reviews/{review_id}/responses", response_model=ReviewResponseResponse)
+@router.post("/{review_id}/responses", response_model=ReviewResponseResponse)
 def create_review_response(
     review_id: str,
     response_data: ReviewResponseCreate,
@@ -278,7 +278,7 @@ def create_review_response(
 
 
 # Review helpfulness voting
-@router.post("/reviews/{review_id}/vote")
+@router.post("/{review_id}/vote")
 def vote_review_helpfulness(
     review_id: str,
     vote_data: ReviewHelpfulnessVoteCreate,
@@ -310,7 +310,7 @@ def vote_review_helpfulness(
 
 
 # Ghana market specific endpoints
-@router.post("/reviews/ghana-market", response_model=ReviewResponse)
+@router.post("/ghana-market", response_model=ReviewResponse)
 def create_ghana_market_review(
     review_data: GhanaMarketReview,
     db: Session = Depends(get_db),
@@ -367,7 +367,7 @@ def create_ghana_market_review(
     return review
 
 
-@router.post("/reviews/produce", response_model=ReviewResponse)
+@router.post("/produce", response_model=ReviewResponse)
 def create_produce_review(
     review_data: ProduceReview,
     db: Session = Depends(get_db),
@@ -478,7 +478,7 @@ def get_product_rating(
 
 
 # Analytics endpoints
-@router.get("/reviews/analytics", response_model=ReviewAnalytics)
+@router.get("/analytics", response_model=ReviewAnalytics)
 def get_review_analytics(
     product_id: Optional[str] = None,
     seller_id: Optional[str] = None,

@@ -6,9 +6,10 @@ import { useState, useEffect } from "react"
 import { Star, ThumbsUp, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { reviewsService } from "@/lib/api/services"
+import { reviewsService } from "@/lib/api/services/reviews.service"
+import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { getUserFriendlyErrorMessage, getErrorTitle } from "@/lib/utils/error-messages"
 
 interface Review {
   id: string
@@ -101,7 +102,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
       await reviewsService.createReview({
         product_id: productId as any,
         rating: rating,
-        comment: reviewComment,
+        content: reviewComment,
+        review_type: 'product' as any,
         ...(reviewTitle && { title: reviewTitle })
       } as any)
 
@@ -118,8 +120,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
     } catch (error: any) {
       console.error("Failed to submit review:", error)
       toast({
-        title: "Error",
-        description: error.response?.data?.detail || "Failed to submit review",
+        title: getErrorTitle(error),
+        description: getUserFriendlyErrorMessage(error),
         variant: "destructive",
       })
     } finally {
