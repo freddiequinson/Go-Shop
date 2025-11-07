@@ -240,7 +240,7 @@ def notify_supplier_offer_accepted(
         if supplier.phone:
             sms_message = (
                 f"Congratulations! Your offer for {request.product_name} "
-                f"(GH₵{offer.total_price}) has been ACCEPTED. "
+                f"(GHS {offer.total_price}) has been ACCEPTED. "
                 f"Deliver by {offer.delivery_date.strftime('%d/%m/%Y')}. "
                 f"Details: goshopghana.com/supplier"
             )

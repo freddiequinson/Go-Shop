@@ -78,7 +78,7 @@ class HubtelSMSService:
         """Send order confirmation SMS"""
         message = (
             f"Hello {customer_name}! Your order #{order_id} has been confirmed. "
-            f"Total: GH₵{total_amount:.2f}. "
+            f"Total: GHS {total_amount:.2f}. "
             f"Track your order at goshopghana.com. Thank you!"
         )
         return await self.send_sms(phone, message)
@@ -95,7 +95,7 @@ class HubtelSMSService:
         message = (
             f"Payment Receipt - GoShopGhana\n"
             f"Dear {customer_name},\n"
-            f"Amount: GH₵{amount:.2f}\n"
+            f"Amount: GHS {amount:.2f}\n"
             f"Method: {payment_method}\n"
             f"Ref: {transaction_id}\n"
             f"Thank you for your payment!"
@@ -128,8 +128,8 @@ class HubtelSMSService:
         message = (
             f"Wallet Top-Up Successful!\n"
             f"Dear {customer_name},\n"
-            f"Amount Added: GH₵{amount:.2f}\n"
-            f"New Balance: GH₵{new_balance:.2f}\n"
+            f"Amount Added: GHS {amount:.2f}\n"
+            f"New Balance: GHS {new_balance:.2f}\n"
             f"GoShopGhana"
         )
         return await self.send_sms(phone, message)

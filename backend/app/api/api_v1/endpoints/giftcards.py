@@ -417,7 +417,7 @@ async def send_giftcard(
             sms_message = f"You've received a GoShopGhana Gift Card! Code: {giftcard.code}"
             if giftcard.pin:
                 sms_message += f" | PIN: {giftcard.pin}"
-            sms_message += f" | Amount: GH₵{giftcard.amount:.2f}. Redeem at goshopghana.com"
+            sms_message += f" | Amount: GHS {giftcard.amount:.2f}. Redeem at goshopghana.com"
             
             sms_response = await sms_service.send_sms(
                 recipient=recipient_phone,

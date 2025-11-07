@@ -90,9 +90,9 @@ def send_order_confirmation(order: Order, user: User) -> bool:
                 delivery_date = order.estimated_delivery_time.strftime('%b %d')
             
             sms_message = (
-                f"Order Confirmed! 🎉\n"
+                f"Order Confirmed!\n"
                 f"Order #{order.id[:8]}\n"
-                f"Total: GH₵{total:.2f}\n"
+                f"Total: GHS {total:.2f}\n"
                 f"Delivery: {delivery_date}\n"
                 f"Track: www.goshopghana.com/orders/{order.id}\n"
                 f"Thank you for shopping with Go-Shop Ghana!"

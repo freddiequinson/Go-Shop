@@ -122,9 +122,6 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
         )
         db.add(order_item)
     
-    # Don't clear cart yet - will be cleared after successful payment
-    # clear_cart(db, user_id)
-    
     try:
         print("DEBUG: About to commit transaction...")
         db.commit()
@@ -134,6 +131,9 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
         print(f"ERROR at db.commit(): {e}")
         print(f"Full traceback: {traceback.format_exc()}")
         raise
+    
+    # Clear cart after successful order creation
+    clear_cart(db, user_id)
     
     db.refresh(order)
     return order
