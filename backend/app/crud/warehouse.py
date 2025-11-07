@@ -63,12 +63,15 @@ def get_all_inventory(
     filters: Optional[InventoryFilter] = None
 ) -> Tuple[List[WarehouseInventory], int]:
     """Get all inventory with filtering"""
+    from app.models.product import Product
+    
     query = db.query(WarehouseInventory)
     
     if filters:
         if filters.search:
-            # Would need to join with products table for name search
-            pass
+            # Join with products table for name search
+            query = query.join(Product, WarehouseInventory.product_id == Product.id)
+            query = query.filter(Product.name.ilike(f"%{filters.search}%"))
         
         if filters.zone:
             query = query.filter(WarehouseInventory.zone == filters.zone)

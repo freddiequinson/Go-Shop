@@ -29,6 +29,7 @@ export default function WarehousePage() {
   const router = useRouter()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false)
   const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
@@ -65,7 +66,12 @@ export default function WarehousePage() {
 
   const fetchInventory = async () => {
     try {
-      setLoading(true)
+      // Only show full page loading on initial load
+      if (inventory.length === 0) {
+        setLoading(true)
+      } else {
+        setSearching(true)
+      }
       const token = localStorage.getItem("access_token")
       let url = `${getApiBaseUrl()}/warehouse/inventory?page=${currentPage}&per_page=${perPage}`
       
@@ -100,6 +106,7 @@ export default function WarehousePage() {
       console.error("Failed to fetch inventory:", error)
     } finally {
       setLoading(false)
+      setSearching(false)
     }
   }
 
@@ -424,7 +431,17 @@ export default function WarehousePage() {
       </div>
 
       {/* Inventory Table */}
-      <div data-tour="inventory-list" className="bg-white rounded-3xl shadow-sm overflow-hidden">
+      <div data-tour="inventory-list" className="bg-white rounded-3xl shadow-sm overflow-hidden relative">
+        {/* Loading overlay */}
+        {searching && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 border-3 border-[#FED141] border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-[#303A4D] font-medium">Searching...</span>
+            </div>
+          </div>
+        )}
+        
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#F4F2E6]">

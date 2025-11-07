@@ -57,7 +57,8 @@ async def list_inventory(
         supplier_id=supplier_id,
         low_stock_only=low_stock_only,
         out_of_stock_only=out_of_stock_only,
-        expiring_soon_only=expiring_soon_only
+        expiring_soon_only=expiring_soon_only,
+        search=search
     )
     
     skip = (page - 1) * per_page
@@ -71,11 +72,6 @@ async def list_inventory(
         # Skip supplier products - they should only show after GRN is received
         if product and product.created_by_type == 'supplier' and not product.in_warehouse:
             continue
-        
-        # Apply search filter if provided
-        if search and product:
-            if search.lower() not in product.name.lower():
-                continue
             
         inv_dict = WarehouseInventoryResponse.model_validate(inv).model_dump()
         if product:
@@ -85,13 +81,12 @@ async def list_inventory(
             inv_dict['created_by_type'] = product.created_by_type
         result.append(WarehouseInventoryResponse(**inv_dict))
     
-    # Calculate pagination
-    result_count = len(result)
-    pages = math.ceil(result_count / per_page) if result_count > 0 else 1
+    # Calculate pagination based on actual total from database
+    pages = math.ceil(total / per_page) if total > 0 else 1
     
     return InventoryListResponse(
         items=result,
-        total=result_count,
+        total=total,
         page=page,
         per_page=per_page,
         pages=pages
