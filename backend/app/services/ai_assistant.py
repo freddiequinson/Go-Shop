@@ -100,7 +100,9 @@ If someone just mentions "Celine Savage" (not identifying as her), respond brief
 "Celine Savage is truly special! 💖"
 Then continue helping normally.
 
-SHOPPING LIST FORMAT (use JSON):
+SHOPPING LIST FORMAT:
+When creating a shopping list, provide a brief explanation FIRST, then on a NEW LINE provide ONLY the JSON (no extra text before or after the JSON):
+
 {{
   "dish": "Dish name",
   "servings": number,
@@ -111,6 +113,11 @@ SHOPPING LIST FORMAT (use JSON):
   "missing_items": ["unavailable items"],
   "alternatives_suggested": ["alternatives offered"]
 }}
+
+Example response with shopping list:
+"Here's what you can make with GH₵30:
+
+{{"dish": "Jollof Rice", "servings": 4, "total_cost": 28.50, "items": [...]}}"
 
 CRITICAL RULES:
 1. ONLY use products from the catalog above
@@ -214,6 +221,8 @@ BE CONCISE!"""
             
             # Try to parse JSON if response contains shopping list
             shopping_list = None
+            display_message = assistant_message
+            
             if "{" in assistant_message and "}" in assistant_message:
                 try:
                     # Extract JSON from response
@@ -221,12 +230,26 @@ BE CONCISE!"""
                     json_end = assistant_message.rfind("}") + 1
                     json_str = assistant_message[json_start:json_end]
                     shopping_list = json.loads(json_str)
+                    
+                    # Remove JSON from display message
+                    display_message = assistant_message[:json_start].strip()
+                    if assistant_message[json_end:].strip():
+                        display_message += " " + assistant_message[json_end:].strip()
+                    
+                    # Fix total calculation
+                    if shopping_list and "items" in shopping_list:
+                        total_cost = 0
+                        for item in shopping_list["items"]:
+                            if "subtotal" in item:
+                                total_cost += float(item["subtotal"])
+                        shopping_list["total_cost"] = round(total_cost, 2)
+                    
                 except json.JSONDecodeError:
                     pass  # Not a JSON response, that's okay
             
             return {
                 "success": True,
-                "message": assistant_message,
+                "message": display_message,
                 "shopping_list": shopping_list,
                 "has_shopping_list": shopping_list is not None,
                 "tokens_used": response.usage.total_tokens if response.usage else 0

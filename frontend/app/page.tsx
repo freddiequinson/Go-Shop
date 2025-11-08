@@ -148,25 +148,22 @@ export default function Home() {
               )}
             </button>
           </Link>
-          <div className="relative">
-            <button
-              onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
-              onMouseEnter={() => setCartDropdownOpen(true)}
-              onMouseLeave={() => setCartDropdownOpen(false)}
-              className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative cursor-pointer"
-            >
-              <ShoppingBag className="w-5 h-5 text-white" />
-              {items.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FED141] text-[#303A4D] text-xs font-bold rounded-full flex items-center justify-center">
-                  {items.length}
-                </span>
-              )}
-            </button>
-            {cartDropdownOpen && (
-              <div onMouseEnter={() => setCartDropdownOpen(true)} onMouseLeave={() => setCartDropdownOpen(false)}>
-                <CartDropdown />
-              </div>
-            )}
+          <div 
+            className="relative"
+            onMouseEnter={() => setCartDropdownOpen(true)}
+            onMouseLeave={() => setCartDropdownOpen(false)}
+          >
+            <Link href="/cart">
+              <button className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative cursor-pointer">
+                <ShoppingBag className="w-5 h-5 text-white" />
+                {items.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FED141] text-[#303A4D] text-xs font-bold rounded-full flex items-center justify-center">
+                    {items.length}
+                  </span>
+                )}
+              </button>
+            </Link>
+            {cartDropdownOpen && <CartDropdown />}
           </div>
         </div>
       </nav>

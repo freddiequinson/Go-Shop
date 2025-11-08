@@ -20,6 +20,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null)
+  const [chatLoaded, setChatLoaded] = useState(false)
   const [quickActions, setQuickActions] = useState<any[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatWindowRef = useRef<HTMLDivElement>(null)
@@ -37,6 +38,72 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
     scrollToBottom()
   }, [messages])
 
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    const loadChatHistory = () => {
+      try {
+        const savedMessages = localStorage.getItem('gloria_chat_history')
+        const savedShoppingList = localStorage.getItem('gloria_shopping_list')
+        
+        if (savedMessages) {
+          const parsed = JSON.parse(savedMessages)
+          // Convert timestamp strings back to Date objects
+          const messagesWithDates = parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+          setMessages(messagesWithDates)
+        }
+        
+        if (savedShoppingList) {
+          setShoppingList(JSON.parse(savedShoppingList))
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error)
+      } finally {
+        setChatLoaded(true)
+      }
+    }
+    
+    loadChatHistory()
+  }, [])
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (chatLoaded && messages.length > 0) {
+      try {
+        localStorage.setItem('gloria_chat_history', JSON.stringify(messages))
+      } catch (error) {
+        console.error('Error saving chat history:', error)
+      }
+    }
+  }, [messages, chatLoaded])
+
+  // Save shopping list to localStorage whenever it changes
+  useEffect(() => {
+    if (chatLoaded) {
+      try {
+        if (shoppingList) {
+          localStorage.setItem('gloria_shopping_list', JSON.stringify(shoppingList))
+        } else {
+          localStorage.removeItem('gloria_shopping_list')
+        }
+      } catch (error) {
+        console.error('Error saving shopping list:', error)
+      }
+    }
+  }, [shoppingList, chatLoaded])
+
+  // Clear chat history on logout
+  useEffect(() => {
+    if (!user) {
+      localStorage.removeItem('gloria_chat_history')
+      localStorage.removeItem('gloria_shopping_list')
+      setMessages([])
+      setShoppingList(null)
+    }
+  }, [user])
+
   // Load quick actions on mount
   useEffect(() => {
     const loadQuickActions = async () => {
@@ -46,9 +113,9 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
     loadQuickActions()
   }, [])
 
-  // Send welcome message when chat opens
+  // Send welcome message when chat opens (only if no history)
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen && messages.length === 0 && chatLoaded) {
       setMessages([
         {
           role: 'assistant',
@@ -57,7 +124,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
         },
       ])
     }
-  }, [isOpen])
+  }, [isOpen, chatLoaded])
 
   // Close chatbot when clicking outside
   useEffect(() => {
@@ -106,9 +173,18 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
       }
     } catch (error) {
       console.error('Error sending message:', error)
+      
+      // Add error message to chat
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: "Oops! I'm having trouble connecting right now. 😔 Please send your message again in a moment. If the problem continues, refresh the page or contact support.",
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      
       toast({
-        title: 'Error',
-        description: 'Failed to send message. Please try again.',
+        title: 'Connection Issue',
+        description: 'Gloria is having trouble responding. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -189,8 +265,9 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
         })
         setShoppingList(null) // Clear shopping list after adding
         
-        // Refresh the page to update cart count
-        window.location.reload()
+        // Close chatbot and redirect to cart
+        setIsOpen(false)
+        router.push('/cart')
       } else {
         toast({
           title: 'Error',
@@ -274,32 +351,61 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F4F2E6]">
-            {messages.map((message, index) => (
+            {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">👩🏾‍🍳</span>
+                  </div>
+                )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
+                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                    msg.role === 'user'
                       ? 'bg-[#303A4D] text-white'
-                      : 'bg-white text-[#303A4D] shadow-sm'
+                      : 'bg-gray-100 text-[#303A4D]'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  {message.timestamp && (
-                    <p className="text-xs opacity-60 mt-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.shoppingList && (
+                    <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <p className="font-semibold text-[#303A4D] mb-2">{msg.shoppingList.dish}</p>
+                      <p className="text-xs text-gray-500 mb-2">
+                        {msg.shoppingList.servings} servings • Total: GH₵{msg.shoppingList.total_cost.toFixed(2)}
+                      </p>
+                      <div className="space-y-1">
+                        {msg.shoppingList.items.map((item, i) => (
+                          <div key={i} className="text-xs flex justify-between">
+                            <span>{item.name} ({item.quantity} {item.unit})</span>
+                            <span className="font-semibold">GH₵{item.subtotal.toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
+                {msg.role === 'user' && (
+                  <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">👤</span>
+                  </div>
+                )}
               </div>
             ))}
 
+            {/* Typing indicator */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
-                  <Loader2 className="w-5 h-5 text-[#FED141] animate-spin" />
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg">👩🏾‍🍳</span>
+                </div>
+                <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
                 </div>
               </div>
             )}

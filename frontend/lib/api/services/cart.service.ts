@@ -27,7 +27,7 @@ export const cartService = {
   /**
    * Update cart item quantity
    */
-  async updateCartItem(productId: number, data: UpdateCartItemRequest): Promise<CartResponse> {
+  async updateCartItem(productId: string | number, data: UpdateCartItemRequest): Promise<CartResponse> {
     const response = await apiClient.put<CartResponse>(API_ENDPOINTS.cart.updateItem(productId), data)
     return response.data
   },
@@ -35,7 +35,7 @@ export const cartService = {
   /**
    * Remove item from cart
    */
-  async removeFromCart(productId: number): Promise<CartResponse> {
+  async removeFromCart(productId: string | number): Promise<CartResponse> {
     const response = await apiClient.delete<CartResponse>(API_ENDPOINTS.cart.removeItem(productId))
     return response.data
   },

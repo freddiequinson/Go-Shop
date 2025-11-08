@@ -249,27 +249,35 @@ def get_sales_analytics(
 
 def get_top_selling_products(db: Session, limit: int = 10, days: int = 30) -> List[dict]:
     """Get top selling products"""
+    from app.models.order import OrderItem
+    
     since = datetime.utcnow() - timedelta(days=days)
     
-    # This is a simplified version - in production you'd aggregate from orders
+    # Join through order_items to get actual product sales
+    delivered_statuses = [OrderStatus.DELIVERED, OrderStatus.DELIVERED_LOWER, "DELIVERED", "delivered"]
+    
     results = db.query(
         Product.id,
         Product.name,
-        func.count(Order.id).label('order_count')
+        func.count(func.distinct(Order.id)).label('order_count'),
+        func.sum(OrderItem.quantity).label('total_quantity')
     ).join(
-        Order, Order.id == Product.id  # This join needs to be through order_items
+        OrderItem, OrderItem.product_id == Product.id
+    ).join(
+        Order, Order.id == OrderItem.order_id
     ).filter(
         Order.created_at >= since,
-        Order.status == OrderStatus.DELIVERED
+        Order.status.in_(delivered_statuses)
     ).group_by(Product.id, Product.name).order_by(
-        func.count(Order.id).desc()
+        func.sum(OrderItem.quantity).desc()
     ).limit(limit).all()
     
     return [
         {
-            "product_id": r.id,
+            "product_id": str(r.id),
             "product_name": r.name,
-            "total_orders": r.order_count
+            "total_orders": r.order_count,
+            "total_quantity": int(r.total_quantity or 0)
         }
         for r in results
     ]
@@ -279,6 +287,7 @@ def get_most_viewed_products(db: Session, limit: int = 10, days: int = 30) -> Li
     """Get most viewed products"""
     since = datetime.utcnow() - timedelta(days=days)
     
+    # Try to get products with views first
     results = db.query(
         ProductView.product_id,
         func.count(ProductView.id).label('view_count')
@@ -294,10 +303,37 @@ def get_most_viewed_products(db: Session, limit: int = 10, days: int = 30) -> Li
         product = db.query(Product).filter(Product.id == r.product_id).first()
         if product:
             product_views.append({
-                "product_id": r.product_id,
+                "product_id": str(r.product_id),
                 "product_name": product.name,
                 "total_views": r.view_count
             })
+    
+    # If no views data, return most recent active products
+    if not product_views:
+        recent_products = db.query(Product).filter(
+            Product.is_active == True
+        ).order_by(Product.created_at.desc()).limit(limit).all()
+        
+        product_views = [
+            {
+                "product_id": str(p.id),
+                "product_name": p.name,
+                "total_views": 0,
+                "total_sales": 0,
+                "total_revenue": 0.0,
+                "total_orders": 0,
+                "stock_level": int(p.stock_quantity) if p.stock_quantity else 0
+            }
+            for p in recent_products
+        ]
+    else:
+        # Add missing fields to existing product_views
+        for pv in product_views:
+            pv["total_sales"] = 0
+            pv["total_revenue"] = 0.0
+            pv["total_orders"] = 0
+            product = db.query(Product).filter(Product.id == pv["product_id"]).first()
+            pv["stock_level"] = int(product.stock_quantity) if product and product.stock_quantity else 0
     
     return product_views
 

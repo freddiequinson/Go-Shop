@@ -6,6 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useAuth } from '@/lib/contexts/auth-context'
 import { cartService } from '@/lib/api/services'
+import { couponService, CouponBenefits } from '@/lib/api/services/coupon.service'
+import { giftCardService } from '@/lib/api/services/giftcard.service'
 import { useToast } from '@/hooks/use-toast'
 import { ShoppingBag, User, Loader2, X, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,7 +16,7 @@ import './cart.css'
 interface CartItem {
   id: string
   product_id: string
-  quantity: number
+  quantity: string | number  // Backend returns string, we parse to number
   product: {
     id: string
     name: string
@@ -35,10 +37,12 @@ export default function CartPage() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [couponCode, setCouponCode] = useState('')
-  const [activeCoupons, setActiveCoupons] = useState<string[]>([])
+  const [giftCardPin, setGiftCardPin] = useState('')
+  const [activeCoupons, setActiveCoupons] = useState<Array<{code: string, benefits: CouponBenefits}>>([])
   const [showGiftMessage, setShowGiftMessage] = useState(false)
   const [giftMessage, setGiftMessage] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -51,17 +55,6 @@ export default function CartPage() {
   const loadCart = async () => {
     try {
       const cartData = await cartService.getCart()
-      console.log('Cart data received:', cartData)
-      console.log('Cart items:', cartData.items)
-      console.log('First item structure:', cartData.items?.[0])
-      
-      // Check if items have product data
-      if (cartData.items && cartData.items.length > 0) {
-        const firstItem = cartData.items[0]
-        console.log('First item has product?', !!firstItem.product)
-        console.log('First item product_id:', firstItem.product_id)
-      }
-      
       setItems(cartData.items || [])
       // Select all items by default
       setSelectedItems(new Set(cartData.items?.map((item: CartItem) => item.id) || []))
@@ -80,14 +73,35 @@ export default function CartPage() {
   const updateQuantity = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return
     
+    // Optimistically update UI
+    const previousItems = [...items]
+    setItems(prevItems => 
+      prevItems.map(item => 
+        item.product_id === productId 
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    )
+    
     setIsUpdating(true)
     try {
+      // productId is a UUID string, pass it directly
       await cartService.updateCartItem(productId, { quantity: newQuantity })
+      // Reload to get accurate data from server
       await loadCart()
-    } catch (error) {
+      toast({
+        title: 'Success',
+        description: 'Cart updated',
+      })
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setItems(previousItems)
+      console.error('Update quantity error:', error)
+      console.error('Error response:', error.response?.data)
+      console.error('Error status:', error.response?.status)
       toast({
         title: 'Error',
-        description: 'Failed to update quantity',
+        description: error.response?.data?.detail || 'Failed to update quantity',
         variant: 'destructive',
       })
     } finally {
@@ -98,6 +112,7 @@ export default function CartPage() {
   const removeItem = async (productId: string) => {
     setIsUpdating(true)
     try {
+      // productId is a UUID string, pass it directly
       await cartService.removeFromCart(productId)
       await loadCart()
       toast({
@@ -105,6 +120,7 @@ export default function CartPage() {
         description: 'Item removed from cart',
       })
     } catch (error) {
+      console.error('Remove item error:', error)
       toast({
         title: 'Error',
         description: 'Failed to remove item',
@@ -156,33 +172,155 @@ export default function CartPage() {
     setSelectedItems(newSelected)
   }
 
-  const applyCoupon = () => {
-    if (!couponCode.trim()) return
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast({
+        title: 'Empty Code',
+        description: 'Please enter a coupon or gift card code',
+        variant: 'destructive',
+      })
+      return
+    }
     
-    // TODO: Integrate with gift card API
-    setActiveCoupons([...activeCoupons, couponCode])
-    setCouponCode('')
-    toast({
-      title: 'Coupon Applied',
-      description: `Coupon "${couponCode}" has been applied`,
-    })
+    // Check if coupon already applied
+    if (activeCoupons.some(c => c.code === couponCode)) {
+      toast({
+        title: 'Already Applied',
+        description: 'This coupon is already active',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    setIsApplyingCoupon(true)
+    try {
+      // First, try as a coupon
+      const subtotal = calculateSubtotal()
+      const couponResponse = await couponService.validateCoupon({
+        code: couponCode,
+        order_amount: subtotal,
+        user_id: user?.id
+      })
+      
+      if (couponResponse.valid && couponResponse.benefits) {
+        // It's a valid coupon
+        setActiveCoupons([...activeCoupons, { code: couponCode, benefits: couponResponse.benefits }])
+        setCouponCode('')
+        toast({
+          title: 'Coupon Applied! 🎉',
+          description: couponResponse.message,
+        })
+      } else {
+        // Not a valid coupon, try as gift card
+        // Gift cards require a PIN, so show a prompt
+        const pin = prompt('This appears to be a gift card. Please enter the PIN:')
+        
+        if (!pin) {
+          toast({
+            title: 'PIN Required',
+            description: 'Gift cards require a PIN to redeem',
+            variant: 'destructive',
+          })
+          setIsApplyingCoupon(false)
+          return
+        }
+        
+        try {
+          const giftCardResponse = await giftCardService.redeemGiftCard({
+            code: couponCode,
+            pin: pin
+          })
+          
+          if (giftCardResponse.success) {
+            setCouponCode('')
+            toast({
+              title: 'Gift Card Redeemed! 🎁',
+              description: `GH₵${(giftCardResponse.amount_credited || 0) / 100} has been added to your wallet`,
+            })
+          } else {
+            toast({
+              title: 'Invalid Gift Card',
+              description: giftCardResponse.message || 'This gift card code is not valid',
+              variant: 'destructive',
+            })
+          }
+        } catch (giftCardError: any) {
+          console.error('Gift card redemption error:', giftCardError)
+          let errorMessage = 'Invalid gift card code or PIN'
+          
+          // Handle Pydantic validation errors (array format)
+          if (Array.isArray(giftCardError.response?.data?.detail)) {
+            errorMessage = giftCardError.response.data.detail
+              .map((err: any) => err.msg || err.message)
+              .join(', ')
+          } 
+          // Handle string error messages
+          else if (typeof giftCardError.response?.data?.detail === 'string') {
+            errorMessage = giftCardError.response.data.detail
+          }
+          // Handle message field
+          else if (giftCardError.response?.data?.message) {
+            errorMessage = giftCardError.response.data.message
+          }
+          
+          toast({
+            title: 'Gift Card Error',
+            description: errorMessage,
+            variant: 'destructive',
+          })
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to validate code. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsApplyingCoupon(false)
+    }
   }
 
-  const removeCoupon = (coupon: string) => {
-    setActiveCoupons(activeCoupons.filter(c => c !== coupon))
+  const removeCoupon = (couponCode: string) => {
+    setActiveCoupons(activeCoupons.filter(c => c.code !== couponCode))
+    toast({
+      title: 'Coupon Removed',
+      description: `Coupon "${couponCode}" has been removed`,
+    })
   }
 
   const calculateSubtotal = () => {
     return items
       .filter(item => selectedItems.has(item.id))
-      .reduce((sum, item) => sum + (item.product.price_per_unit_cedis * item.quantity), 0) / 100
+      .reduce((sum, item) => sum + (item.product.price_per_unit_cedis * parseFloat(String(item.quantity))), 0) / 100
+  }
+
+  const calculateCouponDiscount = () => {
+    const subtotal = calculateSubtotal()
+    let totalDiscount = 0
+    
+    activeCoupons.forEach(coupon => {
+      const { discount_type, discount_value, max_discount } = coupon.benefits
+      
+      if (discount_type === 'percentage') {
+        let discount = (subtotal * discount_value) / 100
+        if (max_discount && discount > max_discount) {
+          discount = max_discount
+        }
+        totalDiscount += discount
+      } else if (discount_type === 'fixed') {
+        totalDiscount += discount_value
+      }
+    })
+    
+    return totalDiscount
   }
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal()
     const giftWrapFee = showGiftMessage ? 20 : 0
-    const couponDiscount = activeCoupons.length * 2.5 // ₵2.50 per coupon
-    return subtotal + giftWrapFee - couponDiscount
+    const couponDiscount = calculateCouponDiscount()
+    return Math.max(0, subtotal + giftWrapFee - couponDiscount)
   }
 
   const handleCheckout = () => {
@@ -420,22 +558,22 @@ export default function CartPage() {
                     </div>
                     <div className="ci-right">
                       <div className="ci-price">
-                        GH₵{((item.product.price_per_unit_cedis * item.quantity) / 100).toFixed(2)}
+                        GH₵{((item.product.price_per_unit_cedis * parseFloat(String(item.quantity))) / 100).toFixed(2)}
                       </div>
                       <div className="ci-qty">
                         <button
                           type="button"
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                          disabled={isUpdating || item.quantity <= 1}
+                          onClick={() => updateQuantity(item.product_id, parseFloat(String(item.quantity)) - 1)}
+                          disabled={isUpdating || parseFloat(String(item.quantity)) <= 1}
                         >
                           −
                         </button>
-                        <input type="text" value={item.quantity} readOnly />
+                        <input type="text" value={parseFloat(String(item.quantity)).toFixed(2)} readOnly />
                         <button
                           type="button"
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.product_id, parseFloat(String(item.quantity)) + 1)}
                           disabled={isUpdating}
                         >
                           +
@@ -464,16 +602,21 @@ export default function CartPage() {
                     onChange={(e) => setCouponCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && applyCoupon()}
                   />
-                  <button type="button" onClick={applyCoupon} className="link-btn">
-                    Apply
+                  <button 
+                    type="button" 
+                    onClick={applyCoupon} 
+                    className="link-btn"
+                    disabled={isApplyingCoupon}
+                  >
+                    {isApplyingCoupon ? 'Validating...' : 'Apply'}
                   </button>
                 </div>
               </div>
               <div className="active-coupons">
                 {activeCoupons.map((coupon) => (
-                  <div key={coupon} className="active-coupon">
-                    <span>{coupon}</span>
-                    <button type="button" onClick={() => removeCoupon(coupon)} className="remove-coupon">
+                  <div key={coupon.code} className="active-coupon">
+                    <span>{coupon.code}</span>
+                    <button type="button" onClick={() => removeCoupon(coupon.code)} className="remove-coupon">
                       ×
                     </button>
                   </div>
@@ -524,7 +667,7 @@ export default function CartPage() {
               {activeCoupons.length > 0 && (
                 <div className="cs-line green">
                   <span>Coupon discount</span>
-                  <span>−GH₵{(activeCoupons.length * 2.5).toFixed(2)}</span>
+                  <span>−GH₵{calculateCouponDiscount().toFixed(2)}</span>
                 </div>
               )}
               {showGiftMessage && (

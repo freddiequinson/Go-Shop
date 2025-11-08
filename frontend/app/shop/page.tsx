@@ -176,7 +176,7 @@ const demoProducts = [
 ]
 
 export default function ShopPage() {
-  const { addItem, totalItems, refreshCart } = useCart()
+  const { addItem, uniqueItemsCount, refreshCart } = useCart()
   const { toast } = useToast()
   const { isAuthenticated, user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
@@ -373,9 +373,9 @@ export default function ShopPage() {
             <Link href="/cart">
               <button className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative">
                 <ShoppingBag className="w-5 h-5 text-white" />
-                {totalItems > 0 && (
+                {uniqueItemsCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
-                    {totalItems}
+                    {uniqueItemsCount}
                   </span>
                 )}
               </button>

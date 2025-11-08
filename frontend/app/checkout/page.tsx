@@ -8,6 +8,8 @@ import { useState, useEffect } from "react"
 import { useAuth } from '@/lib/contexts/auth-context'
 import { useToast } from '@/components/ui/use-toast'
 import apiClient from '@/lib/api/client'
+import { couponService } from '@/lib/api/services/coupon.service'
+import { giftCardService } from '@/lib/api/services/giftcard.service'
 import OpenStreetMapAddressPicker from '@/components/OpenStreetMapAddressPicker'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useRouter } from "next/navigation"
@@ -184,71 +186,113 @@ export default function CheckoutPage() {
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
       toast({
-        title: "Enter Coupon Code",
-        description: "Please enter a coupon code",
+        title: "Empty Code",
+        description: "Please enter a coupon or gift card code",
         variant: "destructive"
       })
       return
     }
     
+    setIsApplyingCoupon(true)
     try {
-      setIsApplyingCoupon(true)
+      // First, try as a coupon
       const subtotal = calculateTotal()
-      
-      const response = await apiClient.post("/coupons/validate", {
+      const couponResponse = await couponService.validateCoupon({
         code: couponCode.toUpperCase(),
         order_amount: subtotal,
-        user_type: user?.user_type,
-        is_first_order: false
+        user_id: user?.id
       })
       
-      if (!response.data.valid) {
+      if (couponResponse.valid && couponResponse.benefits) {
+        // It's a valid coupon
+        setAppliedCoupon(couponResponse)
+        const benefits = couponResponse.benefits
+        
+        // Calculate discount
+        if (benefits.discount_type === 'percentage') {
+          let discount = (subtotal * benefits.discount_value) / 100
+          if (benefits.max_discount && discount > benefits.max_discount) {
+            discount = benefits.max_discount
+          }
+          setCouponDiscount(discount)
+        } else if (benefits.discount_type === 'fixed') {
+          setCouponDiscount(benefits.discount_value)
+        }
+        
         toast({
-          title: "Invalid Coupon",
-          description: response.data.message,
-          variant: "destructive"
+          title: "Coupon Applied! 🎉",
+          description: couponResponse.message
         })
-        return
+      } else {
+        // Not a valid coupon, try as gift card
+        const pin = prompt('This appears to be a gift card. Please enter the PIN:')
+        
+        if (!pin) {
+          toast({
+            title: "PIN Required",
+            description: "Gift cards require a PIN to redeem",
+            variant: "destructive"
+          })
+          setIsApplyingCoupon(false)
+          return
+        }
+        
+        try {
+          const giftCardResponse = await giftCardService.redeemGiftCard({
+            code: couponCode.toUpperCase(),
+            pin: pin
+          })
+          
+          if (giftCardResponse.success) {
+            setCouponCode('')
+            toast({
+              title: "Gift Card Redeemed! 🎁",
+              description: `GH₵${(giftCardResponse.amount_credited || 0) / 100} has been added to your wallet`,
+            })
+          } else {
+            toast({
+              title: "Invalid Gift Card",
+              description: giftCardResponse.message || 'This gift card code is not valid',
+              variant: "destructive"
+            })
+          }
+        } catch (giftCardError: any) {
+          console.error('Gift card redemption error:', giftCardError)
+          let errorMessage = 'Invalid gift card code or PIN'
+          
+          // Handle Pydantic validation errors (array format)
+          if (Array.isArray(giftCardError.response?.data?.detail)) {
+            errorMessage = giftCardError.response.data.detail
+              .map((err: any) => err.msg || err.message)
+              .join(', ')
+          } 
+          // Handle string error messages
+          else if (typeof giftCardError.response?.data?.detail === 'string') {
+            errorMessage = giftCardError.response.data.detail
+          }
+          // Handle message field
+          else if (giftCardError.response?.data?.message) {
+            errorMessage = giftCardError.response.data.message
+          }
+          
+          setIsApplyingCoupon(false)
+          
+          // Show toast immediately without setTimeout
+          toast({
+            title: "Gift Card Error",
+            description: errorMessage,
+            variant: "destructive"
+          })
+          
+          console.log('Toast called with:', { title: "Gift Card Error", description: errorMessage })
+          
+          return // Exit early to prevent outer catch
+        }
       }
-      
-      setAppliedCoupon(response.data)
-      const benefits = response.data.benefits
-      
-      // Free delivery
-      if (benefits.free_delivery) {
-        setDeliveryPrice(0)
-        setIsFreeDelivery(true)
-      }
-      
-      // Delivery discount
-      if (benefits.delivery_discount > 0) {
-        const newPrice = Math.max(0, deliveryPrice - benefits.delivery_discount)
-        setDeliveryPrice(newPrice)
-        setIsFreeDelivery(newPrice === 0)
-      }
-      
-      // Product discount
-      if (benefits.product_discount > 0) {
-        setCouponDiscount(benefits.product_discount)
-      }
-      
-      // Wallet credit notification
-      if (benefits.wallet_credit > 0) {
-        toast({
-          title: "Wallet Credit!",
-          description: `GHS ${benefits.wallet_credit} will be added to your wallet`,
-          duration: 5000
-        })
-      }
-      
-      toast({
-        title: "Coupon Applied!",
-        description: benefits.success_message
-      })
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to apply coupon",
+        description: error.response?.data?.detail || "Failed to validate code. Please try again.",
         variant: "destructive"
       })
     } finally {

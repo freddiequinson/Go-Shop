@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { TrendingUp, Package, Users, ShoppingCart, Eye, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import UserAnalytics from "@/components/admin/UserAnalytics"
 
 interface TopProduct {
   product_id: string
@@ -145,7 +147,20 @@ export default function AnalyticsPage() {
         </Button>
       </div>
 
-      {/* Customer Analytics */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-white border border-gray-200">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-[#FED141] data-[state=active]:text-[#303A4D]">
+            <Package className="w-4 h-4 mr-2" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-[#FED141] data-[state=active]:text-[#303A4D]">
+            <Users className="w-4 h-4 mr-2" />
+            User Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-8">
+          {/* Customer Analytics */}
       {customerAnalytics && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-[#303A4D] mb-4">Customer Insights</h2>
@@ -257,6 +272,12 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

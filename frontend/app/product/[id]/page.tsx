@@ -13,6 +13,7 @@ import { ProductReviews } from "@/components/product-reviews"
 import { cartService } from "@/lib/api/services"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
+import { analyticsService } from "@/lib/services/analytics.service"
 
 interface Product {
   id: string
@@ -92,9 +93,9 @@ export default function ProductPage() {
   const params = useParams()
   const productId = params.id as string
 
-  const { addItem, totalItems, refreshCart } = useCart()
+  const { addItem, uniqueItemsCount, refreshCart } = useCart()
   const { toast } = useToast()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -142,6 +143,18 @@ export default function ProductPage() {
         }
         
         setProduct(transformedProduct)
+        
+        // Track product view
+        try {
+          await analyticsService.trackProductView(data.id, {
+            user_id: user?.id || null,
+            referrer: document.referrer || null,
+            device_type: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+          })
+        } catch (error) {
+          // Silently fail - don't disrupt user experience
+          console.log('Failed to track product view:', error)
+        }
         
         // Fetch similar products (same category)
         if (data.category_id) {
@@ -265,9 +278,9 @@ export default function ProductPage() {
             <Link href="/cart">
               <button className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative">
                 <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                {totalItems > 0 && (
+                {uniqueItemsCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
-                    {totalItems}
+                    {uniqueItemsCount}
                   </span>
                 )}
               </button>

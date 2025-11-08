@@ -68,8 +68,8 @@ export const API_ENDPOINTS = {
     clear: '/cart/',
     summary: '/cart/summary',
     addItem: '/cart/items',
-    updateItem: (productId: number) => `/cart/items/${productId}`,
-    removeItem: (productId: number) => `/cart/items/${productId}`,
+    updateItem: (productId: string | number) => `/cart/items/${productId}`,
+    removeItem: (productId: string | number) => `/cart/items/${productId}`,
   },
   // Orders
   orders: {

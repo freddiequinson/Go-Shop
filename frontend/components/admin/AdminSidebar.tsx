@@ -100,7 +100,7 @@ const menuItems: MenuItem[] = [
     title: "Analytics",
     icon: BarChart3,
     children: [
-      { title: "Overview", href: "/admin/analytics", icon: BarChart3 },
+      { title: "Business Analytics", href: "/admin/analytics", icon: BarChart3 },
       { title: "Sales Analytics", href: "/admin/analytics/sales", icon: TrendingUp },
       { title: "Warehouse", href: "/admin/warehouse/analytics", icon: Warehouse }
     ]
