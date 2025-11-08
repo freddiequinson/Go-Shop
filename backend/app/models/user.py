@@ -46,6 +46,10 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     password_hash = Column(String(255), nullable=False)
     
+    # Password reset
+    password_reset_token = Column(String(10), nullable=True)
+    password_reset_expires = Column(DateTime(timezone=True), nullable=True)
+    
     # User classification
     user_type = Column(Enum(UserType), default=UserType.BUYER, nullable=False)
     verification_status = Column(Enum(VerificationStatus), default=VerificationStatus.PENDING, nullable=False)

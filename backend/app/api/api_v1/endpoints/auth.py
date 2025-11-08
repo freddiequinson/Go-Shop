@@ -211,3 +211,154 @@ async def get_current_user_profile(current_user: User = Depends(get_current_acti
     Get current authenticated user profile
     """
     return UserResponse.from_orm(current_user)
+
+
+@router.post("/forgot-password")
+async def request_password_reset(identifier: str = Form(...), db: Session = Depends(get_db)):
+    """
+    Request password reset - sends reset code to email
+    Accepts email, username, or phone number
+    """
+    from app.core.email import send_password_reset_email
+    from datetime import datetime, timedelta, timezone
+    import secrets
+    
+    # Try to find user by email, username, or phone
+    user = None
+    
+    # Check if it's an email
+    if '@' in identifier:
+        user = get_user_by_email(db, identifier)
+    else:
+        # Try username first
+        user = get_user_by_username(db, identifier)
+        
+        # If not found, try phone number
+        if not user:
+            from app.models.user import User
+            user = db.query(User).filter(User.phone == identifier).first()
+    
+    if not user:
+        # Return error message and indicate account doesn't exist
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email, username, or phone number. Please sign up first."
+        )
+    
+    # Generate 6-digit reset code
+    reset_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+    
+    # Store reset code and expiry in user model (expires in 15 minutes)
+    user.password_reset_token = reset_code
+    user.password_reset_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    db.commit()
+    
+    # Send reset email
+    try:
+        user_name = user.full_name if hasattr(user, 'full_name') and user.full_name else user.username
+        send_password_reset_email(user.email, user_name, reset_code)
+        logger.info(f"Password reset email sent to {user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send reset email. Please try again later."
+        )
+    
+    return {"message": "If the email exists, a password reset code has been sent"}
+
+
+@router.post("/verify-reset-code")
+async def verify_reset_code(
+    identifier: str = Form(...),
+    code: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Verify password reset code
+    Accepts email, username, or phone number
+    """
+    from datetime import datetime, timezone
+    
+    # Find user by identifier
+    user = None
+    if '@' in identifier:
+        user = get_user_by_email(db, identifier)
+    else:
+        user = get_user_by_username(db, identifier)
+        if not user:
+            from app.models.user import User
+            user = db.query(User).filter(User.phone == identifier).first()
+    if not user or not user.password_reset_token or not user.password_reset_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code"
+        )
+    
+    # Check if code matches and hasn't expired
+    if user.password_reset_token != code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid reset code"
+        )
+    
+    if datetime.now(timezone.utc) > user.password_reset_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code has expired. Please request a new one."
+        )
+    
+    return {"message": "Code verified successfully", "email": user.email}
+
+
+@router.post("/reset-password")
+async def reset_password(
+    identifier: str = Form(...),
+    code: str = Form(...),
+    new_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Reset password with verified code
+    Accepts email, username, or phone number
+    """
+    from datetime import datetime, timezone
+    from app.core.security import get_password_hash
+    
+    # Find user by identifier
+    user = None
+    if '@' in identifier:
+        user = get_user_by_email(db, identifier)
+    else:
+        user = get_user_by_username(db, identifier)
+        if not user:
+            from app.models.user import User
+            user = db.query(User).filter(User.phone == identifier).first()
+    if not user or not user.password_reset_token or not user.password_reset_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code"
+        )
+    
+    # Verify code and expiry
+    if user.password_reset_token != code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid reset code"
+        )
+    
+    if datetime.now(timezone.utc) > user.password_reset_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code has expired. Please request a new one."
+        )
+    
+    # Update password
+    user.hashed_password = get_password_hash(new_password)
+    user.password_reset_token = None
+    user.password_reset_expires = None
+    db.commit()
+    
+    logger.info(f"Password reset successful for {user.email}")
+    
+    return {"message": "Password reset successful. You can now log in with your new password."}

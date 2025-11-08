@@ -6,16 +6,26 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("") // Can be email or username
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { login } = useAuth()
   const { toast } = useToast()
+
+  // Load remembered user on mount
+  useEffect(() => {
+    const rememberedUser = localStorage.getItem('remembered_user')
+    if (rememberedUser) {
+      setIdentifier(rememberedUser)
+      setRememberMe(true)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +43,13 @@ export default function LoginPage() {
       setIsSubmitting(true)
       // Backend will accept either email or username
       await login({ email: identifier, password })
+      
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('remembered_user', identifier)
+      } else {
+        localStorage.removeItem('remembered_user')
+      }
       
       toast({
         title: "Welcome back!",
@@ -150,11 +167,13 @@ export default function LoginPage() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-5 h-5 rounded border-2 border-[#303A4D]/30 text-[#FED141] focus:ring-[#FED141]"
                   />
                   <span className="text-sm text-[#303A4D]">Remember me</span>
                 </label>
-                <Link href="#" className="text-sm text-[#303A4D] hover:text-[#FED141] font-medium">
+                <Link href="/forgot-password" className="text-sm text-[#303A4D] hover:text-[#FED141] font-medium">
                   Forgot password?
                 </Link>
               </div>

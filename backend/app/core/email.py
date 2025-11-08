@@ -280,3 +280,157 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
     """
     
     return send_email(email_to, subject, html_content)
+
+
+def send_password_reset_email(email_to: str, user_name: str, reset_code: str) -> bool:
+    """
+    Send password reset email with 6-digit code
+    
+    Args:
+        email_to: User's email address
+        user_name: User's name
+        reset_code: 6-digit reset code
+    
+    Returns:
+        bool: True if email sent successfully
+    """
+    subject = "Reset Your Go-Shop Ghana Password"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #303A4D;
+                margin: 0;
+                padding: 0;
+                background-color: #F4F2E6;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #FED141;
+                padding: 40px 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                color: #303A4D;
+                font-size: 32px;
+                font-weight: bold;
+            }}
+            .content {{
+                padding: 40px 30px;
+            }}
+            .content h2 {{
+                color: #303A4D;
+                font-size: 24px;
+                margin-top: 0;
+            }}
+            .content p {{
+                color: #303A4D;
+                font-size: 16px;
+                margin: 15px 0;
+            }}
+            .code-box {{
+                background-color: #FED141;
+                border-radius: 15px;
+                padding: 30px;
+                margin: 30px 0;
+                text-align: center;
+            }}
+            .code {{
+                font-size: 48px;
+                font-weight: bold;
+                color: #303A4D;
+                letter-spacing: 8px;
+                margin: 10px 0;
+                font-family: 'Courier New', monospace;
+            }}
+            .warning-box {{
+                background-color: #FFF3CD;
+                border-left: 4px solid #FFC107;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 25px 0;
+            }}
+            .warning-box p {{
+                margin: 5px 0;
+                color: #856404;
+                font-size: 14px;
+            }}
+            .footer {{
+                background-color: #303A4D;
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            .footer p {{
+                margin: 5px 0;
+                color: white;
+                font-size: 14px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🔐 Password Reset</h1>
+            </div>
+            
+            <div class="content">
+                <h2>Hello, {user_name}!</h2>
+                
+                <p>We received a request to reset your Go-Shop Ghana password. Use the code below to reset your password:</p>
+                
+                <div class="code-box">
+                    <p style="margin: 0; font-size: 16px; color: #303A4D;">Your Reset Code</p>
+                    <div class="code">{reset_code}</div>
+                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #303A4D;">This code expires in 15 minutes</p>
+                </div>
+                
+                <p><strong>How to reset your password:</strong></p>
+                <ol style="color: #303A4D; font-size: 16px;">
+                    <li>Enter this code on the password reset page</li>
+                    <li>Create a new strong password</li>
+                    <li>Log in with your new password</li>
+                </ol>
+                
+                <div class="warning-box">
+                    <p><strong>⚠️ Security Notice:</strong></p>
+                    <p>• If you didn't request this password reset, please ignore this email.</p>
+                    <p>• Never share this code with anyone.</p>
+                    <p>• Go-Shop Ghana will never ask for your password or reset code.</p>
+                </div>
+                
+                <p style="margin-top: 30px;">If you're having trouble resetting your password, contact our support team:</p>
+                <p style="font-weight: bold;">📞 0241293754</p>
+                
+                <p style="margin-top: 30px; color: #303A4D;">Stay secure!</p>
+                <p style="font-weight: bold; color: #303A4D;">The Go-Shop Ghana Team</p>
+            </div>
+            
+            <div class="footer">
+                <p><strong>Go-Shop Ghana</strong></p>
+                <p>Fresh Groceries from the Market to Your Home</p>
+                <p style="margin-top: 15px;">Accra, Ghana</p>
+                <p>📞 0241293754 | 📧 info@go-shop.gh</p>
+                <p style="margin-top: 15px; font-size: 12px;">© 2025 Go-Shop Ghana. All Rights Reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return send_email(email_to, subject, html_content)
