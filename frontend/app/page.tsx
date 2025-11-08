@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useAuth } from "@/lib/contexts/auth-context"
 import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "motion/react"
+import AIChatbot from "@/components/AIChatbot"
 
 // Dynamically import animation components with error handling
 const SplitText = dynamic(() => import("@/components/SplitText"), {
@@ -712,6 +713,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* AI Chatbot */}
+      <AIChatbot />
     </div>
   )
 }

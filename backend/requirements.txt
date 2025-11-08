@@ -43,3 +43,6 @@ mypy==1.7.1
 
 # Optional: Background tasks (install later)
 # celery==5.3.4
+
+# AI/ML - Groq for chatbot
+groq==0.4.1

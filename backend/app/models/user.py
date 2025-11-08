@@ -92,6 +92,9 @@ class User(Base):
     review_responses = relationship("ReviewResponse", back_populates="responder")
     review_votes = relationship("ReviewHelpfulnessVote", back_populates="user")
     seller_rating = relationship("SellerRating", back_populates="seller", uselist=False)
+    
+    # AI Chat relationships
+    chat_history = relationship("ChatHistory", back_populates="user")
 
     @property
     def phone_number(self):

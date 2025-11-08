@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export function CartDropdown() {
-  const { items, removeFromCart, getTotalPrice } = useCart()
+  const { items, removeItem, totalPrice } = useCart()
 
   if (items.length === 0) {
     return (
@@ -42,7 +42,7 @@ export function CartDropdown() {
                 <span className="font-bold text-sm text-[#303A4D]">
                   GH₵{item.price.toFixed(2)} × {item.quantity}
                 </span>
-                <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700">
+                <button onClick={() => removeItem(item.id)} className="text-red-500 hover:text-red-700">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -54,7 +54,7 @@ export function CartDropdown() {
       <div className="p-4 border-t border-gray-200 bg-[#F4F2E6]">
         <div className="flex items-center justify-between mb-4">
           <span className="font-semibold text-[#303A4D]">Subtotal:</span>
-          <span className="font-bold text-xl text-[#303A4D]">GH₵{getTotalPrice().toFixed(2)}</span>
+          <span className="font-bold text-xl text-[#303A4D]">GH₵{totalPrice.toFixed(2)}</span>
         </div>
         <Link href="/cart">
           <Button className="w-full bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full py-6">

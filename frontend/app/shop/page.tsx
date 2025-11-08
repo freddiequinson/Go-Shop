@@ -12,6 +12,7 @@ import { cartService } from "@/lib/api/services"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { getApiBaseUrl } from "@/lib/api/url-helper"
+import AIChatbot from "@/components/AIChatbot"
 
 interface Product {
   id: string
@@ -445,9 +446,9 @@ export default function ShopPage() {
           {/* Products Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
             {filteredProducts.map((product) => (
-              <div key={product.id}>
-                <Link href={`/product/${product.id}`}>
-                  <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer">
+              <div key={product.id} className="flex flex-col h-full">
+                <Link href={`/product/${product.id}`} className="flex-1">
+                  <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col">
                     <div className="relative h-40 md:h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-2 md:p-4">
                       <Image
                         src={product.image || "/placeholder.svg"}
@@ -476,9 +477,9 @@ export default function ShopPage() {
                         )}
                       </div>
                     </div>
-                    <div className="p-3 md:p-4">
-                      <h3 className="text-base md:text-lg font-bold text-[#303A4D] mb-2 leading-tight line-clamp-2">{product.name}</h3>
-                      <div className="flex flex-col gap-1 mb-3">
+                    <div className="p-3 md:p-4 flex-1 flex flex-col">
+                      <h3 className="text-base md:text-lg font-bold text-[#303A4D] mb-2 leading-tight line-clamp-2 min-h-[3rem]">{product.name}</h3>
+                      <div className="flex flex-col gap-1 mt-auto">
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl md:text-2xl font-bold text-[#303A4D]">GH₵{product.price.toFixed(2)}</span>
                           {product.onSale && product.originalPrice && (
@@ -586,6 +587,9 @@ export default function ShopPage() {
       )}
 
       <CartNotification show={showNotification} productName={notificationProduct} />
+      
+      {/* AI Chatbot */}
+      <AIChatbot />
     </div>
   )
 }

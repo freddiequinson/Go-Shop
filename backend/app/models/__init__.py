@@ -20,3 +20,4 @@ from app.models.rider import Rider, DeliveryAssignment, RiderLocation, VehicleTy
 from app.models.delivery_otp import DeliveryOTP
 from app.models.image_library import ProductImageLibrary
 from app.models.analytics import AdminActivityLog, ProductView, SalesAnalytics
+from app.models.ai_chat import ChatHistory, ChatSession
