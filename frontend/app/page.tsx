@@ -371,7 +371,7 @@ export default function Home() {
                     <div className="absolute inset-0 bg-[#FED141] rounded-full"></div>
                     {/* Rotating stamp image */}
                     <Image 
-                      src="/images/stamp.JPG" 
+                      src="/images/stamp.png" 
                       alt="Fast Delivery Badge" 
                       fill 
                       className="object-contain animate-spin" 
