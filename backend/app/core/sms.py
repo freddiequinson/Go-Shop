@@ -125,7 +125,7 @@ def send_welcome_sms(phone_number: str, user_name: str) -> bool:
         bool: True if SMS sent successfully
     """
     message = (
-        f"Welcome to Go-Shop Ghana, {user_name}! "
+        f"Welcome to GoShop Ghana, {user_name}! "
         f"Thank you for signing up. Get quality products at affordable prices.\n\n"
         f"FREE delivery on your first 2 orders!\n\n"
         f"Shop now: www.goshopghana.com\n\n"
@@ -148,7 +148,7 @@ def send_phone_verification_sms(phone_number: str, user_name: str) -> bool:
     """
     message = (
         f"Hi {user_name}! 👋\n\n"
-        f"Your phone number has been added to your Go-Shop Ghana account.\n\n"
+        f"Your phone number has been added to your GoShop Ghana account.\n\n"
         f"Enjoy FREE delivery on your first 2 orders!\n\n"
         f"Start shopping: www.goshopghana.com\n\n"
         f"Questions? Call 0241293754"

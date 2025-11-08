@@ -72,7 +72,7 @@ export default function RiderLogin() {
           <div className="w-16 h-16 bg-[#FED141] rounded-full flex items-center justify-center mx-auto mb-4">
             <Truck className="w-8 h-8 text-[#303A4D]" />
           </div>
-          <h1 className="text-3xl font-bold text-[#303A4D] mb-2">Go-Shop Rider</h1>
+          <h1 className="text-3xl font-bold text-[#303A4D] mb-2">GoShop Rider</h1>
           <p className="text-[#303A4D]/60">Login to your rider account</p>
         </div>
 

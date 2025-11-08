@@ -267,7 +267,7 @@ export default function CheckoutPage() {
       {/* Page Title */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <h1 className="text-5xl font-bold text-[#303A4D]">
-          Checkout. <span className="text-[#FED141]">Go-Shop</span>
+          Checkout. <span className="text-[#FED141]">GoShop</span>
         </h1>
         <p className="text-lg text-[#303A4D]/70 mt-2">Complete your order in a few simple steps</p>
       </div>

@@ -260,7 +260,7 @@ export default function ShopPage() {
             unit: `per ${p.unit_type}`,
             category: categoryMap.get(p.category_id) || "Uncategorized",
             image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
-            vendor: "Go-Shop"
+            vendor: "GoShop"
           }))
         
         setProducts(transformedProducts)

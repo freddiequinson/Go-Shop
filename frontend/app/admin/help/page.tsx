@@ -40,9 +40,9 @@ export default function HelpPage() {
   const helpSections: HelpSection[] = [
     {
       id: 'business-workflows',
-      title: '🔄 Go-Shop Business Workflows',
+      title: '🔄 GoShop Business Workflows',
       icon: BarChart3,
-      description: 'Understanding how Go-Shop operates from procurement to delivery',
+      description: 'Understanding how GoShop operates from procurement to delivery',
       articles: [
         {
           title: 'How Suppliers Sell to Us',
@@ -71,7 +71,7 @@ export default function HelpPage() {
         },
         {
           title: 'Procurement & Price Comparison',
-          content: 'PROCUREMENT WORKFLOW: Go-Shop uses competitive procurement to get best prices. 1) Admin creates Supply Request for needed products. 2) Request can be Direct (to specific supplier) or Open (marketplace for all suppliers). 3) Multiple suppliers submit offers with their pricing. 4) Admin uses Price Comparison tool to see all offers side-by-side. 5) System calculates total cost, delivery time, and supplier ratings. 6) Admin accepts best offer based on price, quality, and delivery speed. 7) This ensures Go-Shop always gets competitive pricing and maintains quality standards.',
+          content: 'PROCUREMENT WORKFLOW: GoShop uses competitive procurement to get best prices. 1) Admin creates Supply Request for needed products. 2) Request can be Direct (to specific supplier) or Open (marketplace for all suppliers). 3) Multiple suppliers submit offers with their pricing. 4) Admin uses Price Comparison tool to see all offers side-by-side. 5) System calculates total cost, delivery time, and supplier ratings. 6) Admin accepts best offer based on price, quality, and delivery speed. 7) This ensures GoShop always gets competitive pricing and maintains quality standards.',
           link: '/admin/procurement/price-comparison'
         },
         {
@@ -89,7 +89,7 @@ export default function HelpPage() {
       id: 'getting-started',
       title: 'Getting Started',
       icon: Lightbulb,
-      description: 'Learn the basics of the Go-Shop admin dashboard',
+      description: 'Learn the basics of the GoShop admin dashboard',
       articles: [
         {
           title: 'Dashboard Overview',
@@ -370,7 +370,7 @@ export default function HelpPage() {
         </div>
         <h1 className="text-4xl font-bold text-[#303A4D]">Help Center</h1>
         <p className="text-lg text-[#303A4D]/70 max-w-2xl mx-auto">
-          Everything you need to know about managing your Go-Shop store
+          Everything you need to know about managing your GoShop store
         </p>
       </div>
 

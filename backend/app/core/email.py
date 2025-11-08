@@ -83,7 +83,7 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
     Returns:
         bool: True if email sent successfully
     """
-    subject = "Welcome to Go-Shop Ghana! 🎉"
+    subject = "Welcome to GoShop Ghana! 🎉"
     
     # If custom body provided, use it directly
     if custom_body:
@@ -220,15 +220,15 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
     <body>
         <div class="container">
             <div class="header">
-                <h1>🛒 Go-Shop Ghana</h1>
+                <h1>🛒 GoShop Ghana</h1>
             </div>
             
             <div class="content">
                 <h2>Welcome, {user_name}! 🎉</h2>
                 
-                <p>Thank you for signing up with Go-Shop Ghana! We're thrilled to have you join our community of smart shoppers.</p>
+                <p>Thank you for signing up with GoShop Ghana! We're thrilled to have you join our community of smart shoppers.</p>
                 
-                <p>We hope you have a great time shopping with us. At Go-Shop Ghana, we bring you <strong>quality products at affordable prices</strong>, delivered right to your doorstep.</p>
+                <p>We hope you have a great time shopping with us. At GoShop Ghana, we bring you <strong>quality products at affordable prices</strong>, delivered right to your doorstep.</p>
                 
                 <div class="highlight-box">
                     <h3>🎁 Special Welcome Offer!</h3>
@@ -237,7 +237,7 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
                 </div>
                 
                 <div class="benefits">
-                    <h3 style="color: #303A4D; margin-top: 0;">Why Choose Go-Shop Ghana?</h3>
+                    <h3 style="color: #303A4D; margin-top: 0;">Why Choose GoShop Ghana?</h3>
                     <ul>
                         <li>Quality products from trusted local vendors</li>
                         <li>Affordable prices that fit your budget</li>
@@ -264,15 +264,15 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
                 </p>
                 
                 <p style="margin-top: 30px; color: #303A4D;">Happy shopping!</p>
-                <p style="font-weight: bold; color: #303A4D;">The Go-Shop Ghana Team</p>
+                <p style="font-weight: bold; color: #303A4D;">The GoShop Ghana Team</p>
             </div>
             
             <div class="footer">
-                <p><strong>Go-Shop Ghana</strong></p>
+                <p><strong>GoShop Ghana</strong></p>
                 <p>Fresh Groceries from the Market to Your Home</p>
                 <p style="margin-top: 15px;">Accra, Ghana</p>
                 <p>📞 0241293754 | 📧 info@go-shop.gh</p>
-                <p style="margin-top: 15px; font-size: 12px;">© 2025 Go-Shop Ghana. All Rights Reserved.</p>
+                <p style="margin-top: 15px; font-size: 12px;">© 2025 GoShop Ghana. All Rights Reserved.</p>
             </div>
         </div>
     </body>
@@ -294,7 +294,7 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
     Returns:
         bool: True if email sent successfully
     """
-    subject = "Reset Your Go-Shop Ghana Password"
+    subject = "Reset Your GoShop Ghana Password"
     
     html_content = f"""
     <!DOCTYPE html>
@@ -392,7 +392,7 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
             <div class="content">
                 <h2>Hello, {user_name}!</h2>
                 
-                <p>We received a request to reset your Go-Shop Ghana password. Use the code below to reset your password:</p>
+                <p>We received a request to reset your GoShop Ghana password. Use the code below to reset your password:</p>
                 
                 <div class="code-box">
                     <p style="margin: 0; font-size: 16px; color: #303A4D;">Your Reset Code</p>
@@ -411,22 +411,22 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
                     <p><strong>⚠️ Security Notice:</strong></p>
                     <p>• If you didn't request this password reset, please ignore this email.</p>
                     <p>• Never share this code with anyone.</p>
-                    <p>• Go-Shop Ghana will never ask for your password or reset code.</p>
+                    <p>• GoShop Ghana will never ask for your password or reset code.</p>
                 </div>
                 
                 <p style="margin-top: 30px;">If you're having trouble resetting your password, contact our support team:</p>
                 <p style="font-weight: bold;">📞 0241293754</p>
                 
                 <p style="margin-top: 30px; color: #303A4D;">Stay secure!</p>
-                <p style="font-weight: bold; color: #303A4D;">The Go-Shop Ghana Team</p>
+                <p style="font-weight: bold; color: #303A4D;">The GoShop Ghana Team</p>
             </div>
             
             <div class="footer">
-                <p><strong>Go-Shop Ghana</strong></p>
+                <p><strong>GoShop Ghana</strong></p>
                 <p>Fresh Groceries from the Market to Your Home</p>
                 <p style="margin-top: 15px;">Accra, Ghana</p>
                 <p>📞 0241293754 | 📧 info@go-shop.gh</p>
-                <p style="margin-top: 15px; font-size: 12px;">© 2025 Go-Shop Ghana. All Rights Reserved.</p>
+                <p style="margin-top: 15px; font-size: 12px;">© 2025 GoShop Ghana. All Rights Reserved.</p>
             </div>
         </div>
     </body>

@@ -26,7 +26,7 @@ export const profileTourSteps: TourStep[] = [
   {
     target: '[data-tour="wallet-balance"]',
     title: "Your Wallet",
-    description: "Keep track of your Go-Shop wallet balance. You can use this for quick checkouts and receive refunds directly to your wallet.",
+    description: "Keep track of your GoShop wallet balance. You can use this for quick checkouts and receive refunds directly to your wallet.",
     position: "bottom"
   },
   {

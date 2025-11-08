@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         name: item.product?.name || item.product_name || 'Unknown Product',
         price: Number(item.price_per_unit_cedis || item.price_per_unit || 0) / 100, // Convert from cents
         unit: item.product?.unit_type || 'kg',
-        vendor: 'Go-Shop',
+        vendor: 'GoShop',
         image: item.product?.image_url || item.product?.primary_image_url || '/placeholder.svg',
         quantity: Number(item.quantity)
       }))

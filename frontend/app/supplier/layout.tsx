@@ -152,7 +152,7 @@ export default function SupplierLayout({
       >
         {/* Logo/Header */}
         <div className="p-6 border-b border-white/10">
-          <h1 className="text-2xl font-bold text-[#FED141]">Go-Shop</h1>
+          <h1 className="text-2xl font-bold text-[#FED141]">GoShop</h1>
           <p className="text-sm text-white/70 mt-1">Supplier Portal</p>
         </div>
 

@@ -160,7 +160,7 @@ export function ProductDetailModal({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[#303A4D] font-medium">Sold by:</span>
-                  <span className="font-bold text-[#303A4D]">Go-Shop</span>
+                  <span className="font-bold text-[#303A4D]">GoShop</span>
                 </div>
               </div>
 

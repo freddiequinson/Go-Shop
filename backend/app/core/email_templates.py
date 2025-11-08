@@ -59,7 +59,7 @@ def get_order_confirmation_email(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Order Confirmation - Go-Shop Ghana</title>
+        <title>Order Confirmation - GoShop Ghana</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #F4F2E6;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F4F2E6; padding: 20px;">
@@ -69,7 +69,7 @@ def get_order_confirmation_email(
                         <!-- Header -->
                         <tr>
                             <td style="background-color: #FED141; padding: 30px; text-align: center;">
-                                <h1 style="margin: 0; color: #303A4D; font-size: 32px;">Go-Shop Ghana</h1>
+                                <h1 style="margin: 0; color: #303A4D; font-size: 32px;">GoShop Ghana</h1>
                                 <p style="margin: 10px 0 0 0; color: #303A4D; font-size: 16px;">Fresh from Farm to Your Door</p>
                             </td>
                         </tr>
@@ -172,7 +172,7 @@ def get_order_confirmation_email(
                         <tr>
                             <td style="background-color: #303A4D; padding: 20px; text-align: center;">
                                 <p style="margin: 0; color: white; font-size: 12px;">
-                                    © 2025 Go-Shop Ghana. All rights reserved.<br>
+                                    © 2025 GoShop Ghana. All rights reserved.<br>
                                     Fresh Groceries from Farm to Your Door
                                 </p>
                             </td>
@@ -220,7 +220,7 @@ def get_order_status_update_email(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Order Update - Go-Shop Ghana</title>
+        <title>Order Update - GoShop Ghana</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #F4F2E6;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F4F2E6; padding: 20px;">
@@ -230,7 +230,7 @@ def get_order_status_update_email(
                         <!-- Header -->
                         <tr>
                             <td style="background-color: #FED141; padding: 30px; text-align: center;">
-                                <h1 style="margin: 0; color: #303A4D; font-size: 32px;">Go-Shop Ghana</h1>
+                                <h1 style="margin: 0; color: #303A4D; font-size: 32px;">GoShop Ghana</h1>
                             </td>
                         </tr>
                         
@@ -276,7 +276,7 @@ def get_order_status_update_email(
                         <tr>
                             <td style="background-color: #303A4D; padding: 20px; text-align: center;">
                                 <p style="margin: 0; color: white; font-size: 12px;">
-                                    © 2025 Go-Shop Ghana. All rights reserved.
+                                    © 2025 GoShop Ghana. All rights reserved.
                                 </p>
                             </td>
                         </tr>

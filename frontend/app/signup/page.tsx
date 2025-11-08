@@ -284,7 +284,7 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-4xl">
           <div className="text-center mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#303A4D] mb-2">Join Go-Shop</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#303A4D] mb-2">Join GoShop</h1>
             <p className="text-base md:text-lg text-[#303A4D]/70">Create your account in a few simple steps</p>
           </div>
 
@@ -601,7 +601,7 @@ export default function SignupPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-[#303A4D] text-center">Welcome to Go-Shop!</h2>
+              <h2 className="text-3xl font-bold text-[#303A4D] text-center">Welcome to GoShop!</h2>
               <p className="text-lg text-[#303A4D]/70 text-center">
                 Hi {formData.name}! Your account has been created successfully.
               </p>

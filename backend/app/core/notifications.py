@@ -72,7 +72,7 @@ def send_order_confirmation(order: Order, user: User) -> bool:
         
         send_email(
             to_email=user.email,
-            subject=f"Order Confirmed #{order.id[:8]} - Go-Shop Ghana",
+            subject=f"Order Confirmed #{order.id[:8]} - GoShop Ghana",
             html_content=email_html
         )
         
@@ -95,7 +95,7 @@ def send_order_confirmation(order: Order, user: User) -> bool:
                 f"Total: GHS {total:.2f}\n"
                 f"Delivery: {delivery_date}\n"
                 f"Track: www.goshopghana.com/orders/{order.id}\n"
-                f"Thank you for shopping with Go-Shop Ghana!"
+                f"Thank you for shopping with GoShop Ghana!"
             )
             
             send_sms(user.phone, sms_message)
@@ -150,7 +150,7 @@ def send_order_status_update(
         
         send_email(
             to_email=user.email,
-            subject=f"Order {new_status.title()} #{order.id[:8]} - Go-Shop Ghana",
+            subject=f"Order {new_status.title()} #{order.id[:8]} - GoShop Ghana",
             html_content=email_html
         )
         
@@ -237,7 +237,7 @@ def send_payment_receipt(
         bool: True if email was sent successfully
     """
     try:
-        subject = f"Payment Receipt - Go-Shop Ghana"
+        subject = f"Payment Receipt - GoShop Ghana"
         
         html_content = f"""
         <html>
@@ -260,7 +260,7 @@ def send_payment_receipt(
                 </tr>
                 {f'<tr><td style="padding: 10px; border: 1px solid #ddd;"><strong>Description:</strong></td><td style="padding: 10px; border: 1px solid #ddd;">{description}</td></tr>' if description else ''}
             </table>
-            <p>Thank you for using Go-Shop Ghana!</p>
+            <p>Thank you for using GoShop Ghana!</p>
             <p style="color: #666; font-size: 12px;">If you have any questions, contact us at 0241293754</p>
         </body>
         </html>

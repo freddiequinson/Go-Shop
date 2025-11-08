@@ -239,10 +239,10 @@ export default function Home() {
             <div>
               <div className="relative inline-block mb-8">
                 <h2 className="text-4xl md:text-5xl font-bold text-[#303A4D] leading-tight">
-                  Join the Go-Shop Community
+                  Join the GoShop Community
                 </h2>
                 <div className="absolute -right-12 -top-8 w-24 h-24">
-                  <Image src="/images/stamp.jpg" alt="stamp" fill className="object-contain rotate-12" />
+                  <Image src="/images/stamp.png" alt="stamp" fill className="object-contain rotate-12" />
                 </div>
               </div>
               <p className="text-lg md:text-xl text-[#303A4D] mb-8">
@@ -296,7 +296,7 @@ export default function Home() {
             </div>
             <div>
               <p className="text-lg md:text-xl text-[#303A4D]">
-                Go-Shop offers the best, easiest, and most convenient way to shop for your groceries. Receive your
+                GoShop offers the best, easiest, and most convenient way to shop for your groceries. Receive your
                 groceries directly to your office or home, directly with no hassle. We provide you with the best
                 farmers, producers, and shop to ensure you get the best quality products.
               </p>
@@ -385,7 +385,7 @@ export default function Home() {
               We stand with the hands that feed us.
             </h2>
             <p className="text-lg md:text-xl text-[#303A4D] mb-8">
-              Our crop-growers, vendors and small businesses are the backbone of our community. Go-Shop is committed to
+              Our crop-growers, vendors and small businesses are the backbone of our community. GoShop is committed to
               supporting them and ensuring they have access to the resources they need to succeed, and you to enjoy the
               best of what Ghana has to offer.
             </p>
@@ -414,7 +414,7 @@ export default function Home() {
               We stand for our farmers
             </h2>
             <p className="text-lg md:text-xl text-[#303A4D] mb-8">
-              Go-Shop is more than just shopping — it's a way to give back, strengthen local livelihoods, and ensure
+              GoShop is more than just shopping — it's a way to give back, strengthen local livelihoods, and ensure
               that the hands that feed us continue to thrive.
             </p>
             <Button
@@ -561,7 +561,7 @@ export default function Home() {
                 Privacy Policy
               </a>
             </div>
-            <p>© Go-Shop Ghana, 2025. All Rights Reserved.</p>
+            <p>© GoShop Ghana, 2025. All Rights Reserved.</p>
           </div>
         </div>
       </footer>

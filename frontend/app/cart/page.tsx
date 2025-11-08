@@ -348,7 +348,7 @@ export default function CartPage() {
       {/* Page Title */}
       <div className="w-full mx-auto px-4 md:px-6 py-6 md:py-8">
         <h1 className="text-3xl md:text-5xl font-bold text-[#303A4D]">
-          Your Cart. <span className="text-[#FED141]">Go-Shop</span>
+          Your Cart. <span className="text-[#FED141]">GoShop</span>
         </h1>
         <p className="text-sm md:text-base text-[#303A4D]/60 mt-2">{items.length} {items.length === 1 ? 'item' : 'items'} in your cart</p>
       </div>

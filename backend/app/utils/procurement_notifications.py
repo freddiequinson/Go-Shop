@@ -52,7 +52,7 @@ def notify_supplier_new_request(
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1 style="margin: 0; color: #303A4D;">🛒 Go-Shop Ghana</h1>
+                        <h1 style="margin: 0; color: #303A4D;">🛒 GoShop Ghana</h1>
                         <p style="margin: 5px 0; color: #303A4D;">Supplier Portal</p>
                     </div>
                     
@@ -75,11 +75,11 @@ def notify_supplier_new_request(
                             <a href="https://goshopghana.com/supplier/requests" class="button">View Request & Submit Offer</a>
                         </p>
                         
-                        <p style="margin-top: 30px;">Best regards,<br><strong>Go-Shop Ghana Procurement Team</strong></p>
+                        <p style="margin-top: 30px;">Best regards,<br><strong>GoShop Ghana Procurement Team</strong></p>
                     </div>
                     
                     <div class="footer">
-                        <p>Go-Shop Ghana | Accra, Ghana</p>
+                        <p>GoShop Ghana | Accra, Ghana</p>
                         <p>📞 0241293754 | 📧 procurement@go-shop.gh</p>
                     </div>
                 </div>
@@ -92,7 +92,7 @@ def notify_supplier_new_request(
         # Send SMS
         if supplier.phone:
             sms_message = (
-                f"Go-Shop: New supply request for {request.product_name}. "
+                f"GoShop: New supply request for {request.product_name}. "
                 f"Qty: {request.quantity_needed} {request.unit_type}. "
                 f"Required by: {request.required_by_date.strftime('%d/%m/%Y')}. "
                 f"Login to submit offer: goshopghana.com/supplier"
@@ -200,7 +200,7 @@ def notify_supplier_offer_accepted(
                         </div>
                         
                         <p>Dear {supplier.name},</p>
-                        <p>Great news! Your offer has been accepted by Go-Shop Ghana. Please prepare for delivery as per the agreed terms.</p>
+                        <p>Great news! Your offer has been accepted by GoShop Ghana. Please prepare for delivery as per the agreed terms.</p>
                         
                         <div class="details">
                             <h3 style="margin-top: 0; color: #303A4D;">Delivery Details:</h3>
@@ -228,7 +228,7 @@ def notify_supplier_offer_accepted(
                         </p>
                         
                         <p style="margin-top: 30px;">Thank you for your partnership!</p>
-                        <p><strong>Go-Shop Ghana Procurement Team</strong></p>
+                        <p><strong>GoShop Ghana Procurement Team</strong></p>
                     </div>
                 </div>
             </body>
@@ -289,7 +289,7 @@ def notify_supplier_offer_rejected(
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1 style="margin: 0; color: #303A4D;">Go-Shop Ghana</h1>
+                        <h1 style="margin: 0; color: #303A4D;">GoShop Ghana</h1>
                     </div>
                     
                     <div class="content">
@@ -305,7 +305,7 @@ def notify_supplier_offer_rejected(
                         
                         <p>We appreciate your participation and encourage you to submit offers for future requests. Your competitive pricing and quality service are valued.</p>
                         
-                        <p style="margin-top: 30px;">Best regards,<br><strong>Go-Shop Ghana Procurement Team</strong></p>
+                        <p style="margin-top: 30px;">Best regards,<br><strong>GoShop Ghana Procurement Team</strong></p>
                     </div>
                 </div>
             </body>
