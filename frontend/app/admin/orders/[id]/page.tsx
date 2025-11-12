@@ -167,43 +167,6 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
     }
   }
 
-  const handleManualPaymentConfirm = async () => {
-    if (!confirm("⚠️ TEMPORARY FIX: Are you sure you want to manually confirm this payment? This should only be used for legacy orders stuck in pending status.")) {
-      return
-    }
-
-    try {
-      setActionLoading(true)
-      const token = localStorage.getItem("access_token")
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/admin/orders/${unwrappedParams.id}/manual-payment-confirm`, {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      })
-
-      if (response.ok) {
-        toast({
-          title: "✅ Payment Confirmed",
-          description: "Payment status manually updated to completed"
-        })
-        fetchOrderDetails()
-      } else {
-        const error = await response.json()
-        throw new Error(error.detail || "Failed to confirm payment")
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to confirm payment",
-        variant: "destructive"
-      })
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
   const getPaymentStatusBadge = (status: string) => {
     const colors: any = {
       completed: "bg-green-500 text-white",
@@ -277,18 +240,6 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            {/* TEMPORARY: Manual Payment Confirmation Button */}
-            {(order.payment_status === 'pending' || order.payment_status === 'processing') && (
-              <Button 
-                onClick={handleManualPaymentConfirm}
-                disabled={actionLoading}
-                className="bg-orange-600 hover:bg-orange-700 text-white border-2 border-orange-800"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                🔧 Manual Payment Confirm (TEMP)
-              </Button>
-            )}
-
             {/* Show Package button ONLY if payment completed and not yet packaged */}
             {order.payment_status === 'completed' && 
              order.status !== 'preparing' &&
