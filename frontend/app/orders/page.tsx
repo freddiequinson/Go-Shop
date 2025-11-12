@@ -122,9 +122,20 @@ export default function OrdersPage() {
   // Calculate stats
   const stats = {
     total: orders.length,
-    pending: orders.filter(o => o.payment_status === 'pending').length,
-    completed: orders.filter(o => o.payment_status === 'completed').length,
-    delivered: orders.filter(o => o.status === 'delivered').length,
+    pending: orders.filter(o => 
+      o.payment_status === 'pending' || 
+      o.payment_status === 'processing' || 
+      o.payment_status === 'failed' ||
+      o.payment_status === 'pending_payment'
+    ).length,
+    completed: orders.filter(o => 
+      o.payment_status === 'completed' || 
+      o.status === 'confirmed' || 
+      o.status === 'CONFIRMED' ||
+      o.status === 'delivered' ||
+      o.status === 'DELIVERED'
+    ).length,
+    delivered: orders.filter(o => o.status === 'delivered' || o.status === 'DELIVERED').length,
     totalSpent: orders
       .filter(o => o.payment_status === 'completed')
       .reduce((sum, o) => sum + (o.total || 0), 0)

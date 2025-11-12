@@ -58,7 +58,9 @@ class WarehouseInventoryResponse(WarehouseInventoryBase):
     product_description: Optional[str] = None
     is_published: Optional[bool] = None
     created_by_type: Optional[str] = None
-    price_per_unit: Optional[Decimal] = None  # Selling price to customers
+    unit_type: Optional[str] = None  # 'weight' or 'quantity'
+    price_per_unit: Optional[Decimal] = None  # Selling price to customers (for weight items)
+    price_per_quantity: Optional[Decimal] = None  # Selling price to customers (for quantity items)
     product_cost_price: Optional[Decimal] = None  # What we paid supplier
     
     # Location details (populated via join)

@@ -5,6 +5,8 @@ Email utility functions for sending emails
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from typing import Optional
 from pathlib import Path
 import logging
@@ -434,3 +436,76 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
     """
     
     return send_email(email_to, subject, html_content)
+
+
+def send_email_with_attachment(
+    email_to: str,
+    subject: str,
+    html_content: str,
+    attachment_data: bytes,
+    attachment_filename: str,
+    attachment_type: str = "application/pdf",
+    email_from: Optional[str] = None
+) -> bool:
+    """
+    Send an email with an attachment using SMTP
+    
+    Args:
+        email_to: Recipient email address
+        subject: Email subject
+        html_content: HTML content of the email
+        attachment_data: Binary data of the attachment
+        attachment_filename: Name of the attachment file
+        attachment_type: MIME type of the attachment
+        email_from: Sender email (defaults to settings.EMAILS_FROM_EMAIL)
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        # Check if email is configured
+        if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+            logger.warning("Email not configured. Skipping email send.")
+            return False
+        
+        # Set sender email
+        if not email_from:
+            email_from = settings.EMAILS_FROM_EMAIL or settings.SMTP_USER
+        
+        # Create message
+        message = MIMEMultipart("mixed")
+        message["Subject"] = subject
+        message["From"] = f"{settings.EMAILS_FROM_NAME} <{email_from}>"
+        message["To"] = email_to
+        
+        # Attach HTML content
+        html_part = MIMEText(html_content, "html")
+        message.attach(html_part)
+        
+        # Attach file
+        attachment = MIMEBase("application", "octet-stream")
+        attachment.set_payload(attachment_data)
+        encoders.encode_base64(attachment)
+        attachment.add_header(
+            "Content-Disposition",
+            f"attachment; filename= {attachment_filename}",
+        )
+        message.attach(attachment)
+        
+        # Send email
+        logger.info(f"Attempting to send email with attachment to {email_to} via {settings.SMTP_HOST}:{settings.SMTP_PORT}")
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            server.starttls()
+            logger.info(f"TLS started, attempting login as {settings.SMTP_USER}")
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            logger.info("Login successful, sending message with attachment...")
+            server.send_message(message)
+        
+        logger.info(f"Email with attachment sent successfully to {email_to}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to send email with attachment to {email_to}: {type(e).__name__}: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return False

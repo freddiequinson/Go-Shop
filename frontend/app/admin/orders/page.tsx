@@ -264,7 +264,7 @@ export default function OrdersManagement() {
                           {order.user_phone || 'N/A'}
                         </a>
                       </td>
-                      <td className="py-4 px-4 text-[#303A4D]">{order.items?.length || 0}</td>
+                      <td className="py-4 px-4 text-[#303A4D]">{order.item_count || 0}</td>
                       <td className="py-4 px-4 font-bold text-[#303A4D]">GH₵{Number(order.total || 0).toFixed(2)}</td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${

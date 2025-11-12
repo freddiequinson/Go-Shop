@@ -79,7 +79,7 @@ export default function SupplierMarketplacePage() {
       const token = localStorage.getItem("access_token")
       // Fetch all products created by suppliers that are not in warehouse yet
       const response = await fetch(
-        `${getApiBaseUrl()}/products?limit=200&created_by_type=supplier`,
+        `${getApiBaseUrl()}/products/?limit=200&created_by_type=supplier`,
         {
           headers: { "Authorization": `Bearer ${token}` }
         }

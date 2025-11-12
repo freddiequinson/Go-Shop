@@ -90,6 +90,7 @@ async def list_all_orders(
             "user_id": order.user_id,
             "user_email": user.email if user else None,
             "user_name": user.full_name if user else None,
+            "user_phone": user.phone if user else None,
             "status": order.status,
             "payment_status": order.payment_status,
             "total": float(order.total_cedis) / 100,
@@ -959,4 +960,54 @@ async def cancel_order_admin(
     return {
         "message": "Order cancelled successfully",
         "order_id": order_id
+    }
+
+
+@router.post("/orders/{order_id}/manual-payment-confirm")
+async def manual_payment_confirm(
+    order_id: str,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    TEMPORARY ENDPOINT: Manually confirm payment for legacy orders
+    This is a temporary fix for orders stuck in pending status on Digital Ocean
+    TODO: Remove this endpoint after fixing all legacy orders
+    """
+    # Get order
+    order = db.query(Order).filter(Order.id == order_id).first()
+    
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+    
+    # Only allow for pending/processing payments
+    if order.payment_status not in [PaymentStatus.PENDING, PaymentStatus.PROCESSING]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot manually confirm payment with status: {order.payment_status}"
+        )
+    
+    # Update payment status
+    order.payment_status = PaymentStatus.COMPLETED
+    order.status = OrderStatus.CONFIRMED
+    order.payment_method = order.payment_method or "manual_confirmation"
+    order.payment_completed_at = datetime.now()
+    
+    # Clear user's cart
+    from app.crud.cart import clear_cart
+    try:
+        clear_cart(db, order.user_id)
+    except:
+        pass  # Cart might already be cleared
+    
+    db.commit()
+    
+    return {
+        "message": "Payment manually confirmed successfully",
+        "order_id": order_id,
+        "payment_status": order.payment_status,
+        "order_status": order.status
     }

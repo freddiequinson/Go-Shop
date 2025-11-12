@@ -69,46 +69,34 @@ export default function OrderPaymentPage() {
     try {
       setIsInitializing(true)
 
-      // Initialize payment
+      console.log('🚀 Initializing Paystack payment...')
+      console.log('   - Order ID:', orderId)
+      console.log('   - Amount:', order.total)
+      
+      // Initialize payment with redirect callback URL
       const response = await apiClient.post(`/orders/${orderId}/initialize-payment`, {
         callback_url: `${window.location.origin}/checkout/payment/${orderId}/verify`
       })
+      
+      console.log('   - ✅ Payment initialized')
+      console.log('   - Payment reference:', response.data.payment_reference)
+      console.log('   - Authorization URL:', response.data.authorization_url)
 
-      const { authorization_url, access_code, payment_reference } = response.data
+      const { authorization_url } = response.data
 
-      // Load Paystack script if not already loaded
-      if (!window.PaystackPop) {
-        const script = document.createElement('script')
-        script.src = 'https://js.paystack.co/v1/inline.js'
-        script.async = true
-        document.body.appendChild(script)
-
-        await new Promise((resolve) => {
-          script.onload = resolve
-        })
-      }
-
-      // Initialize Paystack popup
-      const handler = window.PaystackPop.setup({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_your_key_here',
-        email: user?.email,
-        amount: Math.round(order.total * 100), // Convert to kobo/pesewas
-        currency: 'GHS',
-        ref: payment_reference,
-        callback: function(response: any) {
-          console.log('Payment successful:', response)
-          verifyPayment()
-        },
-        onClose: function() {
-          toast({
-            title: 'Payment Cancelled',
-            description: 'You cancelled the payment',
-            variant: 'destructive',
-          })
-        }
+      // Show loading message
+      toast({
+        title: 'Redirecting to Paystack...',
+        description: 'You will be redirected to complete your payment',
       })
 
-      handler.openIframe()
+      // Redirect to Paystack payment page
+      console.log('   - 🔄 Redirecting to Paystack...')
+      
+      // Small delay to show the toast
+      setTimeout(() => {
+        window.location.href = authorization_url
+      }, 500)
 
     } catch (error: any) {
       console.error('Payment initialization failed:', error)
@@ -117,16 +105,24 @@ export default function OrderPaymentPage() {
         description: error.response?.data?.detail || 'Failed to initialize payment',
         variant: 'destructive',
       })
-    } finally {
       setIsInitializing(false)
     }
   }
 
   const verifyPayment = async () => {
     try {
+      console.log('\n📞 verifyPayment() function called')
+      console.log('   - Order ID:', orderId)
+      console.log('   - Setting isVerifying to true...')
       setIsVerifying(true)
 
+      console.log('   - Making API call to verify payment...')
       const response = await apiClient.post(`/orders/${orderId}/verify-payment`)
+      
+      console.log('   - ✅ API Response received:')
+      console.log('   - Status:', response.data.status)
+      console.log('   - Message:', response.data.message)
+      console.log('   - Full response:', response.data)
 
       if (response.data.status === 'success') {
         setPaymentStatus('success')

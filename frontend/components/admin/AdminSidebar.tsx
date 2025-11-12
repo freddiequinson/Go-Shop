@@ -114,6 +114,11 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Feedback",
+    href: "/admin/feedback",
+    icon: MessageSquare
+  },
+  {
     title: "Help",
     href: "/admin/help",
     icon: HelpCircle

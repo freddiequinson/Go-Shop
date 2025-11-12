@@ -252,7 +252,7 @@ async def request_delivery_otp(
     if customer_email:
         try:
             send_email(
-                to_email=customer_email,
+                email_to=customer_email,
                 subject="Your Delivery Verification Code",
                 html_content=f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

@@ -3,7 +3,7 @@ Order Payment endpoints for GoShopGhana
 Handles payment initialization, verification, and retry for orders
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.core.deps import get_current_active_user
@@ -158,8 +158,19 @@ async def verify_order_payment(
         )
     
     try:
+        print(f"\n{'='*50}")
+        print(f"VERIFYING ORDER PAYMENT")
+        print(f"Order ID: {order_id}")
+        print(f"Payment Reference: {order.payment_reference}")
+        print(f"Current Payment Status: {order.payment_status}")
+        print(f"Current Order Status: {order.status}")
+        print(f"{'='*50}\n")
+        
         # Verify payment with Paystack
         paystack_response = await paystack_service.verify_payment(order.payment_reference)
+        
+        print(f"Paystack Response Status: {paystack_response.get('status')}")
+        print(f"Paystack Response Data: {paystack_response.get('data', {})}")
         
         if not paystack_response.get("status"):
             raise HTTPException(
@@ -172,15 +183,26 @@ async def verify_order_payment(
         payment_status = data.get("status")
         payment_method = data.get("channel", "card")
         
+        print(f"\nPayment Status from Paystack: {payment_status}")
+        print(f"Payment Method: {payment_method}")
+        
         # Get payment attempt
         payment_attempt = get_payment_attempt_by_reference(db, order.payment_reference)
         
         if payment_status == "success":
             # Payment successful
+            print(f"\n✅ PAYMENT SUCCESSFUL - Updating order status")
+            print(f"   - Order ID: {order_id}")
+            print(f"   - Previous payment status: {order.payment_status}")
+            print(f"   - Previous order status: {order.status}")
+            
             order.payment_status = PaymentStatus.COMPLETED
             order.payment_method = payment_method
             order.payment_completed_at = datetime.now(timezone.utc)
             order.status = OrderStatus.CONFIRMED
+            
+            print(f"   - New payment status: {order.payment_status}")
+            print(f"   - New order status: {order.status}")
             
             # Update payment attempt
             if payment_attempt:
@@ -195,7 +217,19 @@ async def verify_order_payment(
             from app.crud.cart import clear_cart
             clear_cart(db, current_user.id)
             
+            print(f"   - Committing changes to database...")
             db.commit()
+            print(f"   - ✅ Database commit successful!")
+            
+            # Send payment confirmation with PDF receipt and SMS
+            try:
+                from app.core.notifications import send_payment_confirmation_with_receipt
+                print(f"   - 📧 Sending payment confirmation email with PDF receipt...")
+                send_payment_confirmation_with_receipt(order, user)
+                print(f"   - ✅ Payment confirmation sent!")
+            except Exception as e:
+                print(f"   - ⚠️ Failed to send payment confirmation: {e}")
+                # Don't fail the whole request if notification fails
             
             return OrderPaymentVerifyResponse(
                 order_id=order_id,
@@ -255,6 +289,119 @@ async def verify_order_payment(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Payment verification failed: {str(e)}"
         )
+
+
+@router.post("/webhook")
+async def order_payment_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Paystack webhook endpoint for order payment notifications
+    This is called directly by Paystack when payment status changes
+    No authentication required - uses payment reference for security
+    """
+    try:
+        # Get request body
+        body = await request.body()
+        
+        print(f"\n{'='*50}")
+        print(f"ORDER PAYMENT WEBHOOK RECEIVED FROM PAYSTACK")
+        print(f"{'='*50}\n")
+        
+        # Parse webhook data
+        webhook_data = json.loads(body)
+        event = webhook_data.get("event")
+        data = webhook_data.get("data", {})
+        
+        print(f"Event: {event}")
+        print(f"Data: {data}")
+        
+        # Handle charge.success event
+        if event == "charge.success":
+            reference = data.get("reference")
+            status_paystack = data.get("status")
+            
+            print(f"\n✅ Charge Success Event")
+            print(f"   - Reference: {reference}")
+            print(f"   - Status: {status_paystack}")
+            
+            if reference and status_paystack == "success":
+                # Get payment attempt to find the order
+                payment_attempt = get_payment_attempt_by_reference(db, reference)
+                
+                if payment_attempt:
+                    order_id = payment_attempt.order_id
+                    print(f"   - Order ID: {order_id}")
+                    
+                    # Get the order
+                    order = db.query(Order).filter(Order.id == order_id).first()
+                    
+                    if order and order.payment_status != PaymentStatus.COMPLETED:
+                        print(f"   - Processing payment for order...")
+                        
+                        # Update order payment status
+                        order.payment_status = PaymentStatus.COMPLETED
+                        order.payment_method = data.get("channel", "card")
+                        order.payment_completed_at = datetime.now(timezone.utc)
+                        order.status = OrderStatus.CONFIRMED
+                        
+                        # Update payment attempt
+                        update_payment_attempt_status(
+                            db=db,
+                            attempt_id=payment_attempt.id,
+                            status=PaymentStatus.COMPLETED,
+                            paystack_response=data
+                        )
+                        
+                        # Clear user's cart
+                        from app.crud.cart import clear_cart
+                        clear_cart(db, order.user_id)
+                        
+                        db.commit()
+                        
+                        print(f"   - ✅ Order payment status updated to COMPLETED!")
+                        print(f"   - Order status updated to CONFIRMED!")
+                    else:
+                        print(f"   - ⚠️ Order not found or already paid")
+                else:
+                    print(f"   - ⚠️ Payment attempt not found for reference: {reference}")
+            
+            elif status_paystack in ["failed", "cancelled", "abandoned"]:
+                # Handle failed payment
+                payment_attempt = get_payment_attempt_by_reference(db, reference)
+                
+                if payment_attempt:
+                    order_id = payment_attempt.order_id
+                    order = db.query(Order).filter(Order.id == order_id).first()
+                    
+                    if order:
+                        order.payment_status = PaymentStatus.FAILED
+                        order.status = OrderStatus.PAYMENT_FAILED
+                        
+                        update_payment_attempt_status(
+                            db=db,
+                            attempt_id=payment_attempt.id,
+                            status=PaymentStatus.FAILED,
+                            error_message=f"Payment {status_paystack}",
+                            paystack_response=data
+                        )
+                        
+                        db.commit()
+                        
+                        print(f"   - ❌ Order payment marked as FAILED")
+        
+        print(f"\n{'='*50}\n")
+        
+        # Return 200 OK to Paystack
+        return {"status": "success"}
+        
+    except Exception as e:
+        print(f"❌ Webhook error: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        # Still return 200 to prevent Paystack from retrying
+        return {"status": "error", "message": str(e)}
 
 
 @router.get("/{order_id}/payment-attempts", response_model=OrderWithPaymentAttempts)

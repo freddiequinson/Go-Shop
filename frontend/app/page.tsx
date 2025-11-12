@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { User, ShoppingBag, ArrowRight, Menu, X } from "lucide-react"
+import { User, ShoppingBag, ArrowRight, Menu, X, Instagram } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useCart } from "@/lib/cart-context"
@@ -9,6 +9,7 @@ import { CartDropdown } from "@/components/cart-dropdown"
 import Link from "next/link"
 import { useAuth } from "@/lib/contexts/auth-context"
 import dynamic from "next/dynamic"
+import { FaFacebook, FaWhatsapp } from "react-icons/fa"
 import { motion, AnimatePresence } from "motion/react"
 import AIChatbot from "@/components/AIChatbot"
 
@@ -616,7 +617,7 @@ export default function Home() {
             <div>
               <h3 className="text-3xl md:text-4xl font-bold mb-6">Join our community</h3>
               <p className="text-lg mb-8 text-white/80">
-                Get access to new recipes, exciting updates, and grab $1.00 off a pack of Go Shop products.
+                Get access to new recipes, exciting updates, and support GoShop products.
               </p>
               <form className="flex gap-4">
                 <input
@@ -674,9 +675,9 @@ export default function Home() {
                       Resources
                     </a>
                   </li>
-                  <li className="mt-4">info@go-shop.gh</li>
-                  <li>G-shop Ghana</li>
-                  <li>+233 55 000 0000</li>
+                  <li className="mt-4">info@goshop.gh</li>
+                  <li>Goshop Ghana</li>
+                  <li>+233 24 192 3754</li>
                 </ul>
               </div>
             </div>
@@ -685,14 +686,14 @@ export default function Home() {
           <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <Image src="/images/logo.png" alt="go-shop" width={124} height={39} className="brightness-0 invert" />
             <div className="flex gap-6">
-              <a href="#" className="hover:text-[#FED141]">
-                Instagram
+              <a href="#" className="hover:text-[#FED141] transition-colors">
+                <Instagram className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-[#FED141]">
-                Facebook
+              <a href="#" className="hover:text-[#FED141] transition-colors">
+                <FaFacebook className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-[#FED141]">
-                Pinterest
+              <a href="#" className="hover:text-[#FED141] transition-colors">
+                <FaWhatsapp className="w-6 h-6" />
               </a>
             </div>
           </div>

@@ -23,6 +23,21 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [isRetryingPayment, setIsRetryingPayment] = useState(false)
   const [riderLocation, setRiderLocation] = useState<any>(null)
   const [trackingEnabled, setTrackingEnabled] = useState(false)
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false)
+
+  // Check if we were redirected from Paystack and verify payment
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const reference = urlParams.get('reference') || urlParams.get('trxref')
+    
+    if (reference && !isVerifyingPayment) {
+      console.log('🎉 Detected Paystack redirect with reference:', reference)
+      console.log('🔄 Redirecting to verification page...')
+      
+      // Redirect to the proper verify page
+      router.push(`/checkout/payment/${id}/verify`)
+    }
+  }, [id, router, isVerifyingPayment])
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -34,6 +49,21 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       try {
         const response = await apiClient.get(`/orders/${id}`)
         setOrder(response.data)
+        
+        // Check if payment was just completed (coming back from verify page)
+        const urlParams = new URLSearchParams(window.location.search)
+        const fromVerify = urlParams.get('verified')
+        
+        if (fromVerify === 'true' && response.data.payment_status === 'completed') {
+          console.log('✅ Payment verified successfully!')
+          toast({
+            title: '✅ Payment Successful!',
+            description: 'Your order has been confirmed',
+          })
+          
+          // Clean up URL
+          window.history.replaceState({}, '', `/orders/${id}`)
+        }
       } catch (error: any) {
         console.error('Failed to fetch order:', error)
         toast({
@@ -47,12 +77,26 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }
 
     fetchOrder()
+    
+    // Also refresh when page becomes visible (user returns from another tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page visible again, refreshing order...')
+        fetchOrder()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [id, isAuthenticated, router, toast])
 
   // Poll for rider location when delivery is active (dispatched = out for delivery)
   useEffect(() => {
     // Only show tracking when order status is "dispatched" (Out for Delivery stage)
-    if (!order || order.status !== 'dispatched') {
+    if (!order || (order.status !== 'dispatched' && order.status !== 'DISPATCHED')) {
       setTrackingEnabled(false)
       return
     }
@@ -199,6 +243,93 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               paymentCompletedAt={order.payment_completed_at}
               deliveredAt={order.delivered_at}
             />
+
+            {/* Reassurance Message - Different messages for different stages */}
+            {order.payment_status === 'completed' && (() => {
+              // Get the delivery date
+              const getDeliveryDate = () => {
+                if (order.delivered_at) {
+                  return new Date(order.delivered_at).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })
+                }
+                if (order.estimated_delivery_time) {
+                  const estimatedDate = new Date(order.estimated_delivery_time)
+                  if (!isNaN(estimatedDate.getTime())) {
+                    return estimatedDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  }
+                }
+                return null
+              }
+
+              const deliveryDate = getDeliveryDate()
+
+              return (
+                <>
+                  {/* Preparing Stage - confirmed or preparing status */}
+                  {(order.status === 'confirmed' || order.status === 'CONFIRMED' || 
+                    order.status === 'preparing' || order.status === 'PREPARING') && (
+                    <Card className="p-5 bg-white border-l-4 border-[#FED141]">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-[#FED141] rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-5 h-5 text-[#303A4D]" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-[#303A4D] mb-1">
+                            {order.status === 'preparing' || order.status === 'PREPARING' 
+                              ? 'Your Order is Being Packaged' 
+                              : 'Payment Received Successfully'}
+                          </h4>
+                          <p className="text-sm text-[#303A4D]/80 mb-2">
+                            {order.status === 'preparing' || order.status === 'PREPARING'
+                              ? 'Our team is carefully packaging your order with fresh ingredients. It will be ready for dispatch soon.'
+                              : 'Thank you for your payment! Our team is now preparing your order with care.'
+                            }
+                          </p>
+                          {deliveryDate && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="w-4 h-4 text-[#303A4D]" />
+                              <span className="font-medium text-[#303A4D]">Delivery: {deliveryDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Dispatched Stage - out for delivery */}
+                  {(order.status === 'dispatched' || order.status === 'DISPATCHED') && (
+                    <Card className="p-5 bg-white border-l-4 border-[#FED141]">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-[#FED141] rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+                          <Package className="w-5 h-5 text-[#303A4D]" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-[#303A4D] mb-1">
+                            Your Order is On The Way!
+                          </h4>
+                          <p className="text-sm text-[#303A4D]/80 mb-2">
+                            Great news! Your order has been dispatched and our rider is on the way to deliver it to you.
+                          </p>
+                          {deliveryDate && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="w-4 h-4 text-[#303A4D]" />
+                              <span className="font-medium text-[#303A4D]">Expected: {deliveryDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+                </>
+              )
+            })()}
 
             {/* Real-Time Delivery Tracking */}
             {trackingEnabled && order.delivery_address?.latitude && order.delivery_address?.longitude && (
@@ -375,9 +506,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             })
                           }
                         }
-                        // Calculate estimated delivery (3-5 business days from order)
+                        // Calculate estimated delivery from order date
                         const orderDate = new Date(order.created_at)
-                        const estimatedDays = 3 // 3 business days
+                        const estimatedDays = 3
                         const estimatedDate = new Date(orderDate)
                         estimatedDate.setDate(orderDate.getDate() + estimatedDays)
                         
@@ -385,7 +516,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                           weekday: "long",
                           month: "long",
                           day: "numeric",
-                        }) + ' (3-5 business days)'
+                        })
                       })()}
                     </p>
                   </div>
@@ -417,29 +548,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                   </div>
                 )}
-              </div>
-            </Card>
-
-            {/* Customer Info */}
-            <Card className="p-6 bg-white">
-              <h3 className="text-lg font-bold text-[#303A4D] mb-4">Customer Information</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-medium text-[#303A4D]">{user?.full_name || 'N/A'}</p>
-                </div>
-
-                {user?.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-[#303A4D]" />
-                    <p className="font-medium text-[#303A4D]">{user.phone}</p>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#303A4D]" />
-                  <p className="font-medium text-[#303A4D]">{user?.email || 'N/A'}</p>
-                </div>
               </div>
             </Card>
 

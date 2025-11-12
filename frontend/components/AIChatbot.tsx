@@ -329,7 +329,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
 
       {/* Chat Window */}
       {isOpen && (
-        <div ref={chatWindowRef} className="fixed bottom-6 right-6 z-50 w-[400px] h-[600px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border-2 border-[#FED141]">
+        <div ref={chatWindowRef} className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 z-50 sm:w-[400px] h-[85vh] sm:h-[600px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border-2 border-[#FED141]">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#FED141] to-[#F1B424] p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -350,7 +350,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F4F2E6]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F4F2E6] scrollbar-hide">
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -418,7 +418,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
                   <span className="text-sm text-[#303A4D]/60">{shoppingList.servings} servings</span>
                 </div>
                 
-                <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                <div className="space-y-2 mb-3 max-h-40 overflow-y-auto scrollbar-hide">
                   {shoppingList.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-sm">
                       <span className="text-[#303A4D]">

@@ -68,7 +68,7 @@ export default function ProductSearchInput({
     try {
       const token = localStorage.getItem("access_token")
       const response = await fetch(
-        `${getApiBaseUrl()}/products?search=${encodeURIComponent(query)}&per_page=10&page=1`,
+        `${getApiBaseUrl()}/products/?search=${encodeURIComponent(query)}&per_page=10&page=1`,
         {
           headers: {
             "Authorization": `Bearer ${token}`

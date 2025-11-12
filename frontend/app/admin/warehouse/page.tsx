@@ -23,6 +23,9 @@ interface InventoryItem {
   product_description?: string
   is_published?: boolean
   created_by_type?: string
+  unit_type?: string
+  price_per_unit?: number
+  price_per_quantity?: number
 }
 
 export default function WarehousePage() {
@@ -92,6 +95,10 @@ export default function WarehousePage() {
       
       if (response.ok) {
         const data = await response.json()
+        console.log('Warehouse inventory data:', data)
+        if (data.items && data.items.length > 0) {
+          console.log('First item sample:', data.items[0])
+        }
         if (Array.isArray(data)) {
           setInventory(data)
         } else if (data.items) {
@@ -447,10 +454,9 @@ export default function WarehousePage() {
             <thead className="bg-[#F4F2E6]">
               <tr>
                 <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Product Name</th>
-                <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Zone</th>
+                <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Unit Type</th>
+                <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Price</th>
                 <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Available</th>
-                <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Reserved</th>
-                <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Reorder</th>
                 <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Status</th>
                 <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Value</th>
                 <th className="text-left py-4 px-6 text-[#303A4D] font-bold">Shop Status</th>
@@ -477,17 +483,33 @@ export default function WarehousePage() {
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-[#303A4D]">{item.zone || "N/A"}</td>
+                    <td className="py-4 px-6 text-[#303A4D] capitalize">
+                      {item.unit_type ? `Per ${item.unit_type}` : 'Per unit'}
+                    </td>
+                    <td className="py-4 px-6 font-bold text-[#303A4D]">
+                      GH₵{(() => {
+                        // Try price_per_unit first (for weight/liter items)
+                        if (item.price_per_unit) {
+                          return Number(item.price_per_unit).toFixed(2)
+                        }
+                        // Fall back to price_per_quantity (for quantity items)
+                        if (item.price_per_quantity) {
+                          return Number(item.price_per_quantity).toFixed(2)
+                        }
+                        return '0.00'
+                      })()}
+                    </td>
                     <td className="py-4 px-6 font-bold text-[#303A4D]">{item.quantity_available}</td>
-                    <td className="py-4 px-6 text-[#303A4D]/60">{item.quantity_reserved}</td>
-                    <td className="py-4 px-6 text-[#303A4D]/60">{item.reorder_level}</td>
                     <td className="py-4 px-6">
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${status.color}`}>
                         {status.text}
                       </span>
                     </td>
                     <td className="py-4 px-6 font-bold text-[#303A4D]">
-                      GH₵{item.total_value ? Number(item.total_value).toFixed(2) : "0.00"}
+                      GH₵{(() => {
+                        const price = item.cost_price || item.price_per_unit || item.price_per_quantity || 0
+                        return (item.quantity_available * price).toFixed(2)
+                      })()}
                     </td>
                     <td className="py-4 px-6">
                       {item.is_published ? (

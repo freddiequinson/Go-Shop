@@ -4,13 +4,14 @@ Handles email and SMS notifications for orders
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.core.email import send_email
 from app.core.sms import send_sms, format_ghana_phone
 from app.core.email_templates import (
     get_order_confirmation_email,
     get_order_status_update_email
 )
+from app.core.pdf_generator import generate_order_receipt_pdf
 from app.models.order import Order
 from app.models.user import User
 
@@ -71,7 +72,7 @@ def send_order_confirmation(order: Order, user: User) -> bool:
         )
         
         send_email(
-            to_email=user.email,
+            email_to=user.email,
             subject=f"Order Confirmed #{order.id[:8]} - GoShop Ghana",
             html_content=email_html
         )
@@ -149,7 +150,7 @@ def send_order_status_update(
         )
         
         send_email(
-            to_email=user.email,
+            email_to=user.email,
             subject=f"Order {new_status.title()} #{order.id[:8]} - GoShop Ghana",
             html_content=email_html
         )
@@ -267,7 +268,7 @@ def send_payment_receipt(
         """
         
         send_email(
-            to_email=user.email,
+            email_to=user.email,
             subject=subject,
             html_content=html_content
         )
@@ -277,3 +278,157 @@ def send_payment_receipt(
     except Exception as e:
         logger.error(f"Failed to send payment receipt: {e}")
         return False
+
+
+def send_payment_confirmation_with_receipt(order: Order, user: User) -> bool:
+    """
+    Send payment confirmation with PDF receipt via email and SMS
+    
+    Args:
+        order: Order object
+        user: User object
+        
+    Returns:
+        bool: True if at least one notification was sent successfully
+    """
+    success = False
+    
+    # Prepare order data for PDF
+    order_items = []
+    for item in order.items if hasattr(order, 'items') else []:
+        order_items.append({
+            'product_name': item.product_name,
+            'quantity': float(item.quantity),
+            'unit_type': item.unit_type,
+            'price_per_unit_cedis': float(item.price_per_unit_cedis) / 100,
+            'line_total_cedis': float(item.line_total_cedis) / 100,
+        })
+    
+    order_data = {
+        'id': order.id,
+        'created_at': order.created_at.isoformat(),
+        'payment_status': order.payment_status,
+        'payment_method': order.payment_method or 'mobile_money',
+        'payment_reference': order.payment_reference,
+        'payment_completed_at': order.payment_completed_at.isoformat() if order.payment_completed_at else None,
+        'user_name': user.full_name,
+        'user_email': user.email,
+        'user_phone': user.phone,
+        'delivery_address': order.delivery_address,
+        'items': order_items,
+        'subtotal': float(order.subtotal_cedis) / 100,
+        'delivery_fee': float(order.delivery_fee_cedis) / 100,
+        'tax': float(order.tax_cedis) / 100,
+        'total': float(order.total_cedis) / 100,
+    }
+    
+    # Generate PDF receipt
+    try:
+        pdf_buffer = generate_order_receipt_pdf(order_data)
+        pdf_bytes = pdf_buffer.getvalue()
+        
+        # Send Email with PDF attachment
+        try:
+            email_html = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background-color: #303A4D; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="margin: 0;">Payment Confirmed! 🎉</h1>
+                </div>
+                
+                <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <p style="font-size: 16px; color: #303A4D;">Dear {user.full_name},</p>
+                    
+                    <p style="font-size: 14px; color: #666;">
+                        Thank you for your payment! Your order <strong>#{order.id[:8]}</strong> has been confirmed and is being prepared for delivery.
+                    </p>
+                    
+                    <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FED141;">
+                        <h3 style="margin-top: 0; color: #303A4D;">Payment Details</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #666;">Amount Paid:</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #303A4D;">GH₵{order_data['total']:.2f}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #666;">Payment Method:</td>
+                                <td style="padding: 8px 0; text-align: right; color: #303A4D;">{order_data['payment_method'].replace('_', ' ').title()}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #666;">Reference:</td>
+                                <td style="padding: 8px 0; text-align: right; color: #303A4D; font-family: monospace;">{order.payment_reference}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #666;">Delivery Date:</td>
+                                <td style="padding: 8px 0; text-align: right; color: #303A4D;">{order.estimated_delivery_time.strftime('%B %d, %Y') if order.estimated_delivery_time else 'Soon'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div style="background-color: #FED141; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #303A4D; text-align: center;">
+                            📄 <strong>Your receipt is attached to this email</strong>
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://www.goshopghana.com/orders/{order.id}" 
+                           style="background-color: #303A4D; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Track Your Order
+                        </a>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #999; text-align: center; margin-top: 30px;">
+                        Thank you for shopping with GoShop Ghana!<br>
+                        For support, contact us at support@goshopghana.com or 0241293754
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Send email with PDF attachment
+            from app.core.email import send_email_with_attachment
+            
+            send_email_with_attachment(
+                email_to=user.email,
+                subject=f"✅ Payment Confirmed - Order #{order.id[:8]} - GoShop Ghana",
+                html_content=email_html,
+                attachment_data=pdf_bytes,
+                attachment_filename=f"GoShop_Receipt_{order.id[:8]}.pdf",
+                attachment_type="application/pdf"
+            )
+            
+            logger.info(f"Payment confirmation email with PDF sent to {user.email} for order {order.id}")
+            success = True
+        except Exception as e:
+            logger.error(f"Failed to send payment confirmation email: {e}")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate PDF receipt: {e}")
+    
+    # Send SMS notification
+    if user.phone:
+        try:
+            delivery_date = "soon"
+            if order.estimated_delivery_time:
+                delivery_date = order.estimated_delivery_time.strftime('%b %d, %Y')
+            
+            total = float(order.total_cedis) / 100
+            
+            sms_message = (
+                f"✅ Payment Confirmed!\n"
+                f"Order #{order.id[:8]}\n"
+                f"Amount: GH₵{total:.2f}\n"
+                f"Delivery: {delivery_date}\n"
+                f"Track your order: www.goshopghana.com/orders/{order.id}\n"
+                f"Thank you for shopping with GoShop Ghana!"
+            )
+            
+            send_sms(user.phone, sms_message)
+            logger.info(f"Payment confirmation SMS sent to {user.phone} for order {order.id}")
+            success = True
+        except Exception as e:
+            logger.error(f"Failed to send payment confirmation SMS: {e}")
+    
+    return success

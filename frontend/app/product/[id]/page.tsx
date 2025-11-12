@@ -170,7 +170,7 @@ export default function ProductPage() {
 
   const fetchSimilarProducts = async (categoryId: string, currentProductId: string) => {
     try {
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products?limit=100`)
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/?limit=100`)
       if (response.ok) {
         const data = await response.json()
         const productList = Array.isArray(data) ? data : data.products || data.items || []

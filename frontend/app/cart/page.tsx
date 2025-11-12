@@ -43,14 +43,44 @@ export default function CartPage() {
   const [giftMessage, setGiftMessage] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+  const [incompleteOrders, setIncompleteOrders] = useState<any[]>([])
 
   useEffect(() => {
     if (isAuthenticated) {
       loadCart()
+      loadIncompleteOrders()
     } else {
       setIsLoading(false)
     }
   }, [isAuthenticated])
+
+  const loadIncompleteOrders = async () => {
+    try {
+      const { apiClient } = await import('@/lib/api/client')
+      const response = await apiClient.get('/orders/', {
+        params: { skip: 0, limit: 20 }
+      })
+      
+      // Get today's date at midnight
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      // Filter for today's orders with processing or failed payment
+      const incomplete = (response.data || []).filter((order: any) => {
+        const orderDate = new Date(order.created_at)
+        orderDate.setHours(0, 0, 0, 0)
+        
+        return (
+          (order.payment_status === 'processing' || order.payment_status === 'failed') &&
+          orderDate.getTime() === today.getTime()
+        )
+      })
+      setIncompleteOrders(incomplete)
+    } catch (error) {
+      // Silently fail - incomplete orders are optional feature
+      console.log('Could not load incomplete orders')
+    }
+  }
 
   const loadCart = async () => {
     try {
@@ -436,6 +466,29 @@ export default function CartPage() {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#303A4D] mb-3">Your cart is empty</h1>
             <p className="text-lg text-[#303A4D]/70 mb-8">Add some fresh groceries to get started</p>
+            
+            {/* Incomplete Orders Reminder */}
+            {incompleteOrders.length > 0 && (
+              <div className="mb-6 p-4 bg-[#FED141]/10 border border-[#FED141]/30 rounded-xl text-left">
+                <h3 className="font-bold text-[#303A4D] mb-2 text-sm">
+                  📋 You have {incompleteOrders.length} incomplete order{incompleteOrders.length > 1 ? 's' : ''} from today
+                </h3>
+                <p className="text-xs text-[#303A4D]/70 mb-3">
+                  {incompleteOrders.some((o: any) => o.payment_status === 'failed') 
+                    ? 'Some orders have failed payments. Complete them now!'
+                    : 'Complete your payment today to receive your orders'}
+                </p>
+                <Link href="/orders" className="block">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-[#303A4D] text-[#303A4D] hover:bg-[#303A4D] hover:text-white rounded-full text-sm"
+                  >
+                    View My Orders
+                  </Button>
+                </Link>
+              </div>
+            )}
+            
             <Link href="/shop" className="block">
               <Button className="w-full bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                 Start Shopping

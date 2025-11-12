@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/cart-context"
 import { AuthProvider } from "@/lib/contexts/auth-context"
 import { OnboardingProvider } from "@/lib/contexts/onboarding-context"
 import { Toaster } from "@/components/ui/toaster"
+import FeedbackWidget from "@/components/FeedbackWidget"
 import "./globals.css"
 
 // Conditionally import Analytics only on Vercel
@@ -48,6 +49,7 @@ export default function RootLayout({
               {children}
               {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
               <Toaster />
+              <FeedbackWidget />
             </CartProvider>
           </OnboardingProvider>
         </AuthProvider>

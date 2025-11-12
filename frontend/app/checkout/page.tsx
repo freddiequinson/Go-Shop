@@ -345,7 +345,6 @@ export default function CheckoutPage() {
     // Validation with detailed error messages
     if (isAuthenticated && !selectedAddressId) {
       const message = 'Please select a delivery address before placing your order'
-      alert('❌ Address Required\n\n' + message)
       toast({
         title: '❌ Address Required',
         description: message,
@@ -363,7 +362,6 @@ export default function CheckoutPage() {
       if (!guestInfo.address) missingFields.push('Address')
       
       const message = `Please fill in: ${missingFields.join(', ')}`
-      alert('❌ Information Required\n\n' + message)
       toast({
         title: '❌ Information Required',
         description: message,
@@ -376,7 +374,6 @@ export default function CheckoutPage() {
     
     if (!selectedDateId) {
       const message = 'Please select a delivery date before placing your order'
-      alert('❌ Delivery Date Required\n\n' + message)
       toast({
         title: '❌ Delivery Date Required',
         description: message,
@@ -389,6 +386,10 @@ export default function CheckoutPage() {
 
     try {
       setIsPlacingOrder(true)
+      
+      // Show payment options immediately (optimistic UI)
+      setOrderCreated(true)
+      setOrderTotal(calculateFinalTotal())
       
       // Get selected address details
       const selectedAddress = addresses.find(a => a.id === selectedAddressId)
@@ -417,22 +418,18 @@ export default function CheckoutPage() {
         coupon_discount: couponDiscount
       }
       
-      // Create order (status will be PENDING_PAYMENT)
+      // Create order in background (status will be PENDING_PAYMENT)
       const response = await apiClient.post("/orders/", orderData)
       const orderId = response.data.id
       
-      toast({
-        title: 'Order Created!',
-        description: 'Please select a payment method',
-      })
-      
-      // Show payment options instead of redirecting
-      setOrderCreated(true)
+      // Update with actual order ID
       setCreatedOrderId(orderId)
-      setOrderTotal(response.data.total || calculateTotal())
+      setOrderTotal(response.data.total || calculateFinalTotal())
       
     } catch (error: any) {
       console.error('Failed to place order:', error)
+      // Revert optimistic UI
+      setOrderCreated(false)
       toast({
         title: 'Error',
         description: error.response?.data?.detail || 'Failed to create order',
@@ -988,7 +985,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <CreditCard className="w-6 h-6 text-[#303A4D]" />
                     <div>
-                      <p className="font-semibold text-[#303A4D]">Pay with Card/Mobile Money</p>
+                      <p className="font-semibold text-[#303A4D]">Pay with Mobile Money / Card</p>
                     </div>
                   </div>
                 </div>

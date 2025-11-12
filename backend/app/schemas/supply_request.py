@@ -127,10 +127,20 @@ class SupplyOfferUpdate(BaseModel):
     notes: Optional[str] = None
 
 
-class SupplyOfferResponse(SupplyOfferBase):
+class SupplyOfferResponse(BaseModel):
     """Schema for supply offer response"""
     id: str
     supplier_id: str
+    supply_request_id: Optional[str] = None
+    offered_quantity: Decimal
+    unit_price: Decimal
+    delivery_date: datetime  # No validator - allow past dates for historical data
+    delivery_time_hours: Optional[int] = None
+    delivery_fee: Decimal
+    quality_guarantee: Optional[str] = None
+    sample_available: bool = False
+    certifications: Optional[List[str]] = None
+    notes: Optional[str] = None
     total_price: Decimal
     status: str
     is_direct_order: bool = False

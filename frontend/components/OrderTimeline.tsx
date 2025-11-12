@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
-import { XCircle } from 'lucide-react'
+import React, { useState, useEffect, Fragment, useRef } from 'react'
 import Lottie from 'lottie-react'
+import { CheckCircle, XCircle } from 'lucide-react'
 
 // Import Lottie animations
 import orderPlacedAnimation from '@/public/images/lottie/order-placed.json'
@@ -38,6 +38,22 @@ export default function OrderTimeline({
 
   // Define timeline steps based on order status
   const getTimelineSteps = (): TimelineStep[] => {
+    // Determine payment step status
+    const paymentStepStatus = paymentStatus === 'completed' ? 'completed' : 
+                              paymentStatus === 'failed' ? 'failed' : 'current'
+    
+    // Determine packing step status
+    const packingStepStatus = orderStatus === 'confirmed' || orderStatus === 'dispatched' || orderStatus === 'delivered' ? 'completed' :
+                              orderStatus === 'cancelled' ? 'failed' : 'pending'
+    
+    // Determine delivery step status
+    const deliveryStepStatus = orderStatus === 'dispatched' || orderStatus === 'delivered' ? 'completed' :
+                               orderStatus === 'cancelled' ? 'failed' : 'pending'
+    
+    // Determine delivered step status
+    const deliveredStepStatus = orderStatus === 'delivered' ? 'completed' :
+                                orderStatus === 'cancelled' ? 'failed' : 'pending'
+    
     const steps: TimelineStep[] = [
       {
         label: 'Order Placed',
@@ -46,28 +62,28 @@ export default function OrderTimeline({
         animationData: orderPlacedAnimation
       },
       {
-        label: 'Payment Processing',
-        status: paymentStatus === 'completed' ? 'completed' : 
-                paymentStatus === 'failed' ? 'failed' : 'current',
+        label: paymentStepStatus === 'completed' ? 'Payment Received' : 
+               paymentStepStatus === 'failed' ? 'Payment Failed' : 'Payment Processing',
+        status: paymentStepStatus,
         timestamp: paymentCompletedAt,
         animationData: paymentProcessingAnimation
       },
       {
-        label: 'Packing Order',
-        status: orderStatus === 'confirmed' || orderStatus === 'dispatched' || orderStatus === 'delivered' ? 'completed' :
-                orderStatus === 'cancelled' ? 'failed' : 'pending',
+        label: packingStepStatus === 'completed' ? 'Order Packaged' : 
+               packingStepStatus === 'failed' ? 'Order Cancelled' : 'Packing Order',
+        status: packingStepStatus,
         animationData: packingOrderAnimation
       },
       {
-        label: 'Out for Delivery',
-        status: orderStatus === 'dispatched' || orderStatus === 'delivered' ? 'completed' :
-                orderStatus === 'cancelled' ? 'failed' : 'pending',
+        label: deliveryStepStatus === 'completed' ? 'Out for Delivery' : 
+               deliveryStepStatus === 'failed' ? 'Delivery Cancelled' : 'Awaiting Dispatch',
+        status: deliveryStepStatus,
         animationData: deliveryTruckAnimation
       },
       {
-        label: 'Delivered',
-        status: orderStatus === 'delivered' ? 'completed' :
-                orderStatus === 'cancelled' ? 'failed' : 'pending',
+        label: deliveredStepStatus === 'completed' ? 'Delivered' : 
+               deliveredStepStatus === 'failed' ? 'Delivery Failed' : 'Pending Delivery',
+        status: deliveredStepStatus,
         timestamp: deliveredAt,
         animationData: deliveredHomeAnimation
       }
@@ -185,8 +201,8 @@ export default function OrderTimeline({
             const isPending = step.status === 'pending'
 
             return (
-              <>
-                <div key={index} className="relative flex flex-col items-center flex-shrink-0">
+              <Fragment key={index}>
+                <div className="relative flex flex-col items-center flex-shrink-0">
                   {/* Lottie Animation */}
                   <div 
                     className={`relative z-10 flex items-center justify-center w-16 h-16 transition-all duration-500 ${
@@ -235,7 +251,7 @@ export default function OrderTimeline({
                         ⚠️ Action required
                       </p>
                     )}
-                    {isActive && !isFailed && (
+                    {isActive && !isFailed && !isCompleted && step.status === 'current' && (
                       <p className="text-xs text-[#303A4D] mt-1 animate-pulse">
                         ● In progress...
                       </p>
@@ -255,7 +271,7 @@ export default function OrderTimeline({
                     />
                   </div>
                 )}
-              </>
+              </Fragment>
             )
           })}
         </div>

@@ -79,6 +79,9 @@ async def list_inventory(
             inv_dict['product_description'] = product.description
             inv_dict['is_published'] = product.is_published
             inv_dict['created_by_type'] = product.created_by_type
+            inv_dict['unit_type'] = product.unit_type
+            inv_dict['price_per_unit'] = product.price_per_unit
+            inv_dict['price_per_quantity'] = product.price_per_quantity
         result.append(WarehouseInventoryResponse(**inv_dict))
     
     # Calculate pagination based on actual total from database

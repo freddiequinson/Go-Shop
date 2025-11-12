@@ -80,7 +80,7 @@ export default function AdminProducts() {
       }
       const token = localStorage.getItem("access_token")
       // Admin sees all products (admin-created and supplier products that are in warehouse)
-      let url = `${getApiBaseUrl()}/products?page=${currentPage}&per_page=${perPage}`
+      let url = `${getApiBaseUrl()}/products/?page=${currentPage}&per_page=${perPage}`
       
       // Add search query if exists (using debounced value)
       if (debouncedSearchTerm.trim()) {
@@ -168,7 +168,7 @@ export default function AdminProducts() {
       
       // Fetch all products in batches (max 100 per page)
       while (currentPage <= totalPages) {
-        const response = await fetch(`${getApiBaseUrl()}/products?page=${currentPage}&per_page=100`, {
+        const response = await fetch(`${getApiBaseUrl()}/products/?page=${currentPage}&per_page=100`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
         
