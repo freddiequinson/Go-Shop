@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
-import { User, ShoppingBag, Search, Package, ArrowLeft } from "lucide-react"
+import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -13,6 +13,15 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { getApiBaseUrl } from "@/lib/api/url-helper"
 import AIChatbot from "@/components/AIChatbot"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface Product {
   id: string
@@ -181,6 +190,7 @@ export default function ShopPage() {
   const { isAuthenticated, user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
+  const [allCategories, setAllCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -192,6 +202,7 @@ export default function ShopPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
+  const [showScrollArrows, setShowScrollArrows] = useState(false)
   const perPage = 20
 
   // Debounce search query to reduce API calls
@@ -205,8 +216,30 @@ export default function ShopPage() {
 
   useEffect(() => {
     fetchProducts()
-    fetchCategories()
   }, [currentPage, debouncedSearchQuery])
+
+  // Fetch all categories once on mount
+  useEffect(() => {
+    fetchAllCategories()
+  }, [])
+
+  // Check if tabs overflow and need scroll arrows
+  useEffect(() => {
+    const checkOverflow = () => {
+      const container = document.getElementById('category-scroll-container')
+      if (container) {
+        const hasOverflow = container.scrollWidth > container.clientWidth
+        setShowScrollArrows(hasOverflow)
+      }
+    }
+
+    // Check on mount and when categories change
+    checkOverflow()
+    
+    // Check on window resize
+    window.addEventListener('resize', checkOverflow)
+    return () => window.removeEventListener('resize', checkOverflow)
+  }, [categories])
 
   // Reset to page 1 when search query changes
   useEffect(() => {
@@ -237,10 +270,8 @@ export default function ShopPage() {
           setTotalProducts(data.total || 0)
         }
         
-        // Fetch categories first to map them
-        const categoriesResponse = await fetch(`${apiBaseUrl}/products/categories/`)
-        const categoriesData = categoriesResponse.ok ? await categoriesResponse.json() : []
-        const categoryMap = new Map(categoriesData.map((c: any) => [c.id, c.name]))
+        // Use the already fetched categories to map them
+        const categoryMap = new Map(allCategories.map((c: any) => [c.id, c.name]))
         
         // Transform API products to match our interface
         const transformedProducts: Product[] = productList
@@ -259,16 +290,12 @@ export default function ShopPage() {
             inStock: p.stock_quantity > 0,
             price: typeof p.price_per_unit === 'string' ? parseFloat(p.price_per_unit) : p.price_per_unit,
             unit: `per ${p.unit_type}`,
-            category: categoryMap.get(p.category_id) || "Uncategorized",
+            category: categoryMap.get(p.category_id) || "Others",
             image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
             vendor: "GoShop"
           }))
         
         setProducts(transformedProducts)
-        
-        // Extract unique categories from products
-        const uniqueCategories = Array.from(new Set(transformedProducts.map(p => p.category)))
-        setCategories(["All", ...uniqueCategories.sort()])
       }
     } catch (error) {
       console.error("Failed to fetch products:", error)
@@ -277,8 +304,22 @@ export default function ShopPage() {
     }
   }
 
-  const fetchCategories = async () => {
-    // Categories are now fetched in fetchProducts
+  const fetchAllCategories = async () => {
+    try {
+      const apiBaseUrl = getApiBaseUrl()
+      const response = await fetch(`${apiBaseUrl}/products/categories/`)
+      if (response.ok) {
+        const categoriesData = await response.json()
+        setAllCategories(categoriesData)
+        
+        // Filter out categories with 0 products and set category tabs
+        const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
+        const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
+        setCategories(["All", ...categoryNames])
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error)
+    }
   }
 
   // Filter by category only (search is handled by backend)
@@ -385,10 +426,10 @@ export default function ShopPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-[#FED141] px-4 md:px-8 py-8 md:py-12">
+      <section className="bg-[#FED141] px-4 md:px-8 py-2 md:py-3">
         <div className="text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#303A4D] mb-3 md:mb-4">Shop Fresh Groceries</h1>
-          <p className="text-base md:text-xl text-[#303A4D] mb-6 md:mb-8 px-4">
+          <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-[#303A4D] mb-1.5">Shop Fresh Groceries</h1>
+          <p className="text-xs text-[#303A4D] mb-2.5 md:mb-3 px-4">
             Browse our selection of fresh produce from local farmers and vendors
           </p>
 
@@ -426,21 +467,92 @@ export default function ShopPage() {
 
           {!loading && products.length > 0 && (
             <>
-          {/* Category Filter */}
-          <div className="mb-6 md:mb-8 flex flex-wrap gap-2 md:gap-3">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-full font-medium text-sm md:text-base transition-all duration-200 ${
-                  selectedCategory === category
-                    ? "bg-[#303A4D] text-white shadow-md"
-                    : "bg-white text-[#303A4D] hover:bg-[#FED141] shadow-sm hover:shadow-md"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          {/* Category Filter - Mobile Dropdown */}
+          <div className="mb-6 md:hidden">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full bg-white border-2 border-[#303A4D]/20 rounded-full px-6 py-3 text-[#303A4D] font-medium shadow-sm">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category Filter - Desktop Tabs */}
+          <div className="mb-6 md:mb-8 hidden md:block">
+            <div className="relative flex items-center justify-center gap-3">
+              {/* Left Arrow - Only show if content overflows */}
+              {showScrollArrows && (
+                <button
+                  onClick={() => {
+                    const container = document.getElementById('category-scroll-container')
+                    if (container) {
+                      container.scrollBy({ left: -200, behavior: 'smooth' })
+                    }
+                  }}
+                  className="flex-shrink-0 w-10 h-10 rounded-full bg-white border-2 border-[#303A4D]/20 flex items-center justify-center hover:bg-[#FED141] hover:border-[#303A4D]/40 transition-all shadow-sm z-10"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5 text-[#303A4D]" />
+                </button>
+              )}
+
+              {/* Scrollable Tabs Container with Rounded Mask - Dynamic width */}
+              <div className="relative overflow-hidden rounded-full bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 shadow-sm max-w-full">
+                <div 
+                  id="category-scroll-container"
+                  className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', maxWidth: '100%' }}
+                >
+                  <style jsx>{`
+                    #category-scroll-container::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}</style>
+                  <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <TabsList className="inline-flex h-auto bg-transparent border-0 shadow-none p-0 gap-1 w-auto">
+                      {categories.map((category) => (
+                        <TabsTrigger
+                          key={category}
+                          value={category}
+                          className="px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+                        >
+                          {category}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+                {/* Gradient Overlays - Only show if content overflows */}
+                {showScrollArrows && (
+                  <>
+                    <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/80 via-white/40 to-transparent pointer-events-none rounded-l-full" />
+                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/80 via-white/40 to-transparent pointer-events-none rounded-r-full" />
+                  </>
+                )}
+              </div>
+
+              {/* Right Arrow - Only show if content overflows */}
+              {showScrollArrows && (
+                <button
+                  onClick={() => {
+                    const container = document.getElementById('category-scroll-container')
+                    if (container) {
+                      container.scrollBy({ left: 200, behavior: 'smooth' })
+                    }
+                  }}
+                  className="flex-shrink-0 w-10 h-10 rounded-full bg-white border-2 border-[#303A4D]/20 flex items-center justify-center hover:bg-[#FED141] hover:border-[#303A4D]/40 transition-all shadow-sm z-10"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5 text-[#303A4D]" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Products Grid */}
