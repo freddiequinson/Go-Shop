@@ -24,17 +24,29 @@ export default function ShopSimplePage() {
     const fetchProducts = async () => {
       try {
         const apiBaseUrl = getApiBaseUrl()
-        const response = await fetch(`${apiBaseUrl}/products/?page=1&per_page=6`)
+        console.log("Fetching from:", `${apiBaseUrl}/products/?page=1&per_page=6`)
+        
+        // Add timeout to prevent hanging
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+        
+        const response = await fetch(`${apiBaseUrl}/products/?page=1&per_page=6`, {
+          signal: controller.signal
+        })
+        clearTimeout(timeoutId)
+        
+        console.log("Response status:", response.status)
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`)
         }
         
         const data = await response.json()
+        console.log("Data received:", data)
         setProducts(data.products || [])
       } catch (err: any) {
-        setError(err.message)
-        console.error("Error:", err)
+        console.error("Fetch error:", err)
+        setError(err.message || "Unknown error")
       } finally {
         setLoading(false)
       }
