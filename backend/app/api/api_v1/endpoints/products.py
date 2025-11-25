@@ -104,6 +104,14 @@ async def get_products_for_shop(
     # Convert to lightweight response
     shop_products = []
     for product in products:
+        # Only include HTTP/HTTPS URLs, exclude base64 images
+        primary_image = None
+        if product.images and len(product.images) > 0:
+            for img in product.images:
+                if img and (img.startswith('http://') or img.startswith('https://')):
+                    primary_image = img
+                    break
+        
         shop_products.append(ProductShopResponse(
             id=product.id,
             name=product.name,
@@ -112,7 +120,7 @@ async def get_products_for_shop(
             stock_quantity=product.stock_quantity,
             category_id=product.category_id,
             is_active=product.is_active,
-            primary_image_url=product.images[0] if product.images and len(product.images) > 0 else None
+            primary_image_url=primary_image
         ))
     
     return ProductShopListResponse(
