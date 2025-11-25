@@ -691,15 +691,21 @@ export default function ShopPage() {
                 <Link href={`/product/${product.id}`} className="flex-1">
                   <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col">
                     <div className="relative h-40 md:h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-2 md:p-4">
-                      <Image
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name}
-                        fill
-                        priority={index < 3}
-                        loading={index < 3 ? undefined : "lazy"}
-                        unoptimized
-                        className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
-                      />
+                      {product.image && product.image !== "/placeholder.svg" ? (
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          priority={index < 3}
+                          loading={index < 3 ? undefined : "lazy"}
+                          unoptimized
+                          className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Package className="w-16 h-16 text-[#303A4D]/20" />
+                        </div>
+                      )}
                       {!product.inStock && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                           <span className="bg-white text-[#303A4D] px-6 py-3 rounded-full font-bold text-lg">
@@ -832,8 +838,8 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* AI Chatbot - Temporarily disabled to reduce API load on mobile */}
-      {/* <AIChatbot /> */}
+      {/* AI Chatbot */}
+      <AIChatbot />
     </div>
   )
 }
