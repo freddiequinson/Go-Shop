@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.product import (
     ProductCreate, ProductUpdate, ProductResponse, ProductFilter, ProductListResponse,
-    CategoryCreate, CategoryUpdate, CategoryResponse, GhanaProductSuggestion
+    CategoryCreate, CategoryUpdate, CategoryResponse, GhanaProductSuggestion,
+    ProductShopResponse, ProductShopListResponse
 )
 from app.crud.product import (
     get_products, get_product_by_id, create_product, update_product, delete_product,
@@ -66,6 +67,56 @@ async def get_products_list(
     
     return ProductListResponse(
         products=[ProductResponse.from_orm(product) for product in products],
+        total=total,
+        page=page,
+        per_page=per_page,
+        pages=pages
+    )
+
+
+@router.get("/shop", response_model=ProductShopListResponse)
+async def get_products_for_shop(
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    category_id: Optional[str] = Query(None, description="Filter by category"),
+    search: Optional[str] = Query(None, description="Search in name"),
+    db: Session = Depends(get_db)
+):
+    """
+    Lightweight endpoint for shop/mobile - returns minimal product data
+    Excludes heavy fields like images array, descriptions, etc.
+    """
+    # Create filter object (only essential filters)
+    filters = ProductFilter(
+        category_id=category_id,
+        search=search
+    )
+    
+    # Calculate offset
+    skip = (page - 1) * per_page
+    
+    # Get products
+    products, total = get_products(db, skip=skip, limit=per_page, filters=filters)
+    
+    # Calculate pagination info
+    pages = math.ceil(total / per_page) if total > 0 else 1
+    
+    # Convert to lightweight response
+    shop_products = []
+    for product in products:
+        shop_products.append(ProductShopResponse(
+            id=product.id,
+            name=product.name,
+            price_per_unit=product.price_per_unit,
+            unit_type=product.unit_type,
+            stock_quantity=product.stock_quantity,
+            category_id=product.category_id,
+            is_active=product.is_active,
+            primary_image_url=product.images[0] if product.images and len(product.images) > 0 else None
+        ))
+    
+    return ProductShopListResponse(
+        products=shop_products,
         total=total,
         page=page,
         per_page=per_page,

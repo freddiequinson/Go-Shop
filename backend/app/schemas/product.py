@@ -117,6 +117,28 @@ class ProductResponse(ProductBase):
     class Config:
         from_attributes = True
 
+# Lightweight product response for shop/mobile (excludes heavy fields)
+class ProductShopResponse(BaseModel):
+    id: str
+    name: str
+    price_per_unit: Decimal
+    unit_type: UnitType
+    stock_quantity: Optional[Decimal] = None
+    category_id: Optional[str] = None
+    is_active: bool
+    primary_image_url: Optional[str] = None  # Only first image
+    
+    class Config:
+        from_attributes = True
+
+# Lightweight product list response for shop
+class ProductShopListResponse(BaseModel):
+    products: List[ProductShopResponse]
+    total: int
+    page: int
+    per_page: int
+    pages: int
+
 # Category schemas
 class CategoryBase(BaseModel):
     name: str

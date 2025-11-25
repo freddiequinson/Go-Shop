@@ -12,7 +12,7 @@ interface Product {
   price_per_unit: number
   unit_type: string
   stock_quantity: number
-  images?: string[]
+  primary_image_url?: string
 }
 
 export default function ShopSimplePage() {
@@ -24,13 +24,13 @@ export default function ShopSimplePage() {
     const fetchProducts = async () => {
       try {
         const apiBaseUrl = getApiBaseUrl()
-        console.log("Fetching from:", `${apiBaseUrl}/products/?page=1&per_page=6`)
+        console.log("Fetching from:", `${apiBaseUrl}/products/shop?page=1&per_page=6`)
         
         // Add timeout to prevent hanging
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
         
-        const response = await fetch(`${apiBaseUrl}/products/?page=1&per_page=6`, {
+        const response = await fetch(`${apiBaseUrl}/products/shop?page=1&per_page=6`, {
           signal: controller.signal
         })
         clearTimeout(timeoutId)
@@ -98,9 +98,9 @@ export default function ShopSimplePage() {
             {products.map((product, index) => (
               <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-sm">
                 <div className="relative h-48 bg-gray-100">
-                  {product.images && product.images.length > 0 ? (
+                  {product.primary_image_url ? (
                     <Image
-                      src={product.images[0]}
+                      src={product.primary_image_url}
                       alt={product.name}
                       fill
                       loading={index < 4 ? "eager" : "lazy"}
