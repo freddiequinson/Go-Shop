@@ -206,8 +206,8 @@ export default function ShopPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [showScrollArrows, setShowScrollArrows] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  // Reduce products per page on mobile to prevent crashes
-  const perPage = typeof window !== 'undefined' && window.innerWidth < 768 ? 12 : 20
+  // Drastically reduce products per page on mobile to prevent crashes
+  const perPage = typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 20
   const abortControllerRef = useRef<AbortController | null>(null)
   const initializedRef = useRef(false)
   const mountedRef = useRef(false)
@@ -695,9 +695,9 @@ export default function ShopPage() {
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
-                        priority={index < 4}
-                        loading={index < 4 ? undefined : "lazy"}
-                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 200px"
+                        priority={index < 3}
+                        loading={index < 3 ? undefined : "lazy"}
+                        unoptimized
                         className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
                       />
                       {!product.inStock && (
