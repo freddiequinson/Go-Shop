@@ -28,27 +28,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Check if user is authenticated on mount
+  // Check if user is authenticated on mount (deferred to not block page load)
   useEffect(() => {
     const initAuth = async () => {
       try {
         if (authService.isAuthenticated()) {
-          // Try to get stored user first
+          // Try to get stored user first (instant, no API call)
           const storedUser = authService.getStoredUser()
           if (storedUser) {
             setUser(storedUser)
+            setIsLoading(false) // Set loading false immediately with cached data
           }
           
-          // Then fetch fresh user data
-          const currentUser = await authService.getCurrentUser()
-          setUser(currentUser)
+          // Then fetch fresh user data in background (deferred)
+          setTimeout(async () => {
+            try {
+              const currentUser = await authService.getCurrentUser()
+              setUser(currentUser)
+            } catch (error) {
+              console.error('Background auth refresh error:', error)
+            }
+          }, 1500) // Wait 1.5 seconds to not block page load
+        } else {
+          setIsLoading(false)
         }
       } catch (error) {
         console.error('Auth initialization error:', error)
         // Clear invalid token
         localStorage.removeItem('access_token')
         localStorage.removeItem('user')
-      } finally {
         setIsLoading(false)
       }
     }

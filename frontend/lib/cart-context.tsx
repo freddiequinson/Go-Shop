@@ -32,9 +32,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch cart from backend on mount
+  // Fetch cart from backend on mount (deferred to not block page load)
   useEffect(() => {
-    refreshCart()
+    // Defer cart fetch to allow page to render first
+    const timer = setTimeout(() => {
+      refreshCart()
+    }, 1000) // Wait 1 second after page loads
+    
+    return () => clearTimeout(timer)
   }, [])
 
   const refreshCart = async () => {
