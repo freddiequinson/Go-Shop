@@ -226,6 +226,7 @@ export default function ShopPage() {
   // Check if tabs overflow and need scroll arrows
   useEffect(() => {
     const checkOverflow = () => {
+      if (typeof window === 'undefined') return
       const container = document.getElementById('category-scroll-container')
       if (container) {
         const hasOverflow = container.scrollWidth > container.clientWidth
@@ -237,8 +238,10 @@ export default function ShopPage() {
     checkOverflow()
     
     // Check on window resize
-    window.addEventListener('resize', checkOverflow)
-    return () => window.removeEventListener('resize', checkOverflow)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', checkOverflow)
+      return () => window.removeEventListener('resize', checkOverflow)
+    }
   }, [categories])
 
   // Reset to page 1 when search query changes
@@ -490,6 +493,7 @@ export default function ShopPage() {
               {showScrollArrows && (
                 <button
                   onClick={() => {
+                    if (typeof window === 'undefined') return
                     const container = document.getElementById('category-scroll-container')
                     if (container) {
                       container.scrollBy({ left: -200, behavior: 'smooth' })
@@ -506,14 +510,9 @@ export default function ShopPage() {
               <div className="relative overflow-hidden rounded-full bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 shadow-sm max-w-full">
                 <div 
                   id="category-scroll-container"
-                  className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', maxWidth: '100%' }}
+                  className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  style={{ maxWidth: '100%' }}
                 >
-                  <style jsx>{`
-                    #category-scroll-container::-webkit-scrollbar {
-                      display: none;
-                    }
-                  `}</style>
                   <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                     <TabsList className="inline-flex h-auto bg-transparent border-0 shadow-none p-0 gap-1 w-auto">
                       {categories.map((category) => (
@@ -541,6 +540,7 @@ export default function ShopPage() {
               {showScrollArrows && (
                 <button
                   onClick={() => {
+                    if (typeof window === 'undefined') return
                     const container = document.getElementById('category-scroll-container')
                     if (container) {
                       container.scrollBy({ left: 200, behavior: 'smooth' })
