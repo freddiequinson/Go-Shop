@@ -185,45 +185,12 @@ const demoProducts = [
 ]
 
 export default function ShopPage() {
-  // Add error logging
-  useEffect(() => {
-    console.log('[SHOP PAGE] Component mounting...')
-    console.log('[SHOP PAGE] User Agent:', typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A')
-    console.log('[SHOP PAGE] Screen:', typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'N/A')
-  }, [])
-
-  let cartHook, authHook, toastHook
-  
-  try {
-    console.log('[SHOP PAGE] Initializing cart hook...')
-    cartHook = useCart()
-    console.log('[SHOP PAGE] Cart hook initialized')
-  } catch (error: any) {
-    console.error('[SHOP PAGE] Cart hook failed:', error)
-    throw new Error(`Cart hook failed: ${error.message}`)
-  }
-
-  try {
-    console.log('[SHOP PAGE] Initializing toast hook...')
-    toastHook = useToast()
-    console.log('[SHOP PAGE] Toast hook initialized')
-  } catch (error: any) {
-    console.error('[SHOP PAGE] Toast hook failed:', error)
-    throw new Error(`Toast hook failed: ${error.message}`)
-  }
-
-  try {
-    console.log('[SHOP PAGE] Initializing auth hook...')
-    authHook = useAuth()
-    console.log('[SHOP PAGE] Auth hook initialized')
-  } catch (error: any) {
-    console.error('[SHOP PAGE] Auth hook failed:', error)
-    throw new Error(`Auth hook failed: ${error.message}`)
-  }
-
-  const { addItem, uniqueItemsCount, refreshCart } = cartHook
-  const { toast } = toastHook
-  const { isAuthenticated, user } = authHook
+  // Hooks MUST be called directly - cannot be in try-catch
+  console.log('[SHOP PAGE] Initializing hooks...')
+  const { addItem, uniqueItemsCount, refreshCart } = useCart()
+  const { toast } = useToast()
+  const { isAuthenticated, user } = useAuth()
+  console.log('[SHOP PAGE] Hooks initialized successfully')
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
@@ -312,30 +279,43 @@ export default function ShopPage() {
           setTotalProducts(data.total || 0)
         }
         
-        // Use the already fetched categories to map them
-        const categoryMap = new Map(allCategories.map((c: any) => [c.id, c.name]))
+        // Use the already fetched categories to map them - with safety check
+        const categoryMap = new Map(
+          Array.isArray(allCategories) 
+            ? allCategories.filter(c => c && c.id).map((c: any) => [c.id, c.name || "Others"])
+            : []
+        )
         
-        // Transform API products to match our interface
+        // Transform API products to match our interface - with defensive checks
         const transformedProducts: Product[] = productList
-          .filter((p: any) => p.is_active && p.is_published && p.stock_quantity > 0) // Only show active, published products with stock
-          .map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            description: p.description || "",
-            price_per_unit: p.price_per_unit,
-            price_per_quantity: p.price_per_quantity,
-            unit_type: p.unit_type,
-            stock_quantity: p.stock_quantity,
-            category_id: p.category_id,
-            is_active: p.is_active,
-            images: p.images || [],
-            inStock: p.stock_quantity > 0,
-            price: typeof p.price_per_unit === 'string' ? parseFloat(p.price_per_unit) : p.price_per_unit,
-            unit: `per ${p.unit_type}`,
-            category: categoryMap.get(p.category_id) || "Others",
-            image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
-            vendor: "GoShop"
-          }))
+          .filter((p: any) => {
+            // More lenient filtering - only require basic fields
+            return p && p.id && p.name
+          })
+          .map((p: any) => {
+            // Safe price parsing
+            const priceValue = p.price_per_unit || p.price || 0
+            const price = typeof priceValue === 'string' ? parseFloat(priceValue) || 0 : Number(priceValue) || 0
+            
+            return {
+              id: p.id,
+              name: p.name,
+              description: p.description || "",
+              price_per_unit: p.price_per_unit || 0,
+              price_per_quantity: p.price_per_quantity || 0,
+              unit_type: p.unit_type || "kg",
+              stock_quantity: p.stock_quantity || 0,
+              category_id: p.category_id || "",
+              is_active: p.is_active !== false,
+              images: Array.isArray(p.images) ? p.images : [],
+              inStock: (p.stock_quantity || 0) > 0,
+              price: price,
+              unit: `per ${p.unit_type || 'kg'}`,
+              category: categoryMap.get(p.category_id) || "Others",
+              image: (Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : "/placeholder.svg",
+              vendor: "GoShop"
+            }
+          })
         
         setProducts(transformedProducts)
       }
