@@ -832,8 +832,8 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* AI Chatbot */}
-      <AIChatbot />
+      {/* AI Chatbot - Temporarily disabled to reduce API load on mobile */}
+      {/* <AIChatbot /> */}
     </div>
   )
 }
