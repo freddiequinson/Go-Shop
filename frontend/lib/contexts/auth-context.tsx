@@ -26,10 +26,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasInitialized, setHasInitialized] = useState(false)
   const router = useRouter()
 
   // Check if user is authenticated on mount (deferred to not block page load)
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized) return
+    setHasInitialized(true)
+    
     const initAuth = async () => {
       try {
         if (authService.isAuthenticated()) {
@@ -62,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     initAuth()
-  }, [])
+  }, [hasInitialized])
 
   const login = async (credentials: UserLogin) => {
     try {

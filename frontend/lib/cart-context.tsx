@@ -31,16 +31,21 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   // Fetch cart from backend on mount (deferred to not block page load)
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized) return
+    setHasInitialized(true)
+    
     // Defer cart fetch to allow page to render first
     const timer = setTimeout(() => {
       refreshCart()
     }, 1000) // Wait 1 second after page loads
     
     return () => clearTimeout(timer)
-  }, [])
+  }, [hasInitialized])
 
   const refreshCart = async () => {
     try {
