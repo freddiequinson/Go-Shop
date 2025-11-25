@@ -205,14 +205,21 @@ export default function ShopPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [showScrollArrows, setShowScrollArrows] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  // Drastically reduce products per page on mobile to prevent crashes
-  const perPage = typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 20
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  // Infinite scroll: Load smaller batches more frequently
+  // Mobile: 6 products, Tablet: 9 products, Desktop: 12 products per batch
+  const perPage = typeof window !== 'undefined' 
+    ? window.innerWidth < 768 ? 6 : window.innerWidth < 1024 ? 9 : 12
+    : 12
   const abortControllerRef = useRef<AbortController | null>(null)
   const initializedRef = useRef(false)
   const mountedRef = useRef(false)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Fetch products with category filtering and abort controller
-  const fetchProducts = useCallback(async (categoriesData?: any[]) => {
+  const fetchProducts = useCallback(async (categoriesData?: any[], append = false) => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -223,7 +230,12 @@ export default function ShopPage() {
     abortControllerRef.current = controller
 
     try {
-      setLoading(true)
+      if (append) {
+        setLoadingMore(true)
+      } else {
+        setLoading(true)
+        setProducts([]) // Clear products when not appending
+      }
       setErrorMessage(null)
       const apiBaseUrl = getApiBaseUrl()
       // Use lightweight /shop endpoint to avoid base64 images
@@ -312,12 +324,25 @@ export default function ShopPage() {
           }
         })
       
-      setProducts(transformedProducts)
+      // Append or replace products based on mode
+      if (append) {
+        setProducts(prev => [...prev, ...transformedProducts])
+      } else {
+        setProducts(transformedProducts)
+      }
       
-      // Add "Others" category if there are uncategorized products
+      // Check if there are more products to load
+      setHasMore(currentPage < (data.pages || 1))
+      
+      // Add "Others" category if there are uncategorized products (only if not already present)
       const hasOthers = transformedProducts.some(p => p.category === "Others")
-      if (hasOthers && !categories.includes("Others")) {
-        setCategories(prev => [...prev, "Others"])
+      if (hasOthers) {
+        setCategories(prev => {
+          if (!prev.includes("Others")) {
+            return [...prev, "Others"]
+          }
+          return prev
+        })
       }
       
     } catch (error: any) {
@@ -335,6 +360,7 @@ export default function ShopPage() {
       // Only turn off loading if this is still the current request
       if (abortControllerRef.current === controller) {
         setLoading(false)
+        setLoadingMore(false)
       }
     }
   }, [currentPage, perPage, selectedCategory, debouncedSearchQuery, allCategories])
@@ -367,6 +393,7 @@ export default function ShopPage() {
       // Filter out categories with 0 products and set category tabs
       const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
       const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
+      // Start with All + named categories, "Others" will be added dynamically if uncategorized products exist
       setCategories(["All", ...categoryNames])
       
       return categoriesData
@@ -397,6 +424,7 @@ export default function ShopPage() {
     
     const initializeData = async () => {
       const categories = await fetchAllCategories()
+      // Fetch all products initially to check for "Others" category
       if (categories && categories.length > 0) {
         await fetchProducts(categories)
       } else {
@@ -417,15 +445,42 @@ export default function ShopPage() {
   // Reset to page 1 when search query or category changes
   useEffect(() => {
     setCurrentPage(1)
+    setHasMore(true)
   }, [debouncedSearchQuery, selectedCategory])
 
   // Fetch products when page, search, or category changes (after initialization)
   useEffect(() => {
     if (initializedRef.current && allCategories.length > 0) {
-      fetchProducts()
+      const shouldAppend = currentPage > 1
+      fetchProducts(undefined, shouldAppend)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, debouncedSearchQuery, selectedCategory])
+
+  // Infinite scroll: Load more products when user scrolls near bottom
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || loadingMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          setCurrentPage(prev => prev + 1)
+        }
+      },
+      {
+        rootMargin: '200px', // Trigger 200px before reaching the element
+      }
+    )
+
+    observer.observe(loadMoreRef.current)
+    observerRef.current = observer
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [hasMore, loadingMore, loading])
 
   // Check if tabs overflow and need scroll arrows
   useEffect(() => {
@@ -704,10 +759,16 @@ export default function ShopPage() {
                           src={product.image}
                           alt={product.name}
                           fill
-                          priority={index < 3}
-                          loading={index < 3 ? undefined : "lazy"}
+                          priority={index < 2}
+                          loading={index < 2 ? "eager" : "lazy"}
                           unoptimized
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                           className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
+                          onError={(e) => {
+                            // Fallback to placeholder on error
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                          }}
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">
@@ -767,7 +828,26 @@ export default function ShopPage() {
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {/* Infinite Scroll Trigger */}
+          {!loading && hasMore && (
+            <div ref={loadMoreRef} className="py-8 flex justify-center">
+              {loadingMore && (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 border-4 border-[#FED141] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-[#303A4D] font-medium">Loading more products...</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* End of products message */}
+          {!loading && !hasMore && filteredProducts.length > 0 && (
+            <div className="py-8 text-center">
+              <p className="text-[#303A4D]/60 font-medium">You've reached the end! 🎉</p>
+            </div>
+          )}
+
+          {filteredProducts.length === 0 && !loading && (
             <div className="text-center py-16">
               <p className="text-2xl text-[#303A4D]/60">No products found matching your search.</p>
             </div>
@@ -775,8 +855,8 @@ export default function ShopPage() {
             </>
           )}
 
-          {/* Pagination */}
-          {!loading && filteredProducts.length > 0 && totalPages > 1 && (
+          {/* Pagination - Hidden with infinite scroll, kept for fallback */}
+          {false && !loading && filteredProducts.length > 0 && totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}

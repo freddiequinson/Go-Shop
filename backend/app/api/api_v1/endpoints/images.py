@@ -60,12 +60,14 @@ async def get_product_image(
     except Exception:
         raise HTTPException(status_code=400, detail="Failed to decode image")
     
-    # Return image with caching headers
+    # Return image with aggressive caching headers for mobile performance
     return Response(
         content=image_bytes,
         media_type=f"image/{mime_type}",
         headers={
-            "Cache-Control": "public, max-age=86400",  # Cache for 24 hours
-            "ETag": f"{product_id}-{image_index}"
+            "Cache-Control": "public, max-age=604800, immutable",  # Cache for 7 days, immutable
+            "ETag": f'"{product_id}-{image_index}"',
+            "Accept-Ranges": "bytes",
+            "Access-Control-Allow-Origin": "*",  # Allow CORS for images
         }
     )
