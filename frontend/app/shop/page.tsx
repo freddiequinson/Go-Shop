@@ -210,7 +210,6 @@ export default function ShopPage() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const initializedRef = useRef(false)
   const mountedRef = useRef(false)
-  const [isMobile, setIsMobile] = useState(false)
 
   // Fetch products with category filtering and abort controller
   const fetchProducts = useCallback(async (categoriesData?: any[]) => {
@@ -367,16 +366,6 @@ export default function ShopPage() {
       setErrorMessage('Failed to load categories. Please refresh the page.')
       return []
     }
-  }, [])
-
-  // Detect mobile device to disable heavy components
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Debounce search query to reduce API calls
@@ -696,7 +685,7 @@ export default function ShopPage() {
 
           {/* Products Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product, index) => (
               <div key={product.id} className="flex flex-col h-full">
                 <Link href={`/product/${product.id}`} className="flex-1">
                   <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col">
@@ -705,6 +694,9 @@ export default function ShopPage() {
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
+                        priority={index < 4}
+                        loading={index < 4 ? undefined : "lazy"}
+                        unoptimized
                         className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
                       />
                       {!product.inStock && (
@@ -839,8 +831,8 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* AI Chatbot - Disabled on mobile to prevent crashes */}
-      {!isMobile && <AIChatbot />}
+      {/* AI Chatbot */}
+      <AIChatbot />
     </div>
   )
 }
