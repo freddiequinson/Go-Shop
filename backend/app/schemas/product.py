@@ -155,6 +155,7 @@ class CategoryResponse(CategoryBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    product_count: Optional[int] = 0
 
     @field_serializer('created_at', 'updated_at')
     def serialize_datetime(self, value: datetime) -> str:

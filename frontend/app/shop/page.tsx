@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart-context"
 import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { AddToCartModal } from "@/components/add-to-cart-modal"
 import { CartNotification } from "@/components/cart-notification"
 import { cartService } from "@/lib/api/services"
@@ -207,27 +207,221 @@ export default function ShopPage() {
   const [totalProducts, setTotalProducts] = useState(0)
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [showScrollArrows, setShowScrollArrows] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const perPage = 20
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const initializedRef = useRef(false)
 
   console.log('[SHOP PAGE] State initialized')
+
+  // Fetch products with category filtering and abort controller
+  const fetchProducts = useCallback(async (categoriesData?: any[]) => {
+    // Cancel previous request if it exists
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
+    try {
+      setLoading(true)
+      setErrorMessage(null)
+      const apiBaseUrl = getApiBaseUrl()
+      let url = `${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`
+      
+      // Add category filter if not "All" or "Others"
+      if (selectedCategory !== "All" && selectedCategory !== "Others") {
+        const categoriesToUse = categoriesData || allCategories
+        const category = categoriesToUse.find((c: any) => c.name === selectedCategory)
+        if (category) {
+          url += `&category_id=${category.id}`
+        }
+      }
+      
+      // Add search query if exists (using debounced value)
+      if (debouncedSearchQuery.trim()) {
+        url += `&search=${encodeURIComponent(debouncedSearchQuery)}`
+      }
+      
+      console.log('[FETCH] Fetching products from:', url)
+      
+      // Add timeout for mobile networks (30 seconds)
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
+      
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      const productList = Array.isArray(data) ? data : data.products || data.items || []
+      
+      // Set pagination data
+      if (data.pages) {
+        setTotalPages(data.pages)
+        setTotalProducts(data.total || 0)
+      }
+      
+      // Use passed categories or fall back to state
+      const categoriesToUse = categoriesData || allCategories
+      const categoryMap = new Map(
+        Array.isArray(categoriesToUse) 
+          ? categoriesToUse.filter(c => c && c.id).map((c: any) => [c.id, c.name || "Others"])
+          : []
+      )
+      
+      console.log('[FETCH] Category map size:', categoryMap.size)
+      
+      // Transform API products to match our interface
+      const transformedProducts: Product[] = productList
+        .filter((p: any) => p && p.id && p.name)
+        .map((p: any) => {
+          const priceValue = p.price_per_unit || p.price || 0
+          const price = typeof priceValue === 'string' ? parseFloat(priceValue) || 0 : Number(priceValue) || 0
+          const categoryName = categoryMap.get(p.category_id) || "Others"
+          
+          return {
+            id: p.id,
+            name: p.name,
+            description: p.description || "",
+            price_per_unit: p.price_per_unit || 0,
+            price_per_quantity: p.price_per_quantity || 0,
+            unit_type: p.unit_type || "kg",
+            stock_quantity: p.stock_quantity || 0,
+            category_id: p.category_id || "",
+            is_active: p.is_active !== false,
+            images: Array.isArray(p.images) ? p.images : [],
+            inStock: (p.stock_quantity || 0) > 0,
+            price: price,
+            unit: `per ${p.unit_type || 'kg'}`,
+            category: categoryName,
+            image: (Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : "/placeholder.svg",
+            vendor: "GoShop"
+          }
+        })
+      
+      console.log('[FETCH] Transformed products:', transformedProducts.length)
+      setProducts(transformedProducts)
+      
+      // Add "Others" category if there are uncategorized products
+      const hasOthers = transformedProducts.some(p => p.category === "Others")
+      if (hasOthers && !categories.includes("Others")) {
+        setCategories(prev => [...prev, "Others"])
+      }
+      
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('[FETCH] Request aborted')
+        return
+      }
+      console.error("Failed to fetch products:", error)
+      console.error('[DEBUG] API Base URL:', getApiBaseUrl())
+      console.error('[DEBUG] Error type:', typeof error)
+      console.error('[DEBUG] Error name:', error?.name)
+      console.error('[DEBUG] Error message:', error?.message)
+      
+      const errorMsg = error?.message || error?.toString() || 'Network error. Please check your connection and try again.'
+      setErrorMessage(errorMsg)
+      setProducts([])
+      setTotalPages(1)
+      setTotalProducts(0)
+    } finally {
+      // Only turn off loading if this is still the current request
+      if (abortControllerRef.current === controller) {
+        setLoading(false)
+      }
+    }
+  }, [currentPage, perPage, selectedCategory, debouncedSearchQuery, allCategories])
+
+  // Fetch all categories
+  const fetchAllCategories = useCallback(async () => {
+    try {
+      const apiBaseUrl = getApiBaseUrl()
+      console.log('[FETCH] Fetching categories from:', `${apiBaseUrl}/products/categories/`)
+      
+      // Add timeout for mobile networks (30 seconds)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
+      
+      const response = await fetch(`${apiBaseUrl}/products/categories/`, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const categoriesData = await response.json()
+      console.log('[FETCH] Categories loaded:', categoriesData.length)
+      setAllCategories(categoriesData)
+      
+      // Filter out categories with 0 products and set category tabs
+      const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
+      const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
+      setCategories(["All", ...categoryNames])
+      
+      return categoriesData
+    } catch (error: any) {
+      console.error("Failed to fetch categories:", error)
+      setErrorMessage('Failed to load categories. Please refresh the page.')
+      return []
+    }
+  }, [])
 
   // Debounce search query to reduce API calls
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery)
-    }, 500) // Wait 500ms after user stops typing
-
+    }, 500)
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  // Initialize: Fetch categories first, then products
   useEffect(() => {
-    fetchProducts()
-  }, [currentPage, debouncedSearchQuery])
-
-  // Fetch all categories once on mount
-  useEffect(() => {
-    fetchAllCategories()
+    if (!initializedRef.current) {
+      initializedRef.current = true
+      const initializeData = async () => {
+        console.log('[INIT] Starting data initialization...')
+        const categories = await fetchAllCategories()
+        if (categories && categories.length > 0) {
+          console.log('[INIT] Categories loaded, fetching products...')
+          await fetchProducts(categories)
+        } else {
+          console.log('[INIT] No categories, fetching products anyway...')
+          await fetchProducts([])
+        }
+      }
+      initializeData()
+    }
   }, [])
+
+  // Reset to page 1 when search query or category changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearchQuery, selectedCategory])
+
+  // Fetch products when page, search, or category changes (after initialization)
+  useEffect(() => {
+    if (initializedRef.current && allCategories.length > 0) {
+      fetchProducts()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, debouncedSearchQuery, selectedCategory])
 
   // Check if tabs overflow and need scroll arrows
   useEffect(() => {
@@ -240,115 +434,18 @@ export default function ShopPage() {
       }
     }
 
-    // Check on mount and when categories change
     checkOverflow()
     
-    // Check on window resize
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', checkOverflow)
       return () => window.removeEventListener('resize', checkOverflow)
     }
   }, [categories])
 
-  // Reset to page 1 when search query changes
-  useEffect(() => {
-    if (currentPage !== 1 && debouncedSearchQuery) {
-      setCurrentPage(1)
-    }
-  }, [debouncedSearchQuery])
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      const apiBaseUrl = getApiBaseUrl()
-      let url = `${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`
-      
-      // Add search query if exists (using debounced value)
-      if (debouncedSearchQuery.trim()) {
-        url += `&search=${encodeURIComponent(debouncedSearchQuery)}`
-      }
-      
-      const response = await fetch(url)
-      if (response.ok) {
-        const data = await response.json()
-        const productList = Array.isArray(data) ? data : data.products || data.items || []
-        
-        // Set pagination data
-        if (data.pages) {
-          setTotalPages(data.pages)
-          setTotalProducts(data.total || 0)
-        }
-        
-        // Use the already fetched categories to map them - with safety check
-        const categoryMap = new Map(
-          Array.isArray(allCategories) 
-            ? allCategories.filter(c => c && c.id).map((c: any) => [c.id, c.name || "Others"])
-            : []
-        )
-        
-        // Transform API products to match our interface - with defensive checks
-        const transformedProducts: Product[] = productList
-          .filter((p: any) => {
-            // More lenient filtering - only require basic fields
-            return p && p.id && p.name
-          })
-          .map((p: any) => {
-            // Safe price parsing
-            const priceValue = p.price_per_unit || p.price || 0
-            const price = typeof priceValue === 'string' ? parseFloat(priceValue) || 0 : Number(priceValue) || 0
-            
-            return {
-              id: p.id,
-              name: p.name,
-              description: p.description || "",
-              price_per_unit: p.price_per_unit || 0,
-              price_per_quantity: p.price_per_quantity || 0,
-              unit_type: p.unit_type || "kg",
-              stock_quantity: p.stock_quantity || 0,
-              category_id: p.category_id || "",
-              is_active: p.is_active !== false,
-              images: Array.isArray(p.images) ? p.images : [],
-              inStock: (p.stock_quantity || 0) > 0,
-              price: price,
-              unit: `per ${p.unit_type || 'kg'}`,
-              category: categoryMap.get(p.category_id) || "Others",
-              image: (Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : "/placeholder.svg",
-              vendor: "GoShop"
-            }
-          })
-        
-        setProducts(transformedProducts)
-      }
-    } catch (error) {
-      console.error("Failed to fetch products:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchAllCategories = async () => {
-    try {
-      const apiBaseUrl = getApiBaseUrl()
-      const response = await fetch(`${apiBaseUrl}/products/categories/`)
-      if (response.ok) {
-        const categoriesData = await response.json()
-        setAllCategories(categoriesData)
-        
-        // Filter out categories with 0 products and set category tabs
-        const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
-        const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
-        setCategories(["All", ...categoryNames])
-      }
-    } catch (error) {
-      console.error("Failed to fetch categories:", error)
-    }
-  }
-
-  // Filter by category only (search is handled by backend)
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
-    return matchesCategory
-  })
+  // Filter for "Others" category (uncategorized products) - backend handles all other filtering
+  const filteredProducts = selectedCategory === "Others" 
+    ? products.filter(p => p.category === "Others")
+    : products
 
   const handleAddToCart = async (product: Product, quantity: number, purchaseType: "weight" | "quantity") => {
     if (!isAuthenticated) {
@@ -479,7 +576,24 @@ export default function ShopPage() {
             </div>
           )}
 
-          {!loading && products.length === 0 && (
+          {errorMessage && !loading && (
+            <div className="text-center py-16">
+              <Package className="w-16 h-16 text-red-500/60 mx-auto mb-4" />
+              <p className="text-2xl text-red-600 font-semibold">Failed to Load Products</p>
+              <p className="text-[#303A4D]/60 mt-2">{errorMessage}</p>
+              <Button
+                onClick={() => {
+                  setErrorMessage(null)
+                  fetchProducts()
+                }}
+                className="mt-4 bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full px-8 py-3 font-bold"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
+
+          {!loading && !errorMessage && products.length === 0 && (
             <div className="text-center py-16">
               <Package className="w-16 h-16 text-[#303A4D]/40 mx-auto mb-4" />
               <p className="text-2xl text-[#303A4D]/60">No products available yet.</p>

@@ -19,6 +19,7 @@ from app.crud.product import (
 from app.models.warehouse import WarehouseInventory
 from app.core.deps import get_current_active_user, get_current_seller, get_current_admin
 from app.models.user import User
+from app.models.product import Product
 import math
 
 router = APIRouter()
@@ -290,10 +291,27 @@ async def get_categories_list(
     db: Session = Depends(get_db)
 ):
     """
-    Get all product categories
+    Get all product categories with product counts (only published products)
     """
     categories = get_categories(db, skip, limit)
-    return [CategoryResponse.from_orm(category) for category in categories]
+    
+    # Add product count for each category (only active, published products with stock)
+    result = []
+    for category in categories:
+        category_dict = CategoryResponse.from_orm(category).dict()
+        
+        # Count published products in this category
+        product_count = db.query(Product).filter(
+            Product.category_id == category.id,
+            Product.is_active == True,
+            Product.is_published == True,
+            Product.stock_quantity > 0
+        ).count()
+        
+        category_dict['product_count'] = product_count
+        result.append(category_dict)
+    
+    return result
 
 
 @router.post("/categories/", response_model=CategoryResponse)

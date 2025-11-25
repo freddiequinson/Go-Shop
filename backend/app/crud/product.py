@@ -18,12 +18,21 @@ def get_products(
     db: Session, 
     skip: int = 0, 
     limit: int = 20,
-    filters: Optional[ProductFilter] = None
+    filters: Optional[ProductFilter] = None,
+    for_shop: bool = True
 ) -> tuple[List[Product], int]:
-    """Get products with filtering and pagination"""
+    """Get products with filtering and pagination
+    
+    Args:
+        for_shop: If True, only returns active and published products (default for public shop)
+    """
     query = db.query(Product)
     
-    # Apply filters
+    # For shop view: ALWAYS filter by active and published, regardless of other filters
+    if for_shop:
+        query = query.filter(Product.is_active == True, Product.is_published == True)
+    
+    # Apply additional filters
     if filters:
         if filters.category_id:
             query = query.filter(Product.category_id == filters.category_id)
@@ -49,20 +58,19 @@ def get_products(
                 )
             )
         
-        if filters.is_active is not None:
-            query = query.filter(Product.is_active == filters.is_active)
-        
-        if filters.is_published is not None:
-            query = query.filter(Product.is_published == filters.is_published)
+        # Only apply these filters if NOT for_shop (admin/seller views)
+        if not for_shop:
+            if filters.is_active is not None:
+                query = query.filter(Product.is_active == filters.is_active)
+            
+            if filters.is_published is not None:
+                query = query.filter(Product.is_published == filters.is_published)
         
         if filters.created_by_type:
             query = query.filter(Product.created_by_type == filters.created_by_type)
         
         if filters.in_warehouse is not None:
             query = query.filter(Product.in_warehouse == filters.in_warehouse)
-    else:
-        # Default: only show active AND published products (for shop)
-        query = query.filter(Product.is_active == True, Product.is_published == True)
     
     # Get total count
     total = query.count()
