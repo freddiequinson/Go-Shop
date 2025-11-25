@@ -296,8 +296,16 @@ export default function ShopPage() {
           const price = typeof priceValue === 'string' ? parseFloat(priceValue) || 0 : Number(priceValue) || 0
           const categoryName = categoryMap.get(p.category_id) || "Others"
           
-          // Use image URL directly (base64 or HTTP URL)
-          const imageUrl = p.primary_image_url || "/placeholder.svg"
+          // Convert relative image URLs to absolute backend URLs
+          let imageUrl = "/placeholder.svg"
+          if (p.primary_image_url) {
+            if (p.primary_image_url.startsWith('http')) {
+              imageUrl = p.primary_image_url
+            } else {
+              // Convert /images/{id} to full URL
+              imageUrl = buildApiUrl(p.primary_image_url)
+            }
+          }
           
           return {
             id: p.id,
