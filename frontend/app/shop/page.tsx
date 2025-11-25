@@ -26,20 +26,19 @@ import {
 interface Product {
   id: string
   name: string
-  description: string
   price_per_unit: number | string
-  price_per_quantity?: number | string
   unit_type: string
   stock_quantity: number | string
-  category_id: string
+  category_id?: string
   is_active: boolean
-  images?: string[]
+  primary_image_url?: string
+  // Computed fields for display
   inStock: boolean
   price: number
   unit: string
   category: string
   image: string
-  vendor: string
+  vendor?: string
   onSale?: boolean
   originalPrice?: number
   isBundle?: boolean
@@ -227,7 +226,8 @@ export default function ShopPage() {
       setLoading(true)
       setErrorMessage(null)
       const apiBaseUrl = getApiBaseUrl()
-      let url = `${apiBaseUrl}/products/?page=${currentPage}&per_page=${perPage}`
+      // Use lightweight /shop endpoint to avoid base64 images
+      let url = `${apiBaseUrl}/products/shop?page=${currentPage}&per_page=${perPage}`
       
       // Add category filter if not "All" or "Others"
       if (selectedCategory !== "All" && selectedCategory !== "Others") {
@@ -287,19 +287,17 @@ export default function ShopPage() {
           return {
             id: p.id,
             name: p.name,
-            description: p.description || "",
             price_per_unit: p.price_per_unit || 0,
-            price_per_quantity: p.price_per_quantity || 0,
             unit_type: p.unit_type || "kg",
             stock_quantity: p.stock_quantity || 0,
             category_id: p.category_id || "",
             is_active: p.is_active !== false,
-            images: Array.isArray(p.images) ? p.images : [],
+            primary_image_url: p.primary_image_url || null,
             inStock: (p.stock_quantity || 0) > 0,
             price: price,
             unit: `per ${p.unit_type || 'kg'}`,
             category: categoryName,
-            image: (Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : "/placeholder.svg",
+            image: p.primary_image_url || "/placeholder.svg",
             vendor: "GoShop"
           }
         })
