@@ -186,11 +186,9 @@ const demoProducts = [
 
 export default function ShopPage() {
   // Hooks MUST be called directly - cannot be in try-catch
-  console.log('[SHOP PAGE] Initializing hooks...')
   const { addItem, uniqueItemsCount, refreshCart } = useCart()
   const { toast } = useToast()
   const { isAuthenticated, user } = useAuth()
-  console.log('[SHOP PAGE] Hooks initialized successfully')
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
@@ -211,8 +209,8 @@ export default function ShopPage() {
   const perPage = 20
   const abortControllerRef = useRef<AbortController | null>(null)
   const initializedRef = useRef(false)
-
-  console.log('[SHOP PAGE] State initialized')
+  const mountedRef = useRef(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   // Fetch products with category filtering and abort controller
   const fetchProducts = useCallback(async (categoriesData?: any[]) => {
@@ -244,8 +242,6 @@ export default function ShopPage() {
       if (debouncedSearchQuery.trim()) {
         url += `&search=${encodeURIComponent(debouncedSearchQuery)}`
       }
-      
-      console.log('[FETCH] Fetching products from:', url)
       
       // Add timeout for mobile networks (30 seconds)
       const timeoutId = setTimeout(() => controller.abort(), 30000)
@@ -280,8 +276,6 @@ export default function ShopPage() {
           : []
       )
       
-      console.log('[FETCH] Category map size:', categoryMap.size)
-      
       // Transform API products to match our interface
       const transformedProducts: Product[] = productList
         .filter((p: any) => p && p.id && p.name)
@@ -310,7 +304,6 @@ export default function ShopPage() {
           }
         })
       
-      console.log('[FETCH] Transformed products:', transformedProducts.length)
       setProducts(transformedProducts)
       
       // Add "Others" category if there are uncategorized products
@@ -321,14 +314,9 @@ export default function ShopPage() {
       
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.log('[FETCH] Request aborted')
         return
       }
       console.error("Failed to fetch products:", error)
-      console.error('[DEBUG] API Base URL:', getApiBaseUrl())
-      console.error('[DEBUG] Error type:', typeof error)
-      console.error('[DEBUG] Error name:', error?.name)
-      console.error('[DEBUG] Error message:', error?.message)
       
       const errorMsg = error?.message || error?.toString() || 'Network error. Please check your connection and try again.'
       setErrorMessage(errorMsg)
@@ -347,7 +335,6 @@ export default function ShopPage() {
   const fetchAllCategories = useCallback(async () => {
     try {
       const apiBaseUrl = getApiBaseUrl()
-      console.log('[FETCH] Fetching categories from:', `${apiBaseUrl}/products/categories/`)
       
       // Add timeout for mobile networks (30 seconds)
       const controller = new AbortController()
@@ -367,7 +354,6 @@ export default function ShopPage() {
       }
       
       const categoriesData = await response.json()
-      console.log('[FETCH] Categories loaded:', categoriesData.length)
       setAllCategories(categoriesData)
       
       // Filter out categories with 0 products and set category tabs
@@ -383,6 +369,16 @@ export default function ShopPage() {
     }
   }, [])
 
+  // Detect mobile device to disable heavy components
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   // Debounce search query to reduce API calls
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -391,22 +387,32 @@ export default function ShopPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Initialize: Fetch categories first, then products
+  // Initialize: Fetch categories first, then products (ONLY ONCE)
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true
-      const initializeData = async () => {
-        console.log('[INIT] Starting data initialization...')
-        const categories = await fetchAllCategories()
-        if (categories && categories.length > 0) {
-          console.log('[INIT] Categories loaded, fetching products...')
-          await fetchProducts(categories)
-        } else {
-          console.log('[INIT] No categories, fetching products anyway...')
-          await fetchProducts([])
-        }
+    // Strict guard to prevent multiple initializations
+    if (mountedRef.current || initializedRef.current) {
+      return
+    }
+    
+    mountedRef.current = true
+    initializedRef.current = true
+    
+    const initializeData = async () => {
+      const categories = await fetchAllCategories()
+      if (categories && categories.length > 0) {
+        await fetchProducts(categories)
+      } else {
+        await fetchProducts([])
       }
-      initializeData()
+    }
+    
+    initializeData()
+    
+    // Cleanup on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
     }
   }, [])
 
@@ -833,8 +839,8 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* AI Chatbot */}
-      <AIChatbot />
+      {/* AI Chatbot - Disabled on mobile to prevent crashes */}
+      {!isMobile && <AIChatbot />}
     </div>
   )
 }
