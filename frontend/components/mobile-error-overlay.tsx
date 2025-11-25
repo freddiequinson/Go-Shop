@@ -35,7 +35,8 @@ export function MobileErrorOverlay() {
         timestamp: new Date(),
         type: 'error'
       }])
-      setIsVisible(true)
+      // Don't auto-show overlay - user can click the indicator if needed
+      // setIsVisible(true)
     }
 
     console.warn = (...args: any[]) => {
@@ -59,7 +60,8 @@ export function MobileErrorOverlay() {
         timestamp: new Date(),
         type: 'error'
       }])
-      setIsVisible(true)
+      // Don't auto-show overlay - user can click the indicator if needed
+      // setIsVisible(true)
     }
 
     // Capture unhandled promise rejections
@@ -70,7 +72,8 @@ export function MobileErrorOverlay() {
         timestamp: new Date(),
         type: 'error'
       }])
-      setIsVisible(true)
+      // Don't auto-show overlay - user can click the indicator if needed
+      // setIsVisible(true)
     }
 
     window.addEventListener('error', handleError)

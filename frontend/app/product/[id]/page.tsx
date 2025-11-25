@@ -266,7 +266,7 @@ export default function ProductPage() {
           </Link>
 
           <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <Image src="/images/logo.png" alt="go-shop" width={100} height={32} className="sm:w-[124px] sm:h-[39px]" />
+            <Image src="/images/logo.png" alt="go-shop" width={100} height={32} style={{ width: 'auto', height: 'auto' }} className="sm:w-[124px] sm:h-[39px]" />
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">

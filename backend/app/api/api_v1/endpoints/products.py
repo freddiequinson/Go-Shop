@@ -104,13 +104,17 @@ async def get_products_for_shop(
     # Convert to lightweight response
     shop_products = []
     for product in products:
-        # Only include HTTP/HTTPS URLs, exclude base64 images
+        # Convert base64 images to API endpoint URLs, or use HTTP/HTTPS URLs directly
         primary_image = None
         if product.images and len(product.images) > 0:
-            for img in product.images:
-                if img and (img.startswith('http://') or img.startswith('https://')):
-                    primary_image = img
-                    break
+            first_img = product.images[0]
+            if first_img:
+                if first_img.startswith('data:image'):
+                    # Convert base64 to our images endpoint (relative path without /api/v1)
+                    primary_image = f"/images/{product.id}"
+                elif first_img.startswith('http://') or first_img.startswith('https://'):
+                    # Use HTTP/HTTPS URLs directly
+                    primary_image = first_img
         
         shop_products.append(ProductShopResponse(
             id=product.id,

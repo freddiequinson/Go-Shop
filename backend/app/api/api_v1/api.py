@@ -7,7 +7,7 @@ from datetime import datetime
 
 from app.api.api_v1.endpoints import (
     auth, users, products, cart, orders, payments,
-    bubbles, fund_transfers, messages, reviews, oauth, giftcards, suppliers, warehouse, riders, admin, test, audit_logs, user_addresses, guest_orders, delivery_dates, delivery_settings, coupons, order_payments, admin_orders, admin_cleanup, test_audit, warehouse_locations, goods_received, perishables, pick_lists, supply_requests, supply_offers, price_comparison, supplier_products, order_delivery, rider_auth, rider_portal, smart_restock, ai_chat, user_analytics, feedback
+    bubbles, fund_transfers, messages, reviews, oauth, giftcards, suppliers, warehouse, riders, admin, test, audit_logs, user_addresses, guest_orders, delivery_dates, delivery_settings, coupons, order_payments, admin_orders, admin_cleanup, test_audit, warehouse_locations, goods_received, perishables, pick_lists, supply_requests, supply_offers, price_comparison, supplier_products, order_delivery, rider_auth, rider_portal, smart_restock, ai_chat, user_analytics, feedback, images
 )
 from app.api.api_v1.endpoints import orders_fixed as orders
 
@@ -24,6 +24,7 @@ async def health_check():
     }
 
 # Include all endpoint routers
+api_router.include_router(images.router, prefix="/images", tags=["images"])
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(oauth.router, prefix="/oauth", tags=["oauth2"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])

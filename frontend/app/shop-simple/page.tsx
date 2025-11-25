@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Package } from "lucide-react"
-import { getApiBaseUrl } from "@/lib/api/url-helper"
+import { getApiBaseUrl, buildApiUrl } from "@/lib/api/url-helper"
 
 interface Product {
   id: string
@@ -95,12 +95,26 @@ export default function ShopSimplePage() {
 
         {!loading && products.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((product, index) => (
+            {products.map((product, index) => {
+              // Convert relative image URLs to absolute URLs
+              const imageUrl = product.primary_image_url 
+                ? product.primary_image_url.startsWith('http') 
+                  ? product.primary_image_url 
+                  : buildApiUrl(product.primary_image_url)
+                : null
+              
+              // Debug log
+              if (index === 0) {
+                console.log('Image URL for first product:', imageUrl)
+                console.log('API Base URL:', getApiBaseUrl())
+              }
+              
+              return (
               <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-sm">
                 <div className="relative h-48 bg-gray-100">
-                  {product.primary_image_url ? (
+                  {imageUrl ? (
                     <Image
-                      src={product.primary_image_url}
+                      src={imageUrl}
                       alt={product.name}
                       fill
                       loading={index < 4 ? "eager" : "lazy"}
@@ -126,7 +140,8 @@ export default function ShopSimplePage() {
                   </p>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

@@ -10,14 +10,20 @@ export const getBaseURL = (): string => {
     return process.env.NEXT_PUBLIC_API_URL
   }
   
-  // In browser, use same origin as the frontend (for production)
+  // In browser, check if we're in local development
   if (typeof window !== 'undefined') {
-    // Force HTTPS in production
     const origin = window.location.origin
+    
+    // Local development - use backend port
+    if (origin.includes('localhost:3000') || origin.includes('127.0.0.1:3000')) {
+      return 'http://localhost:8000'
+    }
+    
+    // Production - use same origin with HTTPS
     return origin.replace(/^http:/, 'https:')
   }
   
-  // Fallback for local development
+  // Fallback for local development (SSR)
   return 'http://localhost:8000'
 }
 

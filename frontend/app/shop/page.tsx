@@ -11,7 +11,7 @@ import { CartNotification } from "@/components/cart-notification"
 import { cartService } from "@/lib/api/services"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
-import { getApiBaseUrl } from "@/lib/api/url-helper"
+import { getApiBaseUrl, buildApiUrl } from "@/lib/api/url-helper"
 import AIChatbot from "@/components/AIChatbot"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
@@ -284,6 +284,16 @@ export default function ShopPage() {
           const price = typeof priceValue === 'string' ? parseFloat(priceValue) || 0 : Number(priceValue) || 0
           const categoryName = categoryMap.get(p.category_id) || "Others"
           
+          // Convert relative image URLs to absolute backend URLs
+          let imageUrl = "/placeholder.svg"
+          if (p.primary_image_url) {
+            if (p.primary_image_url.startsWith('http')) {
+              imageUrl = p.primary_image_url
+            } else {
+              imageUrl = buildApiUrl(p.primary_image_url)
+            }
+          }
+          
           return {
             id: p.id,
             name: p.name,
@@ -297,7 +307,7 @@ export default function ShopPage() {
             price: price,
             unit: `per ${p.unit_type || 'kg'}`,
             category: categoryName,
-            image: p.primary_image_url || "/placeholder.svg",
+            image: imageUrl,
             vendor: "GoShop"
           }
         })

@@ -277,7 +277,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-[#FED141] flex flex-col">
       <div className="px-6 md:px-8 py-6">
         <Link href="/" className="inline-block">
-          <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-20 md:w-24 object-contain" />
+          <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-20 md:w-24 h-auto object-contain" />
         </Link>
       </div>
 

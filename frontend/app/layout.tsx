@@ -7,7 +7,6 @@ import { OnboardingProvider } from "@/lib/contexts/onboarding-context"
 import { Toaster } from "@/components/ui/toaster"
 import FeedbackWidget from "@/components/FeedbackWidget"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { MobileErrorOverlay } from "@/components/mobile-error-overlay"
 import "./globals.css"
 
 // Conditionally import Analytics only on Vercel
@@ -21,12 +20,13 @@ export const metadata: Metadata = {
   title: "go-shop - Fresh Groceries from the Market",
   description: "Get all your groceries delivered to your home",
   generator: "v0.app",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -53,7 +53,6 @@ export default function RootLayout({
                 {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
                 <Toaster />
                 <FeedbackWidget />
-                <MobileErrorOverlay />
               </CartProvider>
             </OnboardingProvider>
           </AuthProvider>

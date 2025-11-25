@@ -125,7 +125,7 @@ export default function Home() {
 
         <div className="absolute left-1/2 -translate-x-1/2">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-24 object-contain" />
+            <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-24 h-auto object-contain" />
           </Link>
         </div>
 
@@ -173,7 +173,7 @@ export default function Home() {
       <nav className="md:hidden bg-[#FED141] relative z-50">
         <div className="flex items-center justify-between px-6 py-4">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="w-20 object-contain" />
+            <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="w-20 h-auto object-contain" />
           </Link>
           <div className="flex items-center gap-3">
             <Link href={isAuthenticated ? "/profile" : "/login"}>
