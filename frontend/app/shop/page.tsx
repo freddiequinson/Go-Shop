@@ -185,9 +185,46 @@ const demoProducts = [
 ]
 
 export default function ShopPage() {
-  const { addItem, uniqueItemsCount, refreshCart } = useCart()
-  const { toast } = useToast()
-  const { isAuthenticated, user } = useAuth()
+  // Add error logging
+  useEffect(() => {
+    console.log('[SHOP PAGE] Component mounting...')
+    console.log('[SHOP PAGE] User Agent:', typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A')
+    console.log('[SHOP PAGE] Screen:', typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'N/A')
+  }, [])
+
+  let cartHook, authHook, toastHook
+  
+  try {
+    console.log('[SHOP PAGE] Initializing cart hook...')
+    cartHook = useCart()
+    console.log('[SHOP PAGE] Cart hook initialized')
+  } catch (error: any) {
+    console.error('[SHOP PAGE] Cart hook failed:', error)
+    throw new Error(`Cart hook failed: ${error.message}`)
+  }
+
+  try {
+    console.log('[SHOP PAGE] Initializing toast hook...')
+    toastHook = useToast()
+    console.log('[SHOP PAGE] Toast hook initialized')
+  } catch (error: any) {
+    console.error('[SHOP PAGE] Toast hook failed:', error)
+    throw new Error(`Toast hook failed: ${error.message}`)
+  }
+
+  try {
+    console.log('[SHOP PAGE] Initializing auth hook...')
+    authHook = useAuth()
+    console.log('[SHOP PAGE] Auth hook initialized')
+  } catch (error: any) {
+    console.error('[SHOP PAGE] Auth hook failed:', error)
+    throw new Error(`Auth hook failed: ${error.message}`)
+  }
+
+  const { addItem, uniqueItemsCount, refreshCart } = cartHook
+  const { toast } = toastHook
+  const { isAuthenticated, user } = authHook
+
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
   const [allCategories, setAllCategories] = useState<any[]>([])
@@ -204,6 +241,8 @@ export default function ShopPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [showScrollArrows, setShowScrollArrows] = useState(false)
   const perPage = 20
+
+  console.log('[SHOP PAGE] State initialized')
 
   // Debounce search query to reduce API calls
   useEffect(() => {

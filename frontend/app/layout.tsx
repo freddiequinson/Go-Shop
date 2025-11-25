@@ -6,6 +6,8 @@ import { AuthProvider } from "@/lib/contexts/auth-context"
 import { OnboardingProvider } from "@/lib/contexts/onboarding-context"
 import { Toaster } from "@/components/ui/toaster"
 import FeedbackWidget from "@/components/FeedbackWidget"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { MobileErrorOverlay } from "@/components/mobile-error-overlay"
 import "./globals.css"
 
 // Conditionally import Analytics only on Vercel
@@ -43,16 +45,19 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <AuthProvider>
-          <OnboardingProvider>
-            <CartProvider>
-              {children}
-              {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
-              <Toaster />
-              <FeedbackWidget />
-            </CartProvider>
-          </OnboardingProvider>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <OnboardingProvider>
+              <CartProvider>
+                {children}
+                {process.env.NEXT_PUBLIC_VERCEL_ENV && <Analytics />}
+                <Toaster />
+                <FeedbackWidget />
+                <MobileErrorOverlay />
+              </CartProvider>
+            </OnboardingProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )
