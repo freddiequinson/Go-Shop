@@ -755,19 +755,15 @@ export default function ShopPage() {
                   <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col">
                     <div className="relative h-40 md:h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-2 md:p-4">
                       {product.image && product.image !== "/placeholder.svg" ? (
-                        <Image
+                        <img
                           src={product.image}
                           alt={product.name}
-                          fill
-                          priority={index < 2}
                           loading={index < 2 ? "eager" : "lazy"}
-                          unoptimized
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                          className="object-contain group-hover:scale-105 transition-transform duration-300 p-2"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 p-2"
                           onError={(e) => {
                             // Fallback to placeholder on error
                             const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
+                            target.src = '/placeholder.svg'
                           }}
                         />
                       ) : (
