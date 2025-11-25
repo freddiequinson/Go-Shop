@@ -129,12 +129,13 @@ export default function FeedbackWidget() {
           </div>
         )}
 
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-14 h-14 rounded-full bg-[#FED141] hover:bg-[#FED141]/90 text-[#303A4D] shadow-lg hover:shadow-xl transition-all duration-200"
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 border-2 border-white group"
+          aria-label="Give feedback"
         >
-          {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
-        </Button>
+          <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-[#303A4D] group-hover:rotate-12 transition-transform" />
+        </button>
       </div>
 
       {/* Backdrop */}

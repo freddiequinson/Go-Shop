@@ -1,5 +1,5 @@
 """
-Image serving endpoint with in-memory caching
+Image serving endpoint - lightweight version
 """
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import Response
@@ -10,55 +10,8 @@ import base64
 import re
 import io
 from PIL import Image
-from functools import lru_cache
 
 router = APIRouter()
-
-# In-memory cache for optimized images (stores up to 100 images)
-@lru_cache(maxsize=100)
-def optimize_image_cached(base64_data: str, mime_type: str) -> tuple[bytes, str]:
-    """
-    Optimize and cache image data
-    Returns: (optimized_bytes, final_mime_type)
-    """
-    try:
-        # Decode base64
-        image_bytes = base64.b64decode(base64_data)
-        
-        # Open image from bytes
-        img = Image.open(io.BytesIO(image_bytes))
-        
-        # Convert to RGB if needed (for JPEG conversion)
-        if img.mode in ('RGBA', 'P') and mime_type.lower() in ('jpeg', 'jpg'):
-            img = img.convert('RGB')
-            
-        # Resize if too large (max 800x800 for shop thumbnails)
-        max_size = (800, 800)
-        if img.width > max_size[0] or img.height > max_size[1]:
-            img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
-        # Save to bytes with optimization
-        output = io.BytesIO()
-        format_name = mime_type.upper()
-        if format_name == 'JPG':
-            format_name = 'JPEG'
-            
-        # Use JPEG for non-transparent images for better compression
-        if format_name == 'PNG' and img.mode == 'RGB':
-            format_name = 'JPEG'
-            mime_type = 'jpeg'
-            
-        save_kwargs = {'optimize': True}
-        if format_name == 'JPEG':
-            save_kwargs['quality'] = 85
-            
-        img.save(output, format=format_name, **save_kwargs)
-        return output.getvalue(), mime_type
-        
-    except Exception as e:
-        print(f"Image optimization failed: {e}")
-        # Return original
-        return base64.b64decode(base64_data), mime_type
 
 @router.get("/{product_id}")
 async def get_product_image(
@@ -103,8 +56,35 @@ async def get_product_image(
     mime_type = match.group(1)
     base64_data = match.group(2)
     
-    # Use cached optimization function
-    image_bytes, mime_type = optimize_image_cached(base64_data, mime_type)
+    # Decode base64
+    try:
+        image_bytes = base64.b64decode(base64_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to decode image")
+    
+    # Lightweight optimization with PIL - resize only, no heavy processing
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Only resize if image is large (max 600x600 for mobile)
+        max_size = (600, 600)
+        if img.width > max_size[0] or img.height > max_size[1]:
+            # Convert RGBA to RGB for JPEG
+            if img.mode == 'RGBA':
+                img = img.convert('RGB')
+                mime_type = 'jpeg'
+            
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            # Save with moderate compression
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=80, optimize=False)
+            image_bytes = output.getvalue()
+            mime_type = 'jpeg'
+    except Exception as e:
+        # If optimization fails, return original
+        print(f"Image resize failed: {e}")
+        pass
     
     # Return image with aggressive caching headers for mobile performance
     return Response(

@@ -291,7 +291,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-8 right-8 z-50 group"
+          className="fixed bottom-6 right-6 z-50 group"
           aria-label="Open chat with Gloria"
         >
           {/* Main bubble */}
@@ -299,29 +299,31 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300 animate-pulse" />
             
-            {/* Main button */}
-            <div className="relative w-20 h-20 bg-gradient-to-br from-[#FED141] via-[#F1B424] to-[#FED141] rounded-full shadow-2xl flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 border-4 border-white">
-              {/* Icon container */}
-              <div className="relative">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
-                  <span className="text-3xl">👩🏾‍🍳</span>
+            {/* Main bubble */}
+            <div className="relative">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300 border-2 border-white">
+                {/* Icon container */}
+                <div className="relative">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+                    <span className="text-3xl">👩🏾‍🍳</span>
+                  </div>
+                  {/* Sparkle */}
+                  <Sparkles className="w-5 h-5 text-white absolute -top-1 -right-1 animate-pulse drop-shadow-lg" />
                 </div>
-                {/* Sparkle */}
-                <Sparkles className="w-5 h-5 text-white absolute -top-1 -right-1 animate-pulse drop-shadow-lg" />
-              </div>
-              
-              {/* Online indicator */}
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg">
-                <div className="w-full h-full bg-green-400 rounded-full animate-ping" />
+                
+                {/* Online indicator */}
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg">
+                  <div className="w-full h-full bg-green-400 rounded-full animate-ping" />
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Tooltip */}
-          <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            <div className="bg-[#303A4D] text-white px-4 py-2 rounded-xl shadow-xl whitespace-nowrap text-sm font-medium">
-              Chat with Gloria 💬
-              <div className="absolute top-full right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-[#303A4D]" />
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <div className="bg-[#303A4D] text-white px-4 py-2 rounded-xl shadow-xl whitespace-nowrap text-sm font-medium">
+                Chat with Gloria 💬
+                <div className="absolute top-full right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-[#303A4D]" />
+              </div>
             </div>
           </div>
         </button>
