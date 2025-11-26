@@ -49,3 +49,13 @@ groq==0.4.1
 
 # PDF Generation
 reportlab==4.0.7
+
+# Image processing
+Pillow==10.1.0
+
+# DigitalOcean Spaces (S3-compatible storage)
+boto3==1.34.0
+botocore==1.34.0
+
+# Progress bars for scripts
+tqdm==4.66.1
