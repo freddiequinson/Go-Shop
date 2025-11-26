@@ -210,6 +210,7 @@ export default function ShopPage() {
   const [showStickyTabs, setShowStickyTabs] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isChangingCategory, setIsChangingCategory] = useState(false)
   // Infinite scroll: Load smaller batches more frequently
   // Mobile: 6 products, Tablet: 9 products, Desktop: 12 products per batch
   const perPage = typeof window !== 'undefined' 
@@ -236,8 +237,12 @@ export default function ShopPage() {
       if (append) {
         setLoadingMore(true)
       } else {
-        setLoading(true)
-        setProducts([]) // Clear products when not appending
+        // Only show full loading on initial load, not category switches
+        if (products.length === 0) {
+          setLoading(true)
+        } else {
+          setIsChangingCategory(true)
+        }
       }
       setErrorMessage(null)
       const apiBaseUrl = getApiBaseUrl()
@@ -365,9 +370,10 @@ export default function ShopPage() {
       if (abortControllerRef.current === controller) {
         setLoading(false)
         setLoadingMore(false)
+        setIsChangingCategory(false)
       }
     }
-  }, [currentPage, perPage, selectedCategory, debouncedSearchQuery, allCategories])
+  }, [currentPage, perPage, selectedCategory, debouncedSearchQuery, allCategories, products.length])
 
   // Fetch all categories
   const fetchAllCategories = useCallback(async () => {
@@ -698,7 +704,7 @@ export default function ShopPage() {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+          <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
             {filteredProducts.map((product, index) => (
               <div key={product.id} className="flex flex-col h-full">
                 <Link href={`/product/${product.id}`} className="flex-1">
