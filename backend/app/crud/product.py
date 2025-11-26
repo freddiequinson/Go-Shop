@@ -9,6 +9,7 @@ from sqlalchemy import or_, and_, desc
 from app.models.product import Product, Category, UnitType
 from app.models.warehouse import WarehouseInventory
 from app.schemas.product import ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate, ProductFilter
+from app.utils.image_upload import process_product_images
 
 def get_product_by_id(db: Session, product_id: str) -> Optional[Product]:
     """Get product by ID"""
@@ -89,6 +90,7 @@ def get_products_by_seller(db: Session, seller_id: str, skip: int = 0, limit: in
 def create_product(db: Session, product: ProductCreate, seller_id: str, 
                    created_by_type: str = 'admin') -> Product:
     """Create a new product - handles both admin and supplier creation"""
+    # Create product first to get ID
     db_product = Product(
         seller_id=seller_id,
         name=product.name,
@@ -99,7 +101,7 @@ def create_product(db: Session, product: ProductCreate, seller_id: str,
         price_per_quantity=product.price_per_quantity,
         minimum_quantity=product.minimum_quantity,
         stock_quantity=product.stock_quantity,
-        images=product.images or [],
+        images=[],  # Temporarily empty, will process below
         supplier_id=product.supplier_id,
         cost_price=product.cost_price,
         is_perishable=product.is_perishable,
@@ -112,6 +114,12 @@ def create_product(db: Session, product: ProductCreate, seller_id: str,
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
+    
+    # Process images: upload base64 to Spaces, convert to CDN URLs
+    if product.images:
+        db_product.images = process_product_images(product.images, str(db_product.id))
+        db.commit()
+        db.refresh(db_product)
     
     # Only auto-create warehouse inventory for admin products
     # Supplier products get warehouse inventory when GRN is approved
@@ -144,6 +152,11 @@ def update_product(db: Session, product_id: str, product_update: ProductUpdate, 
     
     # Update fields
     update_data = product_update.dict(exclude_unset=True)
+    
+    # Process images if being updated
+    if 'images' in update_data and update_data['images']:
+        update_data['images'] = process_product_images(update_data['images'], product_id)
+    
     for field, value in update_data.items():
         setattr(db_product, field, value)
     
