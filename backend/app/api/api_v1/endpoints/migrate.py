@@ -42,21 +42,24 @@ async def migrate_images_to_spaces(
     try:
         spaces = get_spaces_client()
         
-        # Get products with images in small batches to avoid timeout
-        # Process only the limit requested
-        batch_size = min(limit if limit else 10, 200)
+        # Use database query to find products with base64 images
+        # PostgreSQL can search in JSONB arrays efficiently
+        from sqlalchemy import cast, String, or_
         
-        all_products = db.query(Product).filter(Product.images.isnot(None)).limit(batch_size * 5).all()
+        # Get products where images array contains 'data:image'
+        # This is much faster than loading all products
+        all_products = db.query(Product).filter(
+            Product.images.isnot(None),
+            cast(Product.images, String).like('%data:image%')
+        ).limit(limit if limit else 100).all()
         
-        # Filter for products that actually have base64 images
+        # Double-check each product (in case of false positives)
         products_with_base64 = []
         for p in all_products:
             if p.images and any(img.startswith('data:image') for img in p.images):
                 products_with_base64.append(p)
-                if limit and len(products_with_base64) >= limit:
-                    break
         
-        products = products_with_base64[:limit] if limit else products_with_base64
+        products = products_with_base64
         total = len(products)
         
         migrated = 0
