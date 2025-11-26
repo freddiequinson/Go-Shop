@@ -196,7 +196,17 @@ async def get_my_products(
     Get current seller's products
     """
     products = get_products_by_seller(db, current_user.id, skip, limit)
-    return [ProductResponse.from_orm(product) for product in products]
+    
+    # Add migration status flag
+    result = []
+    for product in products:
+        product_dict = ProductResponse.from_orm(product).dict()
+        product_dict['uses_base64_images'] = any(
+            img.startswith('data:image') for img in (product.images or [])
+        )
+        result.append(ProductResponse(**product_dict))
+    
+    return result
 
 
 @router.get("/statistics")
@@ -552,3 +562,73 @@ async def unpublish_product_from_shop(
         "product_id": product_id,
         "is_published": False
     }
+
+
+@router.post("/{product_id}/migrate-to-cdn")
+async def migrate_product_to_cdn(
+    product_id: str,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Migrate a single product's images from base64 to CDN (admin only)
+    """
+    from app.utils.spaces_client import get_spaces_client
+    
+    product = get_product_by_id(db, product_id)
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if not product.images or len(product.images) == 0:
+        raise HTTPException(status_code=400, detail="Product has no images")
+    
+    # Check if already migrated
+    has_base64 = any(img.startswith('data:image') for img in product.images)
+    if not has_base64:
+        return {
+            "success": True,
+            "message": "Product images already on CDN",
+            "already_migrated": True
+        }
+    
+    try:
+        spaces = get_spaces_client()
+        new_image_urls = []
+        
+        for idx, image_data in enumerate(product.images):
+            if not image_data:
+                continue
+            
+            # Keep if already CDN URL
+            if image_data.startswith('http'):
+                new_image_urls.append(image_data)
+                continue
+            
+            # Keep if not base64
+            if not image_data.startswith('data:image'):
+                new_image_urls.append(image_data)
+                continue
+            
+            # Upload to Spaces
+            cdn_url = spaces.upload_base64_image(
+                base64_data=image_data,
+                product_id=str(product.id),
+                image_index=idx,
+                optimize=True
+            )
+            new_image_urls.append(cdn_url)
+        
+        # Update product
+        product.images = new_image_urls
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Successfully migrated {len(new_image_urls)} images to CDN",
+            "cdn_urls": new_image_urls
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")

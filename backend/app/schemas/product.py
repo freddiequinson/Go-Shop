@@ -109,6 +109,7 @@ class ProductResponse(ProductBase):
     updated_at: datetime
     supplier_id: Optional[str] = None
     cost_price: Optional[Decimal] = None
+    uses_base64_images: Optional[bool] = None  # For migration status
 
     @field_serializer('created_at', 'updated_at')
     def serialize_datetime(self, value: datetime) -> str:
