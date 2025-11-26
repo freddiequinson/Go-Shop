@@ -42,9 +42,11 @@ async def migrate_images_to_spaces(
     try:
         spaces = get_spaces_client()
         
-        # Get ALL products with images and filter for base64
-        # This ensures we find all products that need migration
-        all_products = db.query(Product).filter(Product.images.isnot(None)).all()
+        # Get products with images in small batches to avoid timeout
+        # Process only the limit requested
+        batch_size = min(limit if limit else 10, 200)
+        
+        all_products = db.query(Product).filter(Product.images.isnot(None)).limit(batch_size * 5).all()
         
         # Filter for products that actually have base64 images
         products_with_base64 = []
@@ -54,7 +56,7 @@ async def migrate_images_to_spaces(
                 if limit and len(products_with_base64) >= limit:
                     break
         
-        products = products_with_base64
+        products = products_with_base64[:limit] if limit else products_with_base64
         total = len(products)
         
         migrated = 0
