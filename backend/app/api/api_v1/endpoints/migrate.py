@@ -121,7 +121,7 @@ async def migrate_images_to_spaces(
 
 
 @router.get("/status")
-async def migration_status(db: Session = Depends(get_db)) -> Dict:
+async def migration_status(db: Session = Depends(get_db), debug: bool = False) -> Dict:
     """
     Check migration status - how many products still have base64 images
     
@@ -135,6 +135,7 @@ async def migration_status(db: Session = Depends(get_db)) -> Dict:
         base64_count = 0
         cdn_count = 0
         mixed_count = 0
+        base64_products = []
         
         for product in products:
             if not product.images or len(product.images) == 0:
@@ -147,16 +148,28 @@ async def migration_status(db: Session = Depends(get_db)) -> Dict:
                 mixed_count += 1
             elif has_base64:
                 base64_count += 1
+                if debug:
+                    base64_products.append({
+                        "id": str(product.id),
+                        "name": product.name,
+                        "image_count": len(product.images),
+                        "first_image_prefix": product.images[0][:50] if product.images else ""
+                    })
             elif has_cdn:
                 cdn_count += 1
         
-        return {
+        result = {
             "total_products": len(products),
             "using_base64": base64_count,
             "using_cdn": cdn_count,
             "mixed": mixed_count,
             "migration_complete": base64_count == 0 and mixed_count == 0
         }
+        
+        if debug and base64_products:
+            result["base64_products_sample"] = base64_products[:10]
+        
+        return result
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Status check failed: {str(e)}")
