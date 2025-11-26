@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
-import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -207,6 +207,8 @@ export default function ShopPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [showStickyNav, setShowStickyNav] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   // Infinite scroll: Load smaller batches more frequently
   // Mobile: 6 products, Tablet: 9 products, Desktop: 12 products per batch
   const perPage = typeof window !== 'undefined' 
@@ -412,6 +414,18 @@ export default function ShopPage() {
     }, 500)
     return () => clearTimeout(timer)
   }, [searchQuery])
+
+  // Handle scroll for sticky nav and scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      setShowStickyNav(scrollY > 200)
+      setShowScrollTop(scrollY > 400)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Initialize: Fetch categories first, then products (ONLY ONCE)
   useEffect(() => {
@@ -923,8 +937,74 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* AI Chatbot */}
-      <AIChatbot />
+      {/* Sticky Navbar with Tabs */}
+      {showStickyNav && (
+        <nav className="fixed top-0 left-0 right-0 bg-[#FED141] z-50 shadow-lg animate-in slide-in-from-top duration-300">
+          <div className="px-3 sm:px-6 md:px-8 py-3">
+            <div className="flex items-center justify-between max-w-[1600px] mx-auto mb-3">
+              <Link href="/">
+                <Image
+                  src="/images/logo.png"
+                  alt="go-shop"
+                  width={96}
+                  height={30}
+                  className="w-16 md:w-24 object-contain"
+                />
+              </Link>
+
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link href="/login">
+                  <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <User className="w-4 h-4 text-white" />
+                  </button>
+                </Link>
+                <Link href="/cart">
+                  <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative">
+                    <ShoppingBag className="w-4 h-4 text-white" />
+                    {uniqueItemsCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        {uniqueItemsCount}
+                      </span>
+                    )}
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Tabs in Sticky Nav */}
+            <div className="flex items-center justify-center gap-2">
+              <div className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-w-full">
+                <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <TabsList className="inline-flex h-auto bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 rounded-full shadow-none p-1 gap-1 w-auto">
+                    {categories.map((category) => (
+                      <TabsTrigger
+                        key={category}
+                        value={category}
+                        className="px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+                      >
+                        {category}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
+          </div>
+        </nav>
+      )}
+
+      {/* Scroll to Top Button (replaces chatbot when scrolling) */}
+      {showScrollTop ? (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 z-50 animate-in fade-in slide-in-from-bottom-4"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
+      ) : (
+        <AIChatbot />
+      )}
     </div>
   )
 }
