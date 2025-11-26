@@ -32,13 +32,19 @@ def run_migration_background(db: Session, limit: int = 10):
         migration_status["running"] = True
         spaces = get_spaces_client()
         
-        # Use database query to find products with base64 images
-        from sqlalchemy import cast, String
+        # Get ALL products with images and filter in Python
+        # This is more reliable than database LIKE queries on JSONB
+        all_products = db.query(Product).filter(Product.images.isnot(None)).all()
         
-        all_products = db.query(Product).filter(
-            Product.images.isnot(None),
-            cast(Product.images, String).like('%data:image%')
-        ).limit(limit).all()
+        # Filter for products with base64 images
+        products_to_migrate = []
+        for p in all_products:
+            if p.images and any(img.startswith('data:image') for img in p.images):
+                products_to_migrate.append(p)
+                if len(products_to_migrate) >= limit:
+                    break
+        
+        all_products = products_to_migrate
         
         for product in all_products:
             try:
