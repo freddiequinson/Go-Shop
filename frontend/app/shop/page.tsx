@@ -207,8 +207,9 @@ export default function ShopPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const [showStickyNav, setShowStickyNav] = useState(false)
+  const [showStickyTabs, setShowStickyTabs] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
   // Infinite scroll: Load smaller batches more frequently
   // Mobile: 6 products, Tablet: 9 products, Desktop: 12 products per batch
   const perPage = typeof window !== 'undefined' 
@@ -415,12 +416,12 @@ export default function ShopPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Handle scroll for sticky nav and scroll-to-top button
+  // Handle scroll for sticky tabs and scroll-to-top button
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY
-      setShowStickyNav(scrollY > 200)
-      setShowScrollTop(scrollY > 400)
+      setShowStickyTabs(scrollY > 300)
+      setShowScrollTop(scrollY > 500)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -677,88 +678,22 @@ export default function ShopPage() {
 
           {!loading && products.length > 0 && (
             <>
-          {/* Category Filter - Mobile Dropdown */}
-          <div className="mb-6 md:hidden">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full bg-white border-2 border-[#303A4D]/20 rounded-full px-6 py-3 text-[#303A4D] font-medium shadow-sm">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Category Filter - Desktop Tabs */}
-          <div className="mb-6 md:mb-8 hidden md:block">
-            <div className="relative flex items-center justify-center gap-3 w-full max-w-[95vw] mx-auto">
-              {/* Left Arrow - Only show if content overflows */}
-              {showScrollArrows && (
-                <button
-                  onClick={() => {
-                    if (typeof window === 'undefined') return
-                    const container = document.getElementById('category-scroll-container')
-                    if (container) {
-                      container.scrollBy({ left: -200, behavior: 'smooth' })
-                    }
-                  }}
-                  className="flex-shrink-0 w-10 h-10 rounded-full bg-white border-2 border-[#303A4D]/20 flex items-center justify-center hover:bg-[#FED141] hover:border-[#303A4D]/40 transition-all shadow-sm z-10"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft className="w-5 h-5 text-[#303A4D]" />
-                </button>
-              )}
-
-              {/* Scrollable Tabs Container with Rounded Mask - Dynamic width */}
-              <div className="relative overflow-hidden rounded-full bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 shadow-sm flex-1 min-w-0">
-                <div 
-                  id="category-scroll-container"
-                  className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                  style={{ maxWidth: '100%' }}
-                >
-                  <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <TabsList className="inline-flex h-auto bg-transparent border-0 shadow-none p-0 gap-1 w-auto">
-                      {categories.map((category) => (
-                        <TabsTrigger
-                          key={category}
-                          value={category}
-                          className="px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
-                        >
-                          {category}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
-                </div>
-                {/* Gradient Overlays - Only show if content overflows */}
-                {showScrollArrows && (
-                  <>
-                    <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/80 via-white/40 to-transparent pointer-events-none rounded-l-full" />
-                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/80 via-white/40 to-transparent pointer-events-none rounded-r-full" />
-                  </>
-                )}
-              </div>
-
-              {/* Right Arrow - Only show if content overflows */}
-              {showScrollArrows && (
-                <button
-                  onClick={() => {
-                    if (typeof window === 'undefined') return
-                    const container = document.getElementById('category-scroll-container')
-                    if (container) {
-                      container.scrollBy({ left: 200, behavior: 'smooth' })
-                    }
-                  }}
-                  className="flex-shrink-0 w-10 h-10 rounded-full bg-white border-2 border-[#303A4D]/20 flex items-center justify-center hover:bg-[#FED141] hover:border-[#303A4D]/40 transition-all shadow-sm z-10"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="w-5 h-5 text-[#303A4D]" />
-                </button>
-              )}
+          {/* Category Filter - Scrollable Tabs for all devices */}
+          <div className="mb-6 md:mb-8">
+            <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-1">
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                <TabsList className="inline-flex h-auto bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max">
+                  {categories.map((category) => (
+                    <TabsTrigger
+                      key={category}
+                      value={category}
+                      className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+                    >
+                      {category}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
           </div>
 
@@ -937,74 +872,40 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* Sticky Navbar with Tabs - iOS Glass Morphism */}
-      {showStickyNav && (
-        <nav className="fixed top-0 left-0 right-0 bg-[#FED141]/80 backdrop-blur-xl z-50 shadow-lg border-b border-[#303A4D]/10 animate-in slide-in-from-top duration-300">
-          <div className="px-3 sm:px-6 md:px-8 py-3">
-            <div className="flex items-center justify-between max-w-[1600px] mx-auto mb-3">
-              <Link href="/">
-                <Image
-                  src="/images/logo.png"
-                  alt="go-shop"
-                  width={96}
-                  height={30}
-                  className="w-16 md:w-24 object-contain"
-                />
-              </Link>
-
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/login">
-                  <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity">
-                    <User className="w-4 h-4 text-white" />
-                  </button>
-                </Link>
-                <Link href="/cart">
-                  <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#303A4D] flex items-center justify-center hover:opacity-90 transition-opacity relative">
-                    <ShoppingBag className="w-4 h-4 text-white" />
-                    {uniqueItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#C24628] text-white text-xs rounded-full flex items-center justify-center font-bold">
-                        {uniqueItemsCount}
-                      </span>
-                    )}
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Tabs in Sticky Nav */}
-            <div className="flex items-center justify-center gap-2 w-full max-w-[95vw] mx-auto">
-              <div className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1 min-w-0">
-                <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <TabsList className="inline-flex h-auto bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 rounded-full shadow-none p-1 gap-1 w-auto">
-                    {categories.map((category) => (
-                      <TabsTrigger
-                        key={category}
-                        value={category}
-                        className="px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
-                      >
-                        {category}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
+      {/* Sticky Category Tabs - iOS Glass Morphism */}
+      {showStickyTabs && (
+        <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl z-50 shadow-md border-b border-[#303A4D]/10 animate-in slide-in-from-top duration-300 py-3 px-4">
+          <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+              <TabsList className="inline-flex h-auto bg-[#F4F2E6]/80 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max mx-auto">
+                {categories.map((category) => (
+                  <TabsTrigger
+                    key={category}
+                    value={category}
+                    className="px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+                  >
+                    {category}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
-        </nav>
+        </div>
       )}
 
-      {/* Scroll to Top Button (replaces chatbot when scrolling) */}
-      {showScrollTop ? (
+      {/* Scroll to Top Button - only show when chatbot is closed */}
+      {showScrollTop && !isChatbotOpen && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 z-50 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 z-40 animate-in fade-in slide-in-from-bottom-4"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-6 h-6" />
         </button>
-      ) : (
-        <AIChatbot />
       )}
+      
+      {/* AI Chatbot - always visible */}
+      <AIChatbot onOpenChange={setIsChatbotOpen} />
     </div>
   )
 }

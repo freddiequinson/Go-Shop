@@ -12,10 +12,17 @@ import Image from 'next/image'
 
 interface AIChatbotProps {
   showOnPages?: string[] // Pages where chatbot should appear
+  onOpenChange?: (isOpen: boolean) => void // Callback when chatbot opens/closes
 }
 
-export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotProps) {
+export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }: AIChatbotProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Notify parent when open state changes
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    onOpenChange?.(open)
+  }
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -130,7 +137,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (chatWindowRef.current && !chatWindowRef.current.contains(event.target as Node) && isOpen) {
-        setIsOpen(false)
+        handleOpenChange(false)
       }
     }
 
@@ -266,7 +273,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
         setShoppingList(null) // Clear shopping list after adding
         
         // Close chatbot and redirect to cart
-        setIsOpen(false)
+        handleOpenChange(false)
         router.push('/cart')
       } else {
         toast({
@@ -290,7 +297,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
       {/* Floating Chat Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => handleOpenChange(true)}
           className="fixed bottom-6 right-6 z-50 group"
           aria-label="Open chat with Gloria"
         >
@@ -344,7 +351,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'] }: AIChatbotPro
               </div>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleOpenChange(false)}
               className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
               <X className="w-5 h-5 text-[#303A4D]" />
