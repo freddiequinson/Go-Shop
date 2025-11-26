@@ -316,13 +316,16 @@ async def update_product_details(
 @router.delete("/{product_id}")
 async def delete_product_endpoint(
     product_id: str,
+    hard_delete: bool = Query(False, description="Permanently delete from database (admin only)"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
     Delete a product (owner or admin only)
+    Use ?hard_delete=true to permanently remove from database (admin only)
     """
     from app.utils.audit_logger import log_product_deleted
+    from app.models.product import Product
     
     user_type = current_user.user_type.value if hasattr(current_user.user_type, 'value') else current_user.user_type
     is_admin = user_type == "admin"
@@ -337,6 +340,36 @@ async def delete_product_endpoint(
     
     product_name = product.name
     
+    # Hard delete (admin only)
+    if hard_delete:
+        if not is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can permanently delete products"
+            )
+        
+        # Check ownership for non-admins
+        if not is_admin and product.seller_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to delete this product"
+            )
+        
+        # Permanently delete from database
+        db.query(Product).filter(Product.id == product_id).delete()
+        db.commit()
+        
+        log_product_deleted(
+            db=db,
+            user_id=current_user.id,
+            user_email=current_user.email,
+            product_id=product_id,
+            product_name=f"{product_name} (HARD DELETE)"
+        )
+        
+        return {"message": "Product permanently deleted"}
+    
+    # Soft delete (normal)
     deleted_product = delete_product(db, product_id, current_user.id, is_admin)
     if not deleted_product:
         raise HTTPException(
