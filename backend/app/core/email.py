@@ -257,7 +257,7 @@ def send_welcome_email(email_to: str, user_name: str, custom_body: Optional[str]
                 
                 <div class="contact-box" style="background-color: #93C90F;">
                     <h3>💬 We'd Love Your Feedback!</h3>
-                    <p>Call us: 0241293754</p>
+                    <p>Call us: 0206221924</p>
                     <p style="font-size: 14px; font-weight: normal; margin-top: 10px;">Your feedback helps us serve you better</p>
                 </div>
                 
@@ -417,7 +417,7 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
                 </div>
                 
                 <p style="margin-top: 30px;">If you're having trouble resetting your password, contact our support team:</p>
-                <p style="font-weight: bold;">📞 0241293754</p>
+                <p style="font-weight: bold;">📞 0206221924</p>
                 
                 <p style="margin-top: 30px; color: #303A4D;">Stay secure!</p>
                 <p style="font-weight: bold; color: #303A4D;">The GoShop Ghana Team</p>
@@ -427,8 +427,8 @@ def send_password_reset_email(email_to: str, user_name: str, reset_code: str) ->
                 <p><strong>GoShop Ghana</strong></p>
                 <p>Fresh Groceries from the Market to Your Home</p>
                 <p style="margin-top: 15px;">Accra, Ghana</p>
-                <p>📞 0241293754 | 📧 info@go-shop.gh</p>
-                <p style="margin-top: 15px; font-size: 12px;">© 2025 GoShop Ghana. All Rights Reserved.</p>
+                <p>&#x1F4DE; 0206221924 | &#x2709; info.goshopghana@gmail.com</p>
+                <p style="margin-top: 15px; font-size: 12px;">&copy; 2025 GoShop Ghana. All Rights Reserved.</p>
             </div>
         </div>
     </body>

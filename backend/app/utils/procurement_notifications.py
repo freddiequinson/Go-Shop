@@ -80,7 +80,7 @@ def notify_supplier_new_request(
                     
                     <div class="footer">
                         <p>GoShop Ghana | Accra, Ghana</p>
-                        <p>📞 0241293754 | 📧 procurement@go-shop.gh</p>
+                        <p>📞 0206221924 | 📧 info.goshopghana@gmail.com</p>
                     </div>
                 </div>
             </body>
@@ -431,7 +431,7 @@ def send_delivery_reminder(
                 f"Qty: {offer.offered_quantity}. "
                 f"Date: {offer.delivery_date.strftime('%d/%m/%Y')}. "
                 f"Location: {request.delivery_location or 'Main Warehouse'}. "
-                f"Contact: 0241293754"
+                f"Contact: 0206221924"
             )
             send_sms(supplier.phone, sms_message)
             logger.info(f"Sent delivery reminder to {supplier.name}")

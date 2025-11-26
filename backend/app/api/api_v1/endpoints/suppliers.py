@@ -156,7 +156,7 @@ async def create_new_supplier(
                         <p><strong>Password:</strong> {random_password}</p>
                         <p><strong>Supplier Code:</strong> {db_supplier.supplier_code}</p>
                         <p style="color: red;"><strong>Important:</strong> Please change your password after first login for security.</p>
-                        <p>Best regards,<br>Go-Shop Ghana Team<br>Contact: 0241293754</p>
+                        <p>Best regards,<br>Go-Shop Ghana Team<br>Contact: 0206221924</p>
                         """
                         email_sent = send_welcome_email(supplier.email, supplier.name, custom_body=email_body)
                         if email_sent:
@@ -212,7 +212,7 @@ async def create_new_supplier(
                         <p><strong>Supplier Code:</strong> {db_supplier.supplier_code}</p>
                         <p><strong>Email:</strong> {supplier.email}</p>
                         <p>Please log in with your existing Go-Shop Ghana account credentials to access the supplier portal.</p>
-                        <p>Best regards,<br>Go-Shop Ghana Team<br>Contact: 0241293754</p>
+                        <p>Best regards,<br>Go-Shop Ghana Team<br>Contact: 0206221924</p>
                         """
                         email_sent = send_welcome_email(supplier.email, supplier.name, custom_body=email_body)
                         if email_sent:

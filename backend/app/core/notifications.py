@@ -262,7 +262,7 @@ def send_payment_receipt(
                 {f'<tr><td style="padding: 10px; border: 1px solid #ddd;"><strong>Description:</strong></td><td style="padding: 10px; border: 1px solid #ddd;">{description}</td></tr>' if description else ''}
             </table>
             <p>Thank you for using GoShop Ghana!</p>
-            <p style="color: #666; font-size: 12px;">If you have any questions, contact us at 0241293754</p>
+            <p style="color: #666; font-size: 12px;">If you have any questions, contact us at 0206221924</p>
         </body>
         </html>
         """
@@ -380,7 +380,7 @@ def send_payment_confirmation_with_receipt(order: Order, user: User) -> bool:
                     
                     <p style="font-size: 12px; color: #999; text-align: center; margin-top: 30px;">
                         Thank you for shopping with GoShop Ghana!<br>
-                        For support, contact us at support@goshopghana.com or 0241293754
+                        For support, contact us at info.goshopghana@gmail.com or 0206221924
                     </p>
                 </div>
             </body>

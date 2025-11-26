@@ -675,9 +675,15 @@ export default function Home() {
                       Resources
                     </a>
                   </li>
-                  <li className="mt-4">info@goshop.gh</li>
+                  <li className="mt-4">info.goshopghana@gmail.com</li>
                   <li>Goshop Ghana</li>
-                  <li>+233 24 192 3754</li>
+                  <li>+233 20 622 1924</li>
+                  <li className="mt-2">
+                    <a href="https://instagram.com/gsgshopease" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#FED141] transition-colors">
+                      <Instagram className="w-4 h-4" />
+                      @gsgshopease
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>

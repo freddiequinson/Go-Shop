@@ -162,8 +162,8 @@ def get_order_confirmation_email(
                                     Need help? Contact us:
                                 </p>
                                 <p style="margin: 0; color: #303A4D; font-size: 14px;">
-                                    📞 <strong>0241293754</strong><br>
-                                    📧 <strong>support@goshopghana.com</strong>
+                                    📞 <strong>0206221924</strong><br>
+                                    📧 <strong>info.goshopghana@gmail.com</strong>
                                 </p>
                             </td>
                         </tr>
@@ -267,7 +267,7 @@ def get_order_status_update_email(
                                     Questions? Contact us:
                                 </p>
                                 <p style="margin: 0; color: #303A4D; font-size: 14px;">
-                                    📞 <strong>0241293754</strong>
+                                    📞 <strong>0206221924</strong>
                                 </p>
                             </td>
                         </tr>

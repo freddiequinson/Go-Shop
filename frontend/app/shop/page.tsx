@@ -695,7 +695,7 @@ export default function ShopPage() {
 
           {/* Category Filter - Desktop Tabs */}
           <div className="mb-6 md:mb-8 hidden md:block">
-            <div className="relative flex items-center justify-center gap-3">
+            <div className="relative flex items-center justify-center gap-3 w-full max-w-[95vw] mx-auto">
               {/* Left Arrow - Only show if content overflows */}
               {showScrollArrows && (
                 <button
@@ -714,7 +714,7 @@ export default function ShopPage() {
               )}
 
               {/* Scrollable Tabs Container with Rounded Mask - Dynamic width */}
-              <div className="relative overflow-hidden rounded-full bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 shadow-sm max-w-full">
+              <div className="relative overflow-hidden rounded-full bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 shadow-sm flex-1 min-w-0">
                 <div 
                   id="category-scroll-container"
                   className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -937,9 +937,9 @@ export default function ShopPage() {
 
       <CartNotification show={showNotification} productName={notificationProduct} />
       
-      {/* Sticky Navbar with Tabs */}
+      {/* Sticky Navbar with Tabs - iOS Glass Morphism */}
       {showStickyNav && (
-        <nav className="fixed top-0 left-0 right-0 bg-[#FED141] z-50 shadow-lg animate-in slide-in-from-top duration-300">
+        <nav className="fixed top-0 left-0 right-0 bg-[#FED141]/80 backdrop-blur-xl z-50 shadow-lg border-b border-[#303A4D]/10 animate-in slide-in-from-top duration-300">
           <div className="px-3 sm:px-6 md:px-8 py-3">
             <div className="flex items-center justify-between max-w-[1600px] mx-auto mb-3">
               <Link href="/">
@@ -972,8 +972,8 @@ export default function ShopPage() {
             </div>
 
             {/* Tabs in Sticky Nav */}
-            <div className="flex items-center justify-center gap-2">
-              <div className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-w-full">
+            <div className="flex items-center justify-center gap-2 w-full max-w-[95vw] mx-auto">
+              <div className="overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1 min-w-0">
                 <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                   <TabsList className="inline-flex h-auto bg-white/50 backdrop-blur-sm border-2 border-[#303A4D]/10 rounded-full shadow-none p-1 gap-1 w-auto">
                     {categories.map((category) => (
