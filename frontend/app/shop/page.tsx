@@ -686,7 +686,7 @@ export default function ShopPage() {
             <>
           {/* Category Filter - Scrollable Tabs for all devices */}
           <div className="mb-6 md:mb-8">
-            <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-1">
+            <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-1 flex justify-center">
               <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                 <TabsList className="inline-flex h-auto bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max">
                   {categories.map((category) => (
