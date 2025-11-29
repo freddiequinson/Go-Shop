@@ -155,3 +155,15 @@ async def delete_delivery_date_admin(
             detail="Delivery date not found"
         )
     return None
+
+
+@router.delete("/", status_code=status.HTTP_200_OK)
+async def delete_all_delivery_dates_admin(
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete all delivery dates (admin only)
+    """
+    count = crud_delivery_date.delete_all_delivery_dates(db)
+    return {"message": f"Deleted {count} delivery dates", "count": count}

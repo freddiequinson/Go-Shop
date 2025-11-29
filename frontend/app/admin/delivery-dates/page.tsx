@@ -29,6 +29,7 @@ export default function DeliveryDatesPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingDate, setEditingDate] = useState<DeliveryDate | null>(null)
   const [isBulkCreating, setIsBulkCreating] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
   
   const [formData, setFormData] = useState({
     date: "",
@@ -81,7 +82,7 @@ export default function DeliveryDatesPage() {
       })
       toast({
         title: "Success",
-        description: "Created delivery dates for next 30 days"
+        description: "Created delivery dates for Wednesdays, Fridays, and Saturdays"
       })
       loadDeliveryDates()
     } catch (error: any) {
@@ -92,6 +93,28 @@ export default function DeliveryDatesPage() {
       })
     } finally {
       setIsBulkCreating(false)
+    }
+  }
+
+  const handleClearAll = async () => {
+    if (!confirm("Are you sure you want to delete ALL delivery dates? This action cannot be undone.")) return
+    
+    try {
+      setIsClearing(true)
+      const response = await apiClient.delete("/delivery-dates/")
+      toast({
+        title: "Success",
+        description: `Deleted ${response.data.count} delivery dates`
+      })
+      loadDeliveryDates()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to clear delivery dates",
+        variant: "destructive"
+      })
+    } finally {
+      setIsClearing(false)
     }
   }
 
@@ -197,7 +220,7 @@ export default function DeliveryDatesPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Action Buttons */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-wrap gap-4 mb-6">
           <Button
             onClick={() => {
               setEditingDate(null)
@@ -224,7 +247,26 @@ export default function DeliveryDatesPage() {
             ) : (
               <>
                 <Calendar className="w-4 h-4 mr-2" />
-                Bulk Create (30 Days)
+                Bulk Create (Wed, Fri, Sat)
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={handleClearAll}
+            disabled={isClearing || deliveryDates.length === 0}
+            variant="outline"
+            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+          >
+            {isClearing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Clearing...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All Dates
               </>
             )}
           </Button>

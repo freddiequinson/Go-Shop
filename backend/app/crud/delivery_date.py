@@ -98,6 +98,14 @@ def delete_delivery_date(db: Session, delivery_date_id: str) -> bool:
     return True
 
 
+def delete_all_delivery_dates(db: Session) -> int:
+    """Delete all delivery dates (admin only)"""
+    count = db.query(DeliveryDate).count()
+    db.query(DeliveryDate).delete()
+    db.commit()
+    return count
+
+
 def increment_order_count(db: Session, delivery_date_id: str) -> Optional[DeliveryDate]:
     """Increment order count when order is placed"""
     db_delivery_date = get_delivery_date(db, delivery_date_id)
@@ -111,12 +119,20 @@ def increment_order_count(db: Session, delivery_date_id: str) -> Optional[Delive
 
 
 def bulk_create_delivery_dates(db: Session, start_date: date, days: int = 30) -> List[DeliveryDate]:
-    """Bulk create delivery dates for next N days (admin helper)"""
+    """Bulk create delivery dates for next N days (admin helper)
+    Only creates dates for Wednesdays, Fridays, and Saturdays
+    """
     created_dates = []
     day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    # Only create delivery dates for Wednesday (2), Friday (4), and Saturday (5)
+    allowed_weekdays = [2, 4, 5]  # Wednesday, Friday, Saturday
     
     for i in range(days):
         target_date = start_date + timedelta(days=i)
+        
+        # Skip if not Wednesday, Friday, or Saturday
+        if target_date.weekday() not in allowed_weekdays:
+            continue
         
         # Skip if already exists
         existing = get_delivery_date_by_date(db, target_date)
