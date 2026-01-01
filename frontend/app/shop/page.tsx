@@ -577,7 +577,7 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-[#F4F2E6]">
       {/* Navigation */}
-      <nav className="bg-[#FED141] px-4 md:px-8 py-4 md:py-6">
+      <nav className="bg-[#FED141] px-4 md:px-8 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <Link href="/">
             <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#303A4D] text-white hover:bg-[#3B4559] transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md">
@@ -625,23 +625,20 @@ export default function ShopPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="bg-[#FED141] px-4 md:px-8 py-2 md:py-3">
+      {/* Hero Section - Compact */}
+      <section className="bg-[#FED141] px-4 md:px-8 py-2">
         <div className="text-center">
-          <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-[#303A4D] mb-1.5">Shop Fresh Groceries</h1>
-          <p className="text-xs text-[#303A4D] mb-2.5 md:mb-3 px-4">
-            Browse our selection of fresh produce from local farmers and vendors
-          </p>
+          <h1 className="text-base md:text-lg font-bold text-[#303A4D] mb-1">Shop Fresh Groceries</h1>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative px-4">
-            <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-[#303A4D]/60" />
+          <div className="max-w-xl mx-auto relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#303A4D]/60" />
             <input
               type="text"
               placeholder="Search for products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white rounded-full px-10 md:px-12 py-3 md:py-4 text-sm md:text-base text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:ring-2 focus:ring-[#303A4D] shadow-sm transition-shadow duration-200 focus:shadow-md"
+              className="w-full bg-white rounded-full px-10 py-2.5 text-sm text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:ring-2 focus:ring-[#303A4D] shadow-sm transition-shadow duration-200 focus:shadow-md"
             />
           </div>
         </div>
@@ -684,22 +681,39 @@ export default function ShopPage() {
 
           {!loading && products.length > 0 && (
             <>
-          {/* Category Filter - Scrollable Tabs for all devices */}
-          <div className="mb-6 md:mb-8">
-            <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-1 flex justify-center">
+          {/* Category Filter - Wrapping grid on desktop, scrollable on mobile */}
+          <div className="mb-4 md:mb-6">
+            {/* Mobile: Horizontal scroll */}
+            <div className="md:hidden w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                 <TabsList className="inline-flex h-auto bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max">
                   {categories.map((category) => (
                     <TabsTrigger
                       key={category}
                       value={category}
-                      className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+                      className="px-4 py-2 rounded-full font-medium text-xs transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
                     >
                       {category}
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </Tabs>
+            </div>
+            {/* Desktop: Wrapping flex grid */}
+            <div className="hidden md:flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-2xl shadow-sm p-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
+                    selectedCategory === category
+                      ? 'bg-[#303A4D] text-white shadow-md'
+                      : 'text-[#303A4D] hover:bg-[#FED141]/30'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
             </div>
           </div>
 
