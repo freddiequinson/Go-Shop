@@ -718,77 +718,79 @@ export default function ShopPage() {
           </div>
 
           {/* Products Grid */}
-          <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
+          <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
             {filteredProducts.map((product, index) => (
-              <div key={product.id} className="flex flex-col h-full">
-                <Link href={`/product/${product.id}`} className="flex-1">
-                  <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col">
-                    <div className="relative h-40 md:h-56 bg-gradient-to-br from-[#FED141]/20 to-[#FED141]/5 overflow-hidden p-2 md:p-4">
+              <div key={product.id} className="group">
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100">
+                  <Link href={`/product/${product.id}`}>
+                    {/* Image Container - Clean white background */}
+                    <div className="relative aspect-square bg-white p-3 md:p-4">
                       {product.image && product.image !== "/placeholder.svg" ? (
                         <img
                           src={product.image}
                           alt={product.name}
-                          loading={index < 2 ? "eager" : "lazy"}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 p-2"
+                          loading={index < 4 ? "eager" : "lazy"}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
-                            // Fallback to placeholder on error
                             const target = e.target as HTMLImageElement
                             target.src = '/placeholder.svg'
                           }}
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">
-                          <Package className="w-16 h-16 text-[#303A4D]/20" />
+                          <Package className="w-12 h-12 text-gray-200" />
                         </div>
                       )}
+                      {/* Category Badge - Top left */}
+                      <span className="absolute top-2 left-2 bg-gray-100 text-[#303A4D] px-2 py-0.5 rounded text-[10px] md:text-xs font-medium">
+                        {product.category}
+                      </span>
+                      {/* Sale/Bundle Badges */}
+                      {product.onSale && (
+                        <span className="absolute top-2 right-2 bg-[#C24628] text-white px-2 py-0.5 rounded text-[10px] md:text-xs font-bold">SALE</span>
+                      )}
+                      {product.isBundle && (
+                        <span className="absolute top-2 right-2 bg-[#93C90F] text-white px-2 py-0.5 rounded text-[10px] md:text-xs font-bold">BUNDLE</span>
+                      )}
+                      {/* Out of Stock Overlay */}
                       {!product.inStock && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="bg-white text-[#303A4D] px-6 py-3 rounded-full font-bold text-lg">
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                          <span className="bg-gray-900 text-white px-3 py-1.5 rounded-full font-semibold text-xs">
                             Out of Stock
                           </span>
                         </div>
                       )}
-                      <div className="absolute top-2 left-2 md:top-4 md:left-4 flex gap-1 md:gap-2">
-                        <span className="bg-white/90 backdrop-blur-sm text-[#303A4D] px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium">
-                          {product.category}
-                        </span>
-                        {product.onSale && (
-                          <span className="bg-[#C24628] text-white px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold">SALE</span>
-                        )}
-                        {product.isBundle && (
-                          <span className="bg-[#93C90F] text-white px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold">
-                            BUNDLE
-                          </span>
-                        )}
-                      </div>
                     </div>
-                    <div className="p-3 md:p-4 flex-1 flex flex-col">
-                      <h3 className="text-base md:text-lg font-bold text-[#303A4D] mb-2 leading-tight line-clamp-2 min-h-[3rem]">{product.name}</h3>
-                      <div className="flex flex-col gap-1 mt-auto">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xl md:text-2xl font-bold text-[#303A4D]">GH₵{product.price.toFixed(2)}</span>
+                    {/* Product Info */}
+                    <div className="p-3 md:p-4 border-t border-gray-50">
+                      <h3 className="text-sm md:text-base font-semibold text-[#303A4D] leading-tight line-clamp-2 min-h-[2.5rem] mb-2">{product.name}</h3>
+                      <div className="flex items-baseline justify-between">
+                        <div>
+                          <span className="text-lg md:text-xl font-bold text-[#303A4D]">GH₵{product.price.toFixed(2)}</span>
                           {product.onSale && product.originalPrice && (
-                            <span className="text-sm text-[#303A4D]/40 line-through">
+                            <span className="ml-1 text-xs text-gray-400 line-through">
                               GH₵{product.originalPrice.toFixed(2)}
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-[#303A4D]/60 font-medium">{product.unit}</span>
                       </div>
+                      <span className="text-[10px] md:text-xs text-gray-400">{product.unit}</span>
                     </div>
+                  </Link>
+                  {/* Add to Cart Button - Inside card */}
+                  <div className="px-3 pb-3 md:px-4 md:pb-4">
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setSelectedProduct(product)
+                      }}
+                      className="w-full bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-lg py-2.5 font-semibold text-xs md:text-sm transition-all"
+                      disabled={!product.inStock}
+                    >
+                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
                   </div>
-                </Link>
-                <div className="mt-3">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setSelectedProduct(product)
-                    }}
-                    className="w-full bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full py-3 md:py-4 font-bold text-sm md:text-base shadow-sm hover:shadow-md transition-all"
-                    disabled={!product.inStock}
-                  >
-                    {product.inStock ? "Add to Cart" : "Out of Stock"}
-                  </Button>
                 </div>
               </div>
             ))}
