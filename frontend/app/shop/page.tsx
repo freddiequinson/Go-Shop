@@ -645,7 +645,7 @@ export default function ShopPage() {
       </section>
 
       {/* Main Content */}
-      <section className="px-4 md:px-8 py-8 md:py-12">
+      <section className="px-4 md:px-8 pt-1 pb-4 md:pt-2 md:pb-6">
         <div className="w-full">
           {loading && (
             <div className="text-center py-16">
@@ -681,31 +681,30 @@ export default function ShopPage() {
 
           {!loading && products.length > 0 && (
             <>
-          {/* Category Filter - Wrapping grid on desktop, scrollable on mobile */}
-          <div className="mb-4 md:mb-6">
-            {/* Mobile: Horizontal scroll */}
-            <div className="md:hidden w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className="inline-flex h-auto bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max">
-                  {categories.map((category) => (
-                    <TabsTrigger
-                      key={category}
-                      value={category}
-                      className="px-4 py-2 rounded-full font-medium text-xs transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
-                    >
-                      {category}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
+          {/* Category Filter - Dropdown on mobile, wrapping grid on desktop */}
+          <div className="mb-4 md:mb-5">
+            {/* Mobile: Dropdown select */}
+            <div className="md:hidden">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium text-[#303A4D] focus:outline-none focus:ring-2 focus:ring-[#FED141] focus:border-transparent appearance-none cursor-pointer shadow-sm"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23303A4D'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
             {/* Desktop: Wrapping flex grid */}
-            <div className="hidden md:flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-2xl shadow-sm p-3">
+            <div className="hidden md:flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-xl shadow-sm p-2.5">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 ${
                     selectedCategory === category
                       ? 'bg-[#303A4D] text-white shadow-md'
                       : 'text-[#303A4D] hover:bg-[#FED141]/30'
