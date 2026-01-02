@@ -303,81 +303,41 @@ Example: "To buy a gift card, go to the Gift Cards page, choose an amount, and s
 
 BE CONCISE!"""
     
-    def get_relevant_categories(self, message: str) -> list:
-        """Detect relevant product categories from user message"""
-        message_lower = message.lower()
-        
-        # Category keywords mapping
-        category_keywords = {
-            "vegetables": ["vegetable", "veggies", "tomato", "onion", "pepper", "okra", "garden egg", "kontomire", "spinach", "cabbage", "carrot", "lettuce"],
-            "fruits": ["fruit", "apple", "orange", "banana", "mango", "pineapple", "pawpaw", "watermelon"],
-            "grains": ["rice", "grain", "maize", "corn", "millet", "wheat", "flour", "jollof", "waakye"],
-            "proteins": ["meat", "chicken", "fish", "beef", "goat", "tilapia", "egg", "protein", "crab", "shrimp", "prawn"],
-            "tubers": ["yam", "cassava", "plantain", "cocoyam", "potato", "fufu", "banku", "kenkey", "ampesi"],
-            "oils": ["oil", "palm oil", "vegetable oil", "groundnut oil", "cooking oil"],
-            "spices": ["spice", "pepper", "ginger", "garlic", "onion", "seasoning", "maggi", "salt", "curry", "thyme"],
-            "beans": ["bean", "black-eyed", "cowpea", "red red", "gobe"],
-            "dairy": ["milk", "cheese", "butter", "yogurt", "cream"],
-            "beverages": ["drink", "water", "juice", "soda", "malt"],
-            "snacks": ["snack", "biscuit", "chips", "kelewele", "bofrot", "doughnut"],
-        }
-        
-        relevant = set()
-        for category, keywords in category_keywords.items():
-            for keyword in keywords:
-                if keyword in message_lower:
-                    relevant.add(category)
-                    break
-        
-        # If no specific category detected, return common cooking categories
-        if not relevant:
-            relevant = {"vegetables", "proteins", "grains", "spices", "oils"}
-        
-        return list(relevant)
-    
     def get_product_catalog(self, db: Session, message: str = "") -> str:
-        """Fetch and format product catalog for AI context - filtered by relevance"""
+        """Fetch and format product catalog for AI context - limited to avoid token limits"""
         try:
-            from app.models.category import Category
+            # Simple approach: Get 50 in-stock products, prioritize by name matching message keywords
+            message_lower = message.lower()
             
-            # Get relevant category names based on user message
-            relevant_cats = self.get_relevant_categories(message)
+            # Get all in-stock products
+            all_products = db.query(Product).filter(
+                Product.is_published == True,
+                Product.is_active == True,
+                Product.stock_quantity > 0
+            ).all()
             
-            # Get category IDs that match our relevant categories
-            category_ids = []
-            categories = db.query(Category).all()
-            for cat in categories:
-                cat_name_lower = cat.name.lower() if cat.name else ""
-                for rel_cat in relevant_cats:
-                    if rel_cat in cat_name_lower or cat_name_lower in rel_cat:
-                        category_ids.append(cat.id)
-                        break
+            # Score products by relevance to message
+            scored_products = []
+            for product in all_products:
+                score = 0
+                product_name_lower = product.name.lower() if product.name else ""
+                
+                # Check if product name appears in message or vice versa
+                for word in message_lower.split():
+                    if len(word) > 2 and word in product_name_lower:
+                        score += 10
+                for word in product_name_lower.split():
+                    if len(word) > 2 and word in message_lower:
+                        score += 5
+                
+                scored_products.append((score, product))
             
-            # Get products from relevant categories, limit to 30 per category
-            if category_ids:
-                products = db.query(Product).filter(
-                    Product.is_published == True,
-                    Product.is_active == True,
-                    Product.stock_quantity > 0,
-                    Product.category_id.in_(category_ids)
-                ).limit(60).all()
-            else:
-                # Fallback: get any 40 in-stock products
-                products = db.query(Product).filter(
-                    Product.is_published == True,
-                    Product.is_active == True,
-                    Product.stock_quantity > 0
-                ).limit(40).all()
+            # Sort by score (highest first) and take top 50
+            scored_products.sort(key=lambda x: x[0], reverse=True)
+            products = [p for _, p in scored_products[:50]]
             
             catalog_items = []
             for product in products:
-                category_name = "General"
-                try:
-                    if hasattr(product, 'category') and product.category:
-                        category_name = product.category.name
-                except Exception:
-                    pass
-                
                 item = {
                     "id": str(product.id),
                     "name": product.name,
@@ -387,9 +347,12 @@ BE CONCISE!"""
                 catalog_items.append(item)
             
             # Format as compact text for AI to save tokens
-            catalog_text = f"AVAILABLE PRODUCTS ({len(catalog_items)} items):\n"
-            for item in catalog_items:
-                catalog_text += f"- {item['name']}: GH₵{item['price']:.2f}/{item['unit']} (ID:{item['id']})\n"
+            if catalog_items:
+                catalog_text = f"AVAILABLE PRODUCTS ({len(catalog_items)} items):\n"
+                for item in catalog_items:
+                    catalog_text += f"- {item['name']}: GH₵{item['price']:.2f}/{item['unit']} (ID:{item['id']})\n"
+            else:
+                catalog_text = "PRODUCTS: No products currently in stock."
             
             return catalog_text
         
