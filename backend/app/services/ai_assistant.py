@@ -423,11 +423,21 @@ BE CONCISE!"""
             logger.error(f"Error in AI chat: {e}", exc_info=True)
             logger.error(f"Error type: {type(e).__name__}")
             logger.error(f"Error details: {str(e)}")
+            error_msg = str(e)
+            # Check for specific Groq errors
+            if "403" in error_msg or "Access denied" in error_msg:
+                user_message = "AI service is temporarily unavailable. Please try again later."
+            elif "rate" in error_msg.lower():
+                user_message = "Too many requests. Please wait a moment and try again."
+            else:
+                user_message = "Sorry, I'm having trouble right now. Please try again in a moment! 🙏"
             return {
                 "success": False,
-                "message": "Sorry, I'm having trouble right now. Please try again in a moment! 🙏",
-                "error": str(e),
-                "has_shopping_list": False
+                "message": user_message,
+                "error": error_msg,
+                "error_type": type(e).__name__,
+                "has_shopping_list": False,
+                "tokens_used": 0
             }
     
     async def suggest_budget_meals(
