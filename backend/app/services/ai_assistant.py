@@ -303,18 +303,74 @@ Example: "To buy a gift card, go to the Gift Cards page, choose an amount, and s
 
 BE CONCISE!"""
     
-    def get_product_catalog(self, db: Session) -> str:
-        """Fetch and format product catalog for AI context"""
+    def get_relevant_categories(self, message: str) -> list:
+        """Detect relevant product categories from user message"""
+        message_lower = message.lower()
+        
+        # Category keywords mapping
+        category_keywords = {
+            "vegetables": ["vegetable", "veggies", "tomato", "onion", "pepper", "okra", "garden egg", "kontomire", "spinach", "cabbage", "carrot", "lettuce"],
+            "fruits": ["fruit", "apple", "orange", "banana", "mango", "pineapple", "pawpaw", "watermelon"],
+            "grains": ["rice", "grain", "maize", "corn", "millet", "wheat", "flour", "jollof", "waakye"],
+            "proteins": ["meat", "chicken", "fish", "beef", "goat", "tilapia", "egg", "protein", "crab", "shrimp", "prawn"],
+            "tubers": ["yam", "cassava", "plantain", "cocoyam", "potato", "fufu", "banku", "kenkey", "ampesi"],
+            "oils": ["oil", "palm oil", "vegetable oil", "groundnut oil", "cooking oil"],
+            "spices": ["spice", "pepper", "ginger", "garlic", "onion", "seasoning", "maggi", "salt", "curry", "thyme"],
+            "beans": ["bean", "black-eyed", "cowpea", "red red", "gobe"],
+            "dairy": ["milk", "cheese", "butter", "yogurt", "cream"],
+            "beverages": ["drink", "water", "juice", "soda", "malt"],
+            "snacks": ["snack", "biscuit", "chips", "kelewele", "bofrot", "doughnut"],
+        }
+        
+        relevant = set()
+        for category, keywords in category_keywords.items():
+            for keyword in keywords:
+                if keyword in message_lower:
+                    relevant.add(category)
+                    break
+        
+        # If no specific category detected, return common cooking categories
+        if not relevant:
+            relevant = {"vegetables", "proteins", "grains", "spices", "oils"}
+        
+        return list(relevant)
+    
+    def get_product_catalog(self, db: Session, message: str = "") -> str:
+        """Fetch and format product catalog for AI context - filtered by relevance"""
         try:
-            # Get all published products that are in stock
-            products = db.query(Product).filter(
-                Product.is_published == True,
-                Product.is_active == True
-            ).all()
+            from app.models.category import Category
+            
+            # Get relevant category names based on user message
+            relevant_cats = self.get_relevant_categories(message)
+            
+            # Get category IDs that match our relevant categories
+            category_ids = []
+            categories = db.query(Category).all()
+            for cat in categories:
+                cat_name_lower = cat.name.lower() if cat.name else ""
+                for rel_cat in relevant_cats:
+                    if rel_cat in cat_name_lower or cat_name_lower in rel_cat:
+                        category_ids.append(cat.id)
+                        break
+            
+            # Get products from relevant categories, limit to 30 per category
+            if category_ids:
+                products = db.query(Product).filter(
+                    Product.is_published == True,
+                    Product.is_active == True,
+                    Product.stock_quantity > 0,
+                    Product.category_id.in_(category_ids)
+                ).limit(60).all()
+            else:
+                # Fallback: get any 40 in-stock products
+                products = db.query(Product).filter(
+                    Product.is_published == True,
+                    Product.is_active == True,
+                    Product.stock_quantity > 0
+                ).limit(40).all()
             
             catalog_items = []
             for product in products:
-                # Get category name safely
                 category_name = "General"
                 try:
                     if hasattr(product, 'category') and product.category:
@@ -327,18 +383,13 @@ BE CONCISE!"""
                     "name": product.name,
                     "price": float(product.price_per_unit),
                     "unit": product.unit_type,
-                    "stock": product.stock_quantity,
-                    "in_stock": product.stock_quantity > 0,
-                    "category": category_name,
-                    "min_qty": float(product.minimum_quantity) if product.minimum_quantity else 1.0
                 }
                 catalog_items.append(item)
             
-            # Format as readable text for AI
-            catalog_text = "PRODUCT CATALOG:\n"
+            # Format as compact text for AI to save tokens
+            catalog_text = f"AVAILABLE PRODUCTS ({len(catalog_items)} items):\n"
             for item in catalog_items:
-                stock_status = "✓ IN STOCK" if item["in_stock"] else "✗ OUT OF STOCK"
-                catalog_text += f"- {item['name']}: GH₵{item['price']:.2f} per {item['unit']} [MIN: {item['min_qty']}{item['unit']}] [{stock_status}] (ID: {item['id']})\n"
+                catalog_text += f"- {item['name']}: GH₵{item['price']:.2f}/{item['unit']} (ID:{item['id']})\n"
             
             return catalog_text
         
@@ -364,8 +415,8 @@ BE CONCISE!"""
             Dictionary with response and metadata
         """
         try:
-            # Get fresh product catalog
-            product_catalog = self.get_product_catalog(db)
+            # Get fresh product catalog filtered by message relevance
+            product_catalog = self.get_product_catalog(db, message)
             system_prompt = self.get_system_prompt(product_catalog)
             
             # Build messages array
@@ -429,18 +480,19 @@ BE CONCISE!"""
             logger.error(f"Error type: {type(e).__name__}")
             logger.error(f"Error details: {str(e)}")
             error_msg = str(e)
+            error_type = type(e).__name__
             # Check for specific Groq errors
             if "403" in error_msg or "Access denied" in error_msg:
-                user_message = "AI service is temporarily unavailable. Please try again later."
-            elif "rate" in error_msg.lower():
-                user_message = "Too many requests. Please wait a moment and try again."
+                user_message = f"AI service error: {error_msg}"
+            elif "rate" in error_msg.lower() or "RateLimit" in error_type:
+                user_message = f"Rate limit: {error_msg}"
             else:
-                user_message = "Sorry, I'm having trouble right now. Please try again in a moment! 🙏"
+                user_message = f"Error ({error_type}): {error_msg}"
             return {
                 "success": False,
                 "message": user_message,
                 "error": error_msg,
-                "error_type": type(e).__name__,
+                "error_type": error_type,
                 "has_shopping_list": False,
                 "tokens_used": 0
             }
