@@ -389,12 +389,14 @@ export default function ShopPage() {
         headers: {
           'Accept': 'application/json',
         }
-      })
+      }).catch(() => null)
       
       clearTimeout(timeoutId)
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      if (!response || !response.ok) {
+        // Backend not available - show friendly message
+        setErrorMessage('Unable to connect to server. Please check your connection and try again.')
+        return []
       }
       
       const categoriesData = await response.json()
@@ -408,8 +410,8 @@ export default function ShopPage() {
       
       return categoriesData
     } catch (error: any) {
-      console.error("Failed to fetch categories:", error)
-      setErrorMessage('Failed to load categories. Please refresh the page.')
+      // Silently handle - show user-friendly message
+      setErrorMessage('Unable to connect to server. Please check your connection and try again.')
       return []
     }
   }, [])

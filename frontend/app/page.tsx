@@ -3,15 +3,17 @@
 import { Button } from "@/components/ui/button"
 import { User, ShoppingBag, ArrowRight, Menu, X, Instagram } from "lucide-react"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useCart } from "@/lib/cart-context"
 import { CartDropdown } from "@/components/cart-dropdown"
 import Link from "next/link"
 import { useAuth } from "@/lib/contexts/auth-context"
 import dynamic from "next/dynamic"
 import { FaFacebook, FaWhatsapp } from "react-icons/fa"
-import { motion, AnimatePresence } from "motion/react"
+import { getApiBaseUrl } from "@/lib/api/url-helper"
+import { motion, AnimatePresence, useInView } from "motion/react"
 import AIChatbot from "@/components/AIChatbot"
+import { DeviceMockup } from "@/components/ui/macbook-scroll"
 
 // Dynamically import animation components with error handling
 const SplitText = dynamic(() => import("@/components/SplitText"), {
@@ -24,13 +26,115 @@ const RotatingText = dynamic(() => import("@/components/RotatingText"), {
   loading: () => <span className="opacity-0">Loading...</span>,
 })
 
+interface CategoryWithProduct {
+  id: string
+  name: string
+  color: string
+  product?: {
+    id: string
+    name: string
+    price: number
+    image: string
+    unit: string
+  }
+}
+
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
   const [animationError, setAnimationError] = useState(false)
+  const [categoryProducts, setCategoryProducts] = useState<CategoryWithProduct[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
   const { items } = useCart()
   const { isAuthenticated, user } = useAuth()
+
+  // Color palette for categories
+  const categoryColors = ["#4698CA", "#FED141", "#ED8B00", "#93C90F", "#C24628", "#CF6F5D", "#C0DF16"]
+
+  // Fetch categories with random products (silently falls back to static categories if backend unavailable)
+  useEffect(() => {
+    const fetchCategoriesWithProducts = async () => {
+      try {
+        const apiBaseUrl = getApiBaseUrl()
+        
+        // Fetch categories with timeout
+        const catResponse = await fetch(`${apiBaseUrl}/products/categories/`, {
+          signal: AbortSignal.timeout(8000)
+        }).catch(() => null)
+        
+        if (!catResponse || !catResponse.ok) {
+          // Backend not available - use static fallback
+          setLoadingCategories(false)
+          return
+        }
+        
+        const categoriesData = await catResponse.json()
+        
+        // Filter categories with products
+        const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
+        
+        if (categoriesWithProducts.length === 0) {
+          setLoadingCategories(false)
+          return
+        }
+        
+        // Get today's date as seed for "daily" random selection
+        const today = new Date()
+        const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
+        
+        // For each category, fetch one random product
+        const categoriesWithProductData: CategoryWithProduct[] = await Promise.all(
+          categoriesWithProducts.slice(0, 10).map(async (cat: any, index: number) => {
+            try {
+              const prodResponse = await fetch(`${apiBaseUrl}/products/shop?category_id=${cat.id}&per_page=20`, {
+                signal: AbortSignal.timeout(5000)
+              }).catch(() => null)
+              
+              if (!prodResponse || !prodResponse.ok) {
+                return { id: cat.id, name: cat.name, color: categoryColors[index % categoryColors.length] }
+              }
+              
+              const prodData = await prodResponse.json()
+              const products = prodData.products || prodData.items || prodData || []
+              
+              if (products.length > 0) {
+                const randomIndex = (daySeed + index) % products.length
+                const product = products[randomIndex]
+                
+                return {
+                  id: cat.id,
+                  name: cat.name,
+                  color: categoryColors[index % categoryColors.length],
+                  product: {
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(product.price_per_unit) || 0,
+                    image: product.primary_image_url || '/images/nkatie.jpg',
+                    unit: product.unit_type || 'each'
+                  }
+                }
+              }
+              return { id: cat.id, name: cat.name, color: categoryColors[index % categoryColors.length] }
+            } catch {
+              return { id: cat.id, name: cat.name, color: categoryColors[index % categoryColors.length] }
+            }
+          })
+        )
+        
+        const filtered = categoriesWithProductData.filter(c => c.product)
+        if (filtered.length > 0) {
+          setCategoryProducts(filtered)
+        }
+      } catch {
+        // Silently fail - will use static fallback categories
+      } finally {
+        setLoadingCategories(false)
+      }
+    }
+    
+    fetchCategoriesWithProducts()
+  }, [])
 
   // Error boundary for animations
   useEffect(() => {
@@ -104,19 +208,88 @@ export default function Home() {
   ]
 
   const categories = [
-    { name: "Breakfast", color: "#4698CA" },
-    { name: "Lunch", color: "#FED141" },
-    { name: "Dinner", color: "#FED141" },
-    { name: "Fast food", color: "#CF6F5D" },
-    { name: "Pasta and Noodles", color: "#ED8B00" },
-    { name: "Baby Food & Formula", color: "#C0DF16" },
-    { name: "Household Essentials", color: "#4698CA" },
-    { name: "Personal Care & Hygiene", color: "#ED8B00" },
-    { name: "Organic and Natural", color: "#FED141" },
+    { name: "Fruits", color: "#4698CA", image: "/images/products/banana.jpg" },
+    { name: "Vegetables", color: "#FED141", image: "/images/tomato.jpg" },
+    { name: "Grains & Rice", color: "#ED8B00", image: "/images/rice.jpg" },
+    { name: "Nuts & Seeds", color: "#93C90F", image: "/images/nkatie.jpg" },
+    { name: "Fresh Produce", color: "#C24628", image: "/images/carter.jpg" },
+    { name: "Groceries", color: "#CF6F5D", image: "/images/bags.jpg" },
+    { name: "Herbs & Spices", color: "#C0DF16", image: "/images/products/herbs.jpg" },
+    { name: "Household", color: "#4698CA", image: "/images/big.jpg" },
+    { name: "Bundles", color: "#FED141", image: "/images/apple-inhand.jpg" },
   ]
 
+  // Announcement messages for the launch banner
+  const launchAnnouncements = [
+    "🚀 We launch January 20th! Fresh groceries, delivered to your door.",
+    "🎉 Coming January 20th — Your new favorite way to shop!",
+    "Wubetumi atɔ ade afi GoShopGhana afi Ɔpɛpɔn bosome da a ɛtɔ so aduonu. Yɛn nneɛma nso yɛ fofoofo!",
+    "✨ January 20th — GoShopGhana goes live!",
+    "🛒 Mark your calendars: January 20th, 2025!",
+    "🌟 Shop for fresh products start January 20th — Shop smarter with GoShop!",
+  ]
+
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(0)
+
+  // Rotate announcements and hero slides together
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentAnnouncement((prev) => (prev + 1) % launchAnnouncements.length)
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [heroSlides.length])
+
   return (
-    <div className="min-h-screen bg-[#F4F2E6] overflow-x-hidden">
+    <div className="min-h-screen bg-[#F4F2E6]">
+      {/* Launch Announcement Banner - Fixed at top */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#FED141] text-[#303A4D] py-2 md:py-2.5 shadow-sm">
+        <div className="relative flex items-center justify-between gap-2 px-3 md:px-4 max-w-7xl mx-auto">
+          {/* Announcement Text */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentAnnouncement}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+              className="flex-1 min-w-0"
+            >
+              <p className="text-xs md:text-sm font-semibold tracking-wide truncate md:whitespace-normal md:text-center">
+                {launchAnnouncements[currentAnnouncement]}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+          
+          {/* Share Button */}
+          <button
+            onClick={() => {
+              const shareText = "🛒 Shop for quality and affordable products from GoShop Ghana starting 20th of January! Fresh groceries delivered to your door."
+              const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://goshopghana.com'
+              
+              if (navigator.share) {
+                navigator.share({
+                  title: 'GoShop Ghana - Launching January 20th!',
+                  text: shareText,
+                  url: shareUrl,
+                })
+              } else {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + " " + shareUrl)}`, '_blank')
+              }
+            }}
+            className="flex-shrink-0 bg-[#303A4D] hover:bg-[#3B4559] text-white px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-colors"
+          >
+            <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+            </svg>
+            <span className="hidden xs:inline">Share</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Spacer for fixed banner */}
+      <div className="h-10"></div>
+
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center justify-between px-8 py-6 bg-[#FED141]">
         <Link href="/shop" className="text-lg font-medium text-[#303A4D] hover:opacity-80 cursor-pointer">
@@ -245,91 +418,54 @@ export default function Home() {
       )}
 
       {/* Hero Section */}
-      <section className="relative bg-[#FED141] px-6 md:px-8 pt-12 md:pt-16 pb-20 md:pb-32 overflow-hidden w-full">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-8 md:mb-12">
-            {animationError ? (
-              <>
-                <h1 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4">
-                  Fresh Groceries
-                </h1>
-                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
-                  from the Market
-                </h2>
-                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
-                  To Your Home
-                </h2>
-              </>
-            ) : (
-              <>
-                <SplitText
-                  text="Fresh Groceries"
-                  tag="h1"
-                  className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight mb-4"
-                  delay={40}
-                  duration={1.2}
-                  ease="power2.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 40 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0}
-                  rootMargin="0px"
-                  textAlign="center"
-                />
-                <SplitText
-                  text="from the Market"
-                  tag="h2"
-                  className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight"
-                  delay={40}
-                  duration={1.2}
-                  ease="power2.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 40 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0}
-                  rootMargin="0px"
-                  textAlign="center"
-                />
-                <h2 className="text-[clamp(2.5rem,8vw,7rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight inline-flex items-center justify-center">
-                  <span className="mr-4">To</span>
-                  <RotatingText
-                    texts={heroSlides.map(slide => slide.text)}
-                    mainClassName="inline-flex"
-                    staggerFrom="last"
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "-120%" }}
-                    staggerDuration={0.035}
-                    splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+      <section className="relative bg-[#FED141] px-4 md:px-8 pt-6 md:pt-10 pb-4 md:pb-8 overflow-hidden w-full min-h-[calc(100vh-40px)]">
+        <div className="max-w-7xl mx-auto relative z-10 h-full flex flex-col">
+          <div className="text-center mb-4 md:mb-6">
+            <h1 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
+              Fresh Groceries
+            </h1>
+            <h2 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
+              from the Market
+            </h2>
+            <h2 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight flex items-center justify-center gap-2 md:gap-4 overflow-hidden">
+              <span>To</span>
+              <span className="relative inline-block min-w-[120px] md:min-w-[200px]">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={currentSlide}
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "-100%", opacity: 0 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    rotationInterval={4500}
-                    onNext={(index) => setCurrentSlide(index)}
-                  />
-                </h2>
-              </>
-            )}
+                    className="inline-block"
+                  >
+                    {heroSlides[currentSlide].text}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </h2>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-6">
-            <p className="text-lg md:text-xl text-[#303A4D] text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 mb-4">
+            <p className="text-base md:text-lg text-[#303A4D] text-center md:text-left">
               Get all your groceries without all the hassle
             </p>
             <Link href="/shop">
               <Button
                 size="lg"
-                className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-6 md:px-8 py-5 md:py-6 text-base md:text-lg font-medium h-auto"
+                className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-5 md:px-8 py-4 md:py-5 text-sm md:text-base font-medium h-auto"
               >
                 Find where to buy
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
               </Button>
             </Link>
           </div>
 
           {/* Decorative Circle Background */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[min(600px,100vw)] md:w-[900px] h-[300px] md:h-[450px] bg-white/30 rounded-t-full -z-0" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[min(500px,95vw)] md:w-[700px] h-[200px] md:h-[350px] bg-white/30 rounded-t-full -z-0" />
 
           {/* Hero Image */}
-          <div className="relative z-10 flex justify-center items-end h-[400px] md:h-[600px] w-full">
+          <div className="relative z-10 flex justify-center items-end flex-1 min-h-[250px] md:min-h-[400px] w-full">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -337,7 +473,7 @@ export default function Home() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: "-100%", opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300, duration: 0.8 }}
-                className="relative w-[min(420px,90vw)] md:w-[700px] h-[400px] md:h-[600px]"
+                className="relative w-[min(320px,85vw)] md:w-[500px] h-[280px] md:h-[420px]"
               >
                 <Image
                   src={heroSlides[currentSlide].image || "/placeholder.svg"}
@@ -353,7 +489,13 @@ export default function Home() {
       </section>
 
       {/* Community Section */}
-      <section className="py-12 md:py-20 lg:py-32 px-3 sm:px-4 md:px-6 bg-[#F4F2E6]">
+      <motion.section 
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="py-12 md:py-20 lg:py-32 px-3 sm:px-4 md:px-6 bg-[#F4F2E6]"
+      >
         <div className="max-w-[98%] sm:max-w-[95%] md:max-w-[90%] mx-auto bg-[#3D4A5C] rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] px-5 sm:px-8 md:px-12 lg:px-20 py-10 sm:py-12 md:py-16 lg:py-24 relative overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 lg:gap-20">
             <div>
@@ -427,62 +569,48 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Products Section */}
-      <section className="py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 mb-16">
-            <div>
-              <h2 className="text-5xl md:text-6xl font-bold text-[#303A4D] leading-tight mb-8">
-                Buy. Receive.
-                <br />
-                Enjoy.
-              </h2>
-            </div>
-            <div>
-              <p className="text-lg md:text-xl text-[#303A4D]">
-                GoShop offers the best, easiest, and most convenient way to shop for your groceries. Receive your
-                groceries directly to your office or home, directly with no hassle. We provide you with the best
-                farmers, producers, and shop to ensure you get the best quality products.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {products.map((product, index) => (
-              <div key={index} className="group cursor-pointer">
-                <div
-                  className="relative mb-4 aspect-square rounded-full overflow-hidden"
-                  style={{ backgroundColor: product.color }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center p-8">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-4"
-                    />
-                  </div>
-                </div>
-                <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-3">
-                  <Image src={product.farmer || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
-                </div>
-                <h3 className="font-bold text-lg text-[#303A4D] mb-1">{product.name}</h3>
-                <p className="text-sm text-[#303A4D]/70">{product.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Shop From Home Section - Device Mockup */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full overflow-hidden bg-[#F4F2E6]"
+      >
+        <DeviceMockup
+          title={
+            <span className="text-[#303A4D]">
+              Shop from the comfort of your home. <br /> 
+              <span className="text-[#FED141]">Fresh groceries, delivered.</span>
+            </span>
+          }
+          ipadSrc="/goshopscreenshot.png"
+          iphoneSrc="/iphonescreen.jpg"
+        />
+      </motion.section>
 
       {/* Goals Image Section */}
-      <section className="relative h-[400px] md:h-[600px] overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative h-[400px] md:h-[600px] overflow-hidden"
+      >
         <Image src="/images/big.jpg" alt="Fresh groceries" fill className="object-cover" />
-      </section>
+      </motion.section>
 
       {/* Best Service Section */}
-      <section id="best-service" className="relative py-16 md:py-24 px-6 md:px-8 bg-[#FED141] overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        id="best-service" 
+        className="relative py-16 md:py-24 px-6 md:px-8 bg-[#FED141] overflow-hidden"
+      >
         <div className="absolute inset-0 opacity-20">
           <svg className="absolute top-10 right-10 w-64 h-64" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="80" fill="none" stroke="#F1B424" strokeWidth="20" />
@@ -509,7 +637,7 @@ export default function Home() {
             {[
               { value: "0", label: "additional fees" },
               { value: "100%", label: "quality" },
-              { value: "<1hr", label: "delivery time" },
+              { value: "3x", label: "weekly deliveries" },
               { value: "100%", label: "satisfaction" },
             ].map((stat, index) => (
               <div key={index} className="relative">
@@ -521,10 +649,16 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Protein Section */}
-      <section className="relative py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]"
+      >
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-[#303A4D] leading-tight mb-8">
@@ -547,10 +681,16 @@ export default function Home() {
             <Image src="/images/woman.jpg" alt="Supporting farmers" fill className="object-cover" />
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Freedom Section */}
-      <section className="relative py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]"
+      >
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden">
             <Image src="/images/hose.jpg" alt="Farmer hand" fill className="object-cover" />
@@ -572,43 +712,81 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Categories Section */}
-      <section className="py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="py-16 md:py-24 px-6 md:px-8 bg-[#F4F2E6]"
+      >
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-[#303A4D] leading-tight mb-6">
             Plenty Shops. Infinite possibilities.
           </h2>
           <p className="text-lg md:text-xl text-[#303A4D] mb-8">Over 100 shops and categories to shop from.</p>
-          <Button
-            size="lg"
-            className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-8 py-6 text-lg font-medium h-auto"
-          >
-            Get started
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <Link href="/shop">
+            <Button
+              size="lg"
+              className="bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-8 py-6 text-lg font-medium h-auto"
+            >
+              Get started
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
         </div>
 
         <div className="overflow-hidden">
           <div className="flex gap-4 animate-marquee">
-            {[...categories, ...categories].map((category, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-64 h-80 rounded-3xl p-6 flex flex-col justify-between"
-                style={{ backgroundColor: category.color }}
-              >
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="w-32 h-32 relative">
-                    <Image src="/images/nkatie.jpg" alt={category.name} fill className="object-contain" />
+            {categoryProducts.length > 0 ? (
+              [...categoryProducts, ...categoryProducts].map((category, index) => (
+                <Link 
+                  href="/shop" 
+                  key={index}
+                  className="flex-shrink-0 w-64 h-96 rounded-3xl p-6 flex flex-col justify-between hover:scale-105 transition-transform cursor-pointer"
+                  style={{ backgroundColor: category.color }}
+                >
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <div className="w-32 h-32 relative mb-4">
+                      <Image 
+                        src={category.product?.image || '/images/nkatie.jpg'} 
+                        alt={category.product?.name || category.name} 
+                        fill 
+                        className="object-contain rounded-xl" 
+                      />
+                    </div>
+                    {category.product && (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-[#303A4D]/80 line-clamp-2">{category.product.name}</p>
+                        <p className="text-lg font-bold text-[#303A4D]">GH₵{category.product.price.toFixed(2)}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <h3 className="text-2xl font-bold text-[#303A4D] text-center">{category.name}</h3>
-              </div>
-            ))}
+                  <h3 className="text-xl font-bold text-[#303A4D] text-center">{category.name}</h3>
+                </Link>
+              ))
+            ) : (
+              [...categories, ...categories].map((category, index) => (
+                <Link 
+                  href="/shop" 
+                  key={index}
+                  className="flex-shrink-0 w-64 h-80 rounded-3xl p-6 flex flex-col justify-between hover:scale-105 transition-transform cursor-pointer"
+                  style={{ backgroundColor: category.color }}
+                >
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="w-32 h-32 relative">
+                      <Image src={category.image} alt={category.name} fill className="object-contain rounded-xl" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#303A4D] text-center">{category.name}</h3>
+                </Link>
+              ))
+            )}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
       <footer className="bg-[#303A4D] text-white py-16 px-6 md:px-8">

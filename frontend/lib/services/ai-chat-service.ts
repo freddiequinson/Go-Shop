@@ -154,7 +154,9 @@ class AIChatService {
    */
   async getQuickActions(): Promise<QuickAction[]> {
     try {
-      const response = await fetch(`${getAPIBaseURL()}/ai/quick-actions`)
+      const response = await fetch(`${getAPIBaseURL()}/ai/quick-actions`, {
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      })
 
       if (!response.ok) {
         throw new Error('Failed to get quick actions')
@@ -163,7 +165,7 @@ class AIChatService {
       const data = await response.json()
       return data.actions || []
     } catch (error) {
-      console.error('Error getting quick actions:', error)
+      // Silently fall back to defaults - this is expected when backend is not running
       return [
         {
           id: 'budget_meal',

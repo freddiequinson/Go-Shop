@@ -43,6 +43,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@studio-freight/lenis": "^1.0.42",
+    "@tabler/icons-react": "^3.36.1",
     "@types/leaflet": "^1.9.21",
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
