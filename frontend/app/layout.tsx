@@ -44,7 +44,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased overflow-x-hidden`}>
         <ErrorBoundary>
           <AuthProvider>
             <OnboardingProvider>
