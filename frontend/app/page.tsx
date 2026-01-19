@@ -441,7 +441,7 @@ export default function Home() {
       )}
 
       {/* Hero Section */}
-      <section className="relative bg-[#FED141] px-4 md:px-8 pt-6 md:pt-10 pb-4 md:pb-8 overflow-hidden w-full min-h-[calc(100vh-40px)]">
+      <section className="relative bg-[#FED141] px-4 md:px-8 pt-6 md:pt-10 pb-0 md:pb-8 overflow-hidden w-full min-h-fit md:min-h-[calc(100vh-40px)]">
         <div className="max-w-7xl mx-auto relative z-10 h-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">
             <h1 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
@@ -488,7 +488,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[min(500px,95vw)] md:w-[700px] h-[200px] md:h-[350px] bg-white/30 rounded-t-full -z-0" />
 
           {/* Hero Image */}
-          <div className="relative z-10 flex justify-center items-end flex-1 min-h-[250px] md:min-h-[400px] w-full">
+          <div className="relative z-10 flex justify-center items-end flex-1 min-h-[200px] md:min-h-[400px] w-full">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
