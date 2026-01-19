@@ -72,13 +72,9 @@ async def create_order(
             total=float(order.total_cedis) / 100
         )
         
-        # Send order confirmation notifications
-        try:
-            send_order_confirmation(order, current_user)
-            logger.info(f"Order confirmation sent for order {order.id}")
-        except Exception as e:
-            logger.error(f"Failed to send order confirmation: {e}")
-            # Don't fail the order creation if notification fails
+        # NOTE: Order confirmation email is now sent AFTER payment is completed
+        # See order_payments.py for the payment confirmation flow
+        # This prevents sending "order placed" emails before payment
         
         return order_response
         

@@ -44,6 +44,7 @@ export default function OpenStreetMapAddressPicker({
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isClient, setIsClient] = useState(false)
+  const [isMapExpanded, setIsMapExpanded] = useState(true)
 
   useEffect(() => {
     setIsClient(true)
@@ -79,6 +80,9 @@ export default function OpenStreetMapAddressPicker({
           longitude: lng.toString(),
           fullAddress,
         })
+        
+        // Auto-collapse map after location is selected
+        setIsMapExpanded(false)
       }
     } catch (error) {
       console.error('Geocoding error:', error)
@@ -186,19 +190,31 @@ export default function OpenStreetMapAddressPicker({
         )}
       </Button>
 
-      {/* Map */}
-      <div className="relative h-[400px] rounded-lg overflow-hidden border-2 border-gray-200">
-        <DynamicMap position={position} onMapClick={handleMapClick} />
+      {/* Map Toggle Button */}
+      <Button 
+        onClick={() => setIsMapExpanded(!isMapExpanded)} 
+        variant="outline" 
+        className="w-full border-2 border-[#FED141] hover:bg-[#FED141]/10"
+      >
+        <MapPin className="w-4 h-4 mr-2" />
+        {isMapExpanded ? 'Hide Map' : 'Show Map to Select Location'}
+      </Button>
 
-        {isGeocoding && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-[1000]">
-            <div className="bg-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Loading address...</span>
+      {/* Map */}
+      {isMapExpanded && (
+        <div className="relative h-[400px] rounded-lg overflow-hidden border-2 border-gray-200">
+          <DynamicMap position={position} onMapClick={handleMapClick} />
+
+          {isGeocoding && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-[1000]">
+              <div className="bg-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Loading address...</span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Selected Address Display */}
       {address && (
