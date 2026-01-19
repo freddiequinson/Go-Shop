@@ -180,7 +180,7 @@ export default function OrderTimeline({
   }, [orderStatus, paymentStatus])
 
   return (
-    <div className="relative bg-gradient-to-br from-[#FED141]/10 to-[#303A4D]/5 rounded-2xl p-6 overflow-hidden">
+    <div className="relative bg-gradient-to-br from-[#FED141]/10 to-[#303A4D]/5 rounded-2xl p-4 md:p-6 overflow-hidden">
       {/* Animated background canvas */}
       <canvas
         ref={canvasRef}
@@ -190,10 +190,10 @@ export default function OrderTimeline({
 
       {/* Timeline content */}
       <div className="relative z-10">
-        <h3 className="text-xl font-bold text-[#303A4D] mb-8 text-center">Getting Your Order To You</h3>
+        <h3 className="text-lg md:text-xl font-bold text-[#303A4D] mb-4 md:mb-8 text-center">Getting Your Order To You</h3>
 
-        {/* Horizontal Timeline */}
-        <div className="relative flex items-start px-4">
+        {/* Timeline - Vertical on mobile, Horizontal on desktop */}
+        <div className="relative flex flex-col md:flex-row md:items-start px-2 md:px-4 gap-2 md:gap-0">
           {steps.map((step, index) => {
             const isActive = index === activeStep
             const isCompleted = step.status === 'completed'
@@ -202,32 +202,33 @@ export default function OrderTimeline({
 
             return (
               <Fragment key={index}>
-                <div className="relative flex flex-col items-center flex-shrink-0">
+                {/* Mobile: Horizontal row layout | Desktop: Vertical column layout */}
+                <div className="relative flex flex-row md:flex-col items-center md:items-center flex-shrink-0 gap-3 md:gap-0">
                   {/* Lottie Animation */}
                   <div 
-                    className={`relative z-10 flex items-center justify-center w-16 h-16 transition-all duration-500 ${
+                    className={`relative z-10 flex items-center justify-center w-10 h-10 md:w-16 md:h-16 transition-all duration-500 ${
                       isCompleted ? 'scale-110' :
                       isFailed ? 'scale-110' :
-                      isActive ? 'scale-125' :
+                      isActive ? 'scale-110 md:scale-125' :
                       'scale-100 opacity-50'
                     }`}
                   >
                     {isFailed ? (
-                      <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
-                        <XCircle className="w-6 h-6 text-white" />
+                      <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-red-500 flex items-center justify-center">
+                        <XCircle className="w-4 h-4 md:w-6 md:h-6 text-white" />
                       </div>
                     ) : (
                       <Lottie
                         animationData={step.animationData}
                         loop={isActive}
                         autoplay={isCompleted || isActive}
-                        style={{ width: 64, height: 64 }}
+                        className="w-10 h-10 md:w-16 md:h-16"
                       />
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="flex flex-col items-center text-center mt-3 w-24">
+                  <div className="flex flex-col items-start md:items-center text-left md:text-center md:mt-3 flex-1 md:flex-none md:w-24">
                     <p className={`font-semibold text-xs transition-all duration-300 ${
                       isCompleted ? 'text-green-700' :
                       isFailed ? 'text-red-700' :
@@ -237,7 +238,7 @@ export default function OrderTimeline({
                       {step.label}
                     </p>
                     {step.timestamp && (
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-600 mt-0.5 md:mt-1">
                         {new Date(step.timestamp).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -247,21 +248,21 @@ export default function OrderTimeline({
                       </p>
                     )}
                     {isFailed && (
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-red-600 mt-0.5 md:mt-1">
                         ⚠️ Action required
                       </p>
                     )}
                     {isActive && !isFailed && !isCompleted && step.status === 'current' && (
-                      <p className="text-xs text-[#303A4D] mt-1 animate-pulse">
+                      <p className="text-xs text-[#303A4D] mt-0.5 md:mt-1 animate-pulse">
                         ● In progress...
                       </p>
                     )}
                   </div>
                 </div>
 
-                {/* Connector line between steps */}
+                {/* Connector line between steps - Vertical on mobile, Horizontal on desktop */}
                 {index < steps.length - 1 && (
-                  <div className="flex items-start pt-6 flex-1 min-w-[40px] max-w-[120px]">
+                  <div className="hidden md:flex items-start pt-6 flex-1 min-w-[20px] max-w-[80px]">
                     <div 
                       className={`w-full h-1 transition-all duration-500 ${
                         isCompleted ? 'bg-green-500' : 

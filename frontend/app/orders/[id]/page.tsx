@@ -137,15 +137,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setIsRetryingPayment(true)
     try {
       const response = await apiClient.post(`/orders/${id}/initialize-payment`, {
-        callback_url: `${window.location.origin}/orders/${id}`
+        callback_url: `${window.location.origin}/checkout/payment/${id}/verify`
       })
       
       if (response.data.authorization_url) {
-        window.open(response.data.authorization_url, '_blank')
-        toast({
-          title: 'Payment Window Opened',
-          description: 'Complete your payment in the new tab',
-        })
+        // Redirect to Paystack payment page (works better on mobile)
+        window.location.href = response.data.authorization_url
       }
     } catch (error: any) {
       toast({
@@ -153,7 +150,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         description: error.response?.data?.detail || 'Failed to initialize payment',
         variant: 'destructive'
       })
-    } finally {
       setIsRetryingPayment(false)
     }
   }
@@ -196,6 +192,37 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-full overflow-x-hidden">
+        {/* Prominent Pay Now Banner for Pending Payments */}
+        {order.payment_status === 'pending' && (
+          <div className="mb-4 md:mb-6 bg-gradient-to-r from-[#FED141] to-[#F1B424] rounded-xl p-4 md:p-6 shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <h3 className="text-lg md:text-xl font-bold text-[#303A4D]">
+                  Complete Your Payment
+                </h3>
+                <p className="text-sm md:text-base text-[#303A4D]/80">
+                  Your order is waiting for payment. Pay now to confirm your order.
+                </p>
+              </div>
+              <Button
+                onClick={handleRetryPayment}
+                disabled={isRetryingPayment}
+                size="lg"
+                className="w-full md:w-auto bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full px-8 py-3 font-bold"
+              >
+                {isRetryingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>Pay Now - GH₵{order.total?.toFixed(2)}</>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
