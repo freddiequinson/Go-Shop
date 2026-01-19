@@ -17,6 +17,9 @@ import { DeviceMockup } from "@/components/ui/macbook-scroll"
 import { useToast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api/client"
 
+// CDN base URL for static images (faster loading)
+const CDN_URL = "https://goshop-images.lon1.cdn.digitaloceanspaces.com/static/images"
+
 // Dynamically import animation components with error handling
 const SplitText = dynamic(() => import("@/components/SplitText"), {
   ssr: false,
@@ -167,61 +170,61 @@ export default function Home() {
   }, [mobileMenuOpen])
 
   const heroSlides = [
-    { text: "Your Home", image: "/images/apple-inhand.jpg", bg: "#FED141" },
-    { text: "The Office", image: "/images/rice.png", bg: "#4698CA" },
-    { text: "Your School", image: "/images/bags.png", bg: "#ED8B00" },
-    { text: "The Hostel", image: "/images/carter.png", bg: "#93C90F" },
-    { text: "Your Place", image: "/images/tomato.png", bg: "#C24628" },
+    { text: "Your Home", image: `${CDN_URL}/apple-inhand.jpg`, bg: "#FED141" },
+    { text: "The Office", image: `${CDN_URL}/rice.png`, bg: "#4698CA" },
+    { text: "Your School", image: `${CDN_URL}/bags.png`, bg: "#ED8B00" },
+    { text: "The Hostel", image: `${CDN_URL}/carter.png`, bg: "#93C90F" },
+    { text: "Your Place", image: `${CDN_URL}/tomato.png`, bg: "#C24628" },
   ]
 
   const products = [
     {
       name: "Esi",
       role: "Fruit Vendor, Makola",
-      image: "/images/products/banana.jpg",
-      farmer: "/images/farmers/f1.jpg",
+      image: `${CDN_URL}/products/banana.jpg`,
+      farmer: `${CDN_URL}/farmers/f1.jpg`,
       color: "#FED141",
     },
     {
       name: "Ama",
       role: "Rice Farmer, Tema",
-      image: "/images/rice.jpg",
-      farmer: "/images/farmers/f2.jpg",
+      image: `${CDN_URL}/rice.jpg`,
+      farmer: `${CDN_URL}/farmers/f2.jpg`,
       color: "#4698CA",
     },
     {
       name: "Mimi Shop",
       role: "Grocery Shop, Mallam",
-      image: "/images/products/herbs.jpg",
-      farmer: "/images/farmers/shop1.jpg",
+      image: `${CDN_URL}/products/herbs.jpg`,
+      farmer: `${CDN_URL}/farmers/shop1.jpg`,
       color: "#ED8B00",
     },
     {
       name: "Cantonese Enterprise",
       role: "Grocery Shop, Dansoman",
-      image: "/images/carter.jpg",
-      farmer: "/images/farmers/shop2.jpg",
+      image: `${CDN_URL}/carter.jpg`,
+      farmer: `${CDN_URL}/farmers/shop2.jpg`,
       color: "#93C90F",
     },
     {
       name: "Akosua",
       role: "Vegetable Vendor, Tudu",
-      image: "/images/nkatie.jpg",
-      farmer: "/images/farmers/f3.jpg",
+      image: `${CDN_URL}/nkatie.jpg`,
+      farmer: `${CDN_URL}/farmers/f3.jpg`,
       color: "#C24628",
     },
   ]
 
   const categories = [
-    { name: "Fruits", color: "#4698CA", image: "/images/products/banana.jpg" },
-    { name: "Vegetables", color: "#FED141", image: "/images/tomato.jpg" },
-    { name: "Grains & Rice", color: "#ED8B00", image: "/images/rice.jpg" },
-    { name: "Nuts & Seeds", color: "#93C90F", image: "/images/nkatie.jpg" },
-    { name: "Fresh Produce", color: "#C24628", image: "/images/carter.jpg" },
-    { name: "Groceries", color: "#CF6F5D", image: "/images/bags.jpg" },
-    { name: "Herbs & Spices", color: "#C0DF16", image: "/images/products/herbs.jpg" },
-    { name: "Household", color: "#4698CA", image: "/images/big.jpg" },
-    { name: "Bundles", color: "#FED141", image: "/images/apple-inhand.jpg" },
+    { name: "Fruits", color: "#4698CA", image: `${CDN_URL}/products/banana.jpg` },
+    { name: "Vegetables", color: "#FED141", image: `${CDN_URL}/tomato.jpg` },
+    { name: "Grains & Rice", color: "#ED8B00", image: `${CDN_URL}/rice.jpg` },
+    { name: "Nuts & Seeds", color: "#93C90F", image: `${CDN_URL}/nkatie.jpg` },
+    { name: "Fresh Produce", color: "#C24628", image: `${CDN_URL}/carter.jpg` },
+    { name: "Groceries", color: "#CF6F5D", image: `${CDN_URL}/bags.jpg` },
+    { name: "Herbs & Spices", color: "#C0DF16", image: `${CDN_URL}/products/herbs.jpg` },
+    { name: "Household", color: "#4698CA", image: `${CDN_URL}/big.jpg` },
+    { name: "Bundles", color: "#FED141", image: `${CDN_URL}/apple-inhand.jpg` },
   ]
 
   // Announcement messages for the launch banner
@@ -357,7 +360,7 @@ export default function Home() {
 
         <div className="absolute left-1/2 -translate-x-1/2">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={96} height={30} className="w-24 h-auto object-contain" />
+            <Image src={`${CDN_URL}/logo.png`} alt="go-shop" width={96} height={30} className="w-24 h-auto object-contain" />
           </Link>
         </div>
 
@@ -405,7 +408,7 @@ export default function Home() {
       <nav className="md:hidden bg-[#FED141] relative z-50">
         <div className="flex items-center justify-between px-6 py-4">
           <Link href="/">
-            <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="w-20 h-auto object-contain" />
+            <Image src={`${CDN_URL}/logo.png`} alt="go-shop" width={80} height={25} className="w-20 h-auto object-contain" />
           </Link>
           <div className="flex items-center gap-3">
             <Link href={isAuthenticated ? "/profile" : "/login"}>
@@ -571,7 +574,7 @@ export default function Home() {
                     <div className="absolute inset-0 bg-[#FED141] rounded-full"></div>
                     {/* Rotating stamp image */}
                     <Image 
-                      src="/images/stamp.png" 
+                      src={`${CDN_URL}/stamp.png`} 
                       alt="Fast Delivery Badge" 
                       fill 
                       className="object-contain animate-spin" 
@@ -658,7 +661,7 @@ export default function Home() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative h-[400px] md:h-[600px] overflow-hidden"
       >
-        <Image src="/images/big.jpg" alt="Fresh foodstuff" fill className="object-cover" />
+        <Image src={`${CDN_URL}/big.jpg`} alt="Fresh foodstuff" fill className="object-cover" />
       </motion.section>
 
       {/* Best Service Section */}
@@ -737,7 +740,7 @@ export default function Home() {
             </Button>
           </div>
           <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden">
-            <Image src="/images/woman.jpg" alt="Supporting farmers" fill className="object-cover" />
+            <Image src={`${CDN_URL}/woman.jpg`} alt="Supporting farmers" fill className="object-cover" />
           </div>
         </div>
       </motion.section>
@@ -752,7 +755,7 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden">
-            <Image src="/images/hose.jpg" alt="Farmer hand" fill className="object-cover" />
+            <Image src={`${CDN_URL}/hose.jpg`} alt="Farmer hand" fill className="object-cover" />
           </div>
           <div className="order-1 md:order-2">
             <h2 className="text-4xl md:text-5xl font-bold text-[#303A4D] leading-tight mb-8">
@@ -930,7 +933,7 @@ export default function Home() {
           </div>
 
           <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <Image src="/images/logo.png" alt="go-shop" width={124} height={39} className="brightness-0 invert" />
+            <Image src={`${CDN_URL}/logo.png`} alt="go-shop" width={124} height={39} className="brightness-0 invert" />
             <div className="flex gap-6">
               <a href="#" className="hover:text-[#FED141] transition-colors">
                 <Instagram className="w-6 h-6" />
