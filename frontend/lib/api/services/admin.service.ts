@@ -88,7 +88,7 @@ export const adminService = {
   },
 
   async previewCleanup(targets: string[]) {
-    const response = await apiClient.post('/admin/cleanup/preview', targets)
+    const response = await apiClient.post('/admin/cleanup/preview', { targets })
     return response.data
   },
 

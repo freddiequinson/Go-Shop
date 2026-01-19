@@ -12,7 +12,7 @@ export const DeviceMockup = ({
   title?: string | React.ReactNode;
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 md:py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-12 md:py-16 px-4 overflow-hidden w-full">
       <motion.h2
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

@@ -10,8 +10,15 @@ from passlib.context import CryptContext
 from app.core.config import settings
 import hashlib
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing context - with fallback for bcrypt version issues
+try:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    # Test if bcrypt works
+    pwd_context.hash("test")
+    BCRYPT_AVAILABLE = True
+except Exception:
+    pwd_context = None
+    BCRYPT_AVAILABLE = False
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
@@ -35,19 +42,30 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     # Check if it's a SHA256 hash (64 characters, hexadecimal)
     if len(hashed_password) == 64 and all(c in '0123456789abcdef' for c in hashed_password.lower()):
         # SHA256 hash - simple comparison
-        return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
+        computed_hash = hashlib.sha256(plain_password.encode()).hexdigest()
+        return computed_hash.lower() == hashed_password.lower()
     
-    # Try bcrypt verification (will fail gracefully if bcrypt is broken)
-    try:
-        return pwd_context.verify(plain_password, hashed_password)
-    except:
-        return False
+    # Try bcrypt verification
+    if BCRYPT_AVAILABLE and pwd_context:
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            pass
+    
+    return False
 
 def get_password_hash(password: str) -> str:
     """
     Hash a password
+    Uses bcrypt if available, falls back to SHA256 if bcrypt is broken
     """
-    return pwd_context.hash(password)
+    if BCRYPT_AVAILABLE and pwd_context:
+        try:
+            return pwd_context.hash(password)
+        except Exception:
+            pass
+    # Fallback to SHA256 if bcrypt is broken
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_token(token: str) -> Optional[dict]:
     """

@@ -221,12 +221,12 @@ export default function Home() {
 
   // Announcement messages for the launch banner
   const launchAnnouncements = [
-    "🚀 We launch January 20th! Fresh groceries, delivered to your door.",
-    "🎉 Coming January 20th — Your new favorite way to shop!",
-    "Wubetumi atɔ ade afi GoShopGhana afi Ɔpɛpɔn bosome da a ɛtɔ so aduonu. Yɛn nneɛma nso yɛ fofoofo!",
-    "✨ January 20th — GoShopGhana goes live!",
-    "🛒 Mark your calendars: January 20th, 2025!",
-    "🌟 Shop for fresh products start January 20th — Shop smarter with GoShop!",
+    "🚀 We have launched! Fresh foodstuff, delivered to your door.",
+    "🎉 We're live — Your new favorite way to shop!",
+    "Yɛafi ase! Tɔ ade fi GoShopGhana. Yɛn nneɛma nso yɛ fofoofo!",
+    "✨ GoShopGhana is now live!",
+    "🛒 Shop now at GoShopGhana!",
+    "🌟 Fresh products available now — Shop smarter with GoShop!",
   ]
 
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0)
@@ -241,35 +241,58 @@ export default function Home() {
   }, [heroSlides.length])
 
   return (
-    <div className="min-h-screen bg-[#F4F2E6]">
+    <div className="min-h-screen bg-[#F4F2E6] overflow-x-hidden">
       {/* Launch Announcement Banner - Fixed at top */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#FED141] text-[#303A4D] py-2 md:py-2.5 shadow-sm">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#FED141] text-[#303A4D] py-2 md:py-2.5 shadow-sm overflow-hidden">
         <div className="relative flex items-center justify-between gap-2 px-3 md:px-4 max-w-7xl mx-auto">
-          {/* Announcement Text */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentAnnouncement}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4 }}
-              className="flex-1 min-w-0"
-            >
-              <p className="text-xs md:text-sm font-semibold tracking-wide truncate md:whitespace-normal md:text-center">
-                {launchAnnouncements[currentAnnouncement]}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+          {/* Announcement Text - Marquee on mobile, static on desktop */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            {/* Mobile: Scrolling marquee */}
+            <div className="md:hidden overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentAnnouncement}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="animate-marquee-text whitespace-nowrap"
+                >
+                  <span className="text-xs font-semibold tracking-wide inline-block pr-8">
+                    {launchAnnouncements[currentAnnouncement]}
+                  </span>
+                  <span className="text-xs font-semibold tracking-wide inline-block pr-8">
+                    {launchAnnouncements[currentAnnouncement]}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            {/* Desktop: Static centered text */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentAnnouncement}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+                className="hidden md:block"
+              >
+                <p className="text-sm font-semibold tracking-wide text-center">
+                  {launchAnnouncements[currentAnnouncement]}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
           
           {/* Share Button */}
           <button
             onClick={() => {
-              const shareText = "🛒 Shop for quality and affordable products from GoShop Ghana starting 20th of January! Fresh groceries delivered to your door."
+              const shareText = "🛒 Shop for quality and affordable products from GoShop Ghana! Fresh foodstuff delivered to your door."
               const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://goshopghana.com'
               
               if (navigator.share) {
                 navigator.share({
-                  title: 'GoShop Ghana - Launching January 20th!',
+                  title: 'GoShop Ghana - Now Live!',
                   text: shareText,
                   url: shareUrl,
                 })
@@ -422,7 +445,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto relative z-10 h-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">
             <h1 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
-              Fresh Groceries
+              Fresh Foodstuff
             </h1>
             <h2 className="text-[clamp(2rem,7vw,5rem)] font-bold leading-[0.95] text-[#303A4D] tracking-tight">
               from the Market
@@ -448,7 +471,7 @@ export default function Home() {
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 mb-4">
             <p className="text-base md:text-lg text-[#303A4D] text-center md:text-left">
-              Get all your groceries without all the hassle
+              Get all your foodstuff without all the hassle
             </p>
             <Link href="/shop">
               <Button
@@ -477,7 +500,7 @@ export default function Home() {
               >
                 <Image
                   src={heroSlides[currentSlide].image || "/placeholder.svg"}
-                  alt="Fresh groceries"
+                  alt="Fresh foodstuff"
                   fill
                   className="object-contain object-bottom"
                   priority
@@ -506,7 +529,7 @@ export default function Home() {
                   Community
                 </h2>
                 {/* Stamp positioned in the middle of "Go-" - responsive positioning */}
-                <div className="absolute top-0 left-[180px] sm:left-[240px] md:left-[320px] lg:left-[400px] xl:left-[480px] -translate-y-1 sm:-translate-y-2 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36">
+                <div className="absolute top-0 left-[140px] sm:left-[240px] md:left-[320px] lg:left-[400px] xl:left-[480px] -translate-y-1 sm:-translate-y-2 w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36">
                   <div className="relative w-full h-full">
                     {/* Yellow stamp background */}
                     <div className="absolute inset-0 bg-[#FED141] rounded-full"></div>
@@ -583,7 +606,7 @@ export default function Home() {
           title={
             <span className="text-[#303A4D]">
               Shop from the comfort of your home. <br /> 
-              <span className="text-[#FED141]">Fresh groceries, delivered.</span>
+              <span className="text-[#FED141]">Fresh foodstuff, delivered.</span>
             </span>
           }
           ipadSrc="/goshopscreenshot.png"
@@ -599,7 +622,7 @@ export default function Home() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative h-[400px] md:h-[600px] overflow-hidden"
       >
-        <Image src="/images/big.jpg" alt="Fresh groceries" fill className="object-cover" />
+        <Image src="/images/big.jpg" alt="Fresh foodstuff" fill className="object-cover" />
       </motion.section>
 
       {/* Best Service Section */}

@@ -57,10 +57,10 @@ export default function AdminLayout({
 
   return (
     <OnboardingProvider>
-      <div className="flex min-h-screen bg-[#F4F2E6]">
+      <div className="flex h-screen overflow-hidden bg-[#F4F2E6]">
         <AdminSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
         <header className={`px-6 py-3 sticky top-0 z-10 transition-all duration-300 ${
           scrolled 
@@ -99,7 +99,7 @@ export default function AdminLayout({
         </header>
 
         {/* Main Content */}
-        <main id="admin-main-content" className="flex-1 overflow-auto w-full p-8">
+        <main id="admin-main-content" className="flex-1 overflow-y-auto overflow-x-hidden w-full p-8">
           {children}
         </main>
         </div>

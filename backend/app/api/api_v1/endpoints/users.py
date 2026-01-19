@@ -33,9 +33,6 @@ async def update_user_profile(
     Update current user profile
     """
     try:
-        # Log the incoming data for debugging
-        print(f"Updating user {current_user.id} with data: {user_update.dict(exclude_unset=True)}")
-        
         updated_user = update_user(db, current_user.id, user_update)
         if not updated_user:
             raise HTTPException(
@@ -47,11 +44,6 @@ async def update_user_profile(
         # Re-raise HTTP exceptions
         raise
     except Exception as e:
-        # Log the full error
-        import traceback
-        print(f"Error updating user profile: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
-        
         # Return user-friendly error message
         error_msg = str(e)
         if "duplicate key" in error_msg.lower():
@@ -82,14 +74,14 @@ async def change_password(
     Change user password
     """
     # Verify current password
-    if not verify_password(password_data.current_password, current_user.hashed_password):
+    if not verify_password(password_data.current_password, current_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
     
     # Update password
-    current_user.hashed_password = get_password_hash(password_data.new_password)
+    current_user.password_hash = get_password_hash(password_data.new_password)
     db.commit()
     db.refresh(current_user)
     

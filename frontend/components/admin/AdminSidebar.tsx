@@ -128,6 +128,7 @@ const menuItems: MenuItem[] = [
     icon: Settings,
     children: [
       { title: "General Settings", href: "/admin/settings", icon: Settings },
+      { title: "Change Password", href: "/admin/settings/password", icon: Shield },
       { title: "Delivery Settings", href: "/admin/delivery-settings", icon: Settings },
       { title: "Delivery Dates", href: "/admin/delivery-dates", icon: Calendar },
       { title: "Database Cleanup", href: "/admin/cleanup", icon: Settings }
@@ -243,19 +244,20 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:sticky top-0 h-screen bg-white border-r-4 border-[#303A4D] overflow-y-auto transition-all duration-300 z-40
+        fixed top-0 left-0 h-screen bg-white border-r-4 border-[#303A4D] overflow-y-auto overflow-x-hidden transition-all duration-300 z-40 flex-shrink-0
         ${
           // Mobile: slide in from left
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }
-        lg:translate-x-0
+        lg:translate-x-0 lg:relative
         ${
           // Desktop: collapsible width
           isDesktopCollapsed ? 'lg:w-20' : 'lg:w-64'
         }
         w-64
-      `}>
-        <div className={`${isDesktopCollapsed ? 'lg:p-2 p-6' : 'p-6'}`}>
+      `}
+      >
+        <div className={`${isDesktopCollapsed ? 'lg:p-2 p-6' : 'p-6'} pb-32 min-h-full`}>
           <div className="flex items-center justify-between mb-6">
             {!isDesktopCollapsed && <h2 className="text-xl lg:text-2xl font-bold text-[#303A4D]">Admin Panel</h2>}
             {/* Desktop collapse button */}

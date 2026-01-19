@@ -4,9 +4,10 @@ Allows admins to selectively clear database records for testing/deployment
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
+from pydantic import BaseModel
 from app.db.database import get_db
 from app.core.deps import get_current_admin
 from app.models.user import User, UserType
@@ -15,12 +16,21 @@ from app.models.product import Product, Category
 from app.models.warehouse import WarehouseInventory, InventoryMovement
 from datetime import datetime
 
+
+class CleanupPreviewRequest(BaseModel):
+    targets: List[str]
+
+
+class CleanupExecuteRequest(BaseModel):
+    targets: List[str]
+    confirmation_code: str
+
 router = APIRouter()
 
 
 @router.post("/cleanup/preview")
 async def preview_cleanup(
-    targets: List[str],
+    request: CleanupPreviewRequest,
     current_admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -29,11 +39,13 @@ async def preview_cleanup(
     Returns counts of records that would be affected
     """
     preview = {}
+    targets = request.targets
     
     if "orders" in targets:
         order_count = db.query(func.count(Order.id)).scalar()
         order_items_count = db.query(func.count(OrderItem.id)).scalar()
         payment_attempts_count = db.query(func.count(PaymentAttempt.id)).scalar()
+        transactions_count = db.execute(text("SELECT COUNT(*) FROM transactions")).scalar()
         delivery_otps_count = db.execute(text("SELECT COUNT(*) FROM delivery_otps")).scalar()
         delivery_assignments_count = db.execute(text("SELECT COUNT(*) FROM delivery_assignments")).scalar()
         pick_lists_count = db.execute(text("SELECT COUNT(*) FROM pick_lists")).scalar()
@@ -43,11 +55,12 @@ async def preview_cleanup(
             "orders": order_count,
             "order_items": order_items_count,
             "payment_attempts": payment_attempts_count,
+            "transactions": transactions_count,
             "delivery_otps": delivery_otps_count,
             "delivery_assignments": delivery_assignments_count,
             "pick_lists": pick_lists_count,
             "order_conversations": order_conversations_count,
-            "total": order_count + order_items_count + payment_attempts_count + delivery_otps_count + delivery_assignments_count + pick_lists_count + order_conversations_count
+            "total": order_count + order_items_count + payment_attempts_count + transactions_count + delivery_otps_count + delivery_assignments_count + pick_lists_count + order_conversations_count
         }
     
     if "products" in targets:
@@ -96,8 +109,7 @@ async def preview_cleanup(
 
 @router.post("/cleanup/execute")
 async def execute_cleanup(
-    targets: List[str],
-    confirmation_code: str,
+    request: CleanupExecuteRequest,
     current_admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -105,6 +117,9 @@ async def execute_cleanup(
     Execute database cleanup
     Requires confirmation code to prevent accidental deletion
     """
+    targets = request.targets
+    confirmation_code = request.confirmation_code
+    
     # Verify confirmation code
     expected_code = f"DELETE-{current_admin.id[:8]}"
     if confirmation_code != expected_code:
@@ -127,6 +142,12 @@ async def execute_cleanup(
         if "orders" in targets:
             try:
                 # Delete all tables that reference orders (in correct order to respect FK constraints)
+                # Delete fund_transfers first (references transactions)
+                fund_transfers_deleted = db.execute(text("DELETE FROM fund_transfers")).rowcount
+                
+                # Delete transactions (references orders)
+                transactions_deleted = db.execute(text("DELETE FROM transactions")).rowcount
+                
                 # Delete delivery-related tables
                 delivery_otps_deleted = db.execute(text("DELETE FROM delivery_otps")).rowcount
                 rider_locations_deleted = db.execute(text("DELETE FROM rider_locations WHERE order_id IS NOT NULL")).rowcount
@@ -151,6 +172,7 @@ async def execute_cleanup(
                     "orders": orders_deleted,
                     "order_items": order_items_deleted,
                     "payment_attempts": payment_attempts_deleted,
+                    "transactions": transactions_deleted,
                     "delivery_otps": delivery_otps_deleted,
                     "delivery_assignments": delivery_assignments_deleted,
                     "pick_lists": pick_lists_deleted,
