@@ -482,22 +482,12 @@ export default function CheckoutPage() {
   const handlePaystackPayment = async () => {
     try {
       const response = await apiClient.post(`/orders/${createdOrderId}/initialize-payment`, {
-        callback_url: `${window.location.origin}/orders/${createdOrderId}`
+        callback_url: `${window.location.origin}/checkout/payment/${createdOrderId}/verify`
       })
       
       if (response.data.authorization_url) {
-        // Open Paystack in new tab
-        window.open(response.data.authorization_url, '_blank')
-        
-        toast({
-          title: 'Payment Window Opened',
-          description: 'Complete your payment in the new tab',
-        })
-        
-        // Redirect to order page after a delay
-        setTimeout(() => {
-          router.push(`/orders/${createdOrderId}`)
-        }, 2000)
+        // Redirect to Paystack payment page (works better on mobile than window.open)
+        window.location.href = response.data.authorization_url
       } else {
         throw new Error('Failed to initialize payment')
       }

@@ -180,31 +180,31 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F2E6]">
+    <div className="min-h-screen bg-[#F4F2E6] overflow-x-hidden">
       {/* Header */}
       <header className="bg-[#FED141] border-b border-[#303A4D]/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/orders" className="flex items-center gap-2 text-[#303A4D] hover:opacity-80">
+            <Link href="/orders" className="flex items-center gap-1 md:gap-2 text-[#303A4D] hover:opacity-80">
               <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to Orders</span>
+              <span className="font-semibold text-sm md:text-base">Back</span>
             </Link>
-            <h1 className="text-2xl font-bold text-[#303A4D]">Order Details</h1>
-            <div className="w-24" />
+            <h1 className="text-lg md:text-2xl font-bold text-[#303A4D]">Order Details</h1>
+            <div className="w-12 md:w-24" />
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-full overflow-x-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Info */}
-            <Card className="p-6 bg-white">
-              <div className="flex items-center justify-between mb-6">
+            <Card className="p-4 md:p-6 bg-white">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#303A4D] mb-1">Order #{order.id.slice(0, 8)}</h2>
-                  <p className="text-gray-600">
+                  <h2 className="text-lg md:text-2xl font-bold text-[#303A4D] mb-1">Order #{order.id.slice(0, 8)}</h2>
+                  <p className="text-sm md:text-base text-gray-600">
                     Placed on{" "}
                     {new Date(order.created_at).toLocaleDateString("en-US", {
                       month: "long",
@@ -213,17 +213,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     })}
                   </p>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
+                <div className="flex flex-wrap gap-2">
+                  <span className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2 ${
                     order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                     order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
                     order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                     'bg-yellow-100 text-yellow-700'
                   }`}>
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
                     {order.status.replace('_', ' ').charAt(0).toUpperCase() + order.status.slice(1).replace('_', ' ')}
                   </span>
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium text-center ${
+                  <span className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium text-center ${
                     order.payment_status === 'completed' ? 'bg-green-100 text-green-700' :
                     order.payment_status === 'failed' ? 'bg-red-100 text-red-700' :
                     'bg-yellow-100 text-yellow-700'
@@ -417,29 +417,29 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             {/* Order Items */}
-            <Card className="p-6 bg-white">
-              <h3 className="text-xl font-bold text-[#303A4D] mb-4">Order Items</h3>
-              <div className="space-y-4">
+            <Card className="p-4 md:p-6 bg-white">
+              <h3 className="text-lg md:text-xl font-bold text-[#303A4D] mb-4">Order Items</h3>
+              <div className="space-y-3 md:space-y-4">
                 {order.items && order.items.length > 0 ? order.items.map((item: any) => (
-                  <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
+                  <div key={item.id} className="flex gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-200 last:border-0">
                     <Image
                       src={item.product_image_url || "/placeholder.svg"}
                       alt={item.product_name}
-                      width={80}
-                      height={80}
-                      className="rounded-lg object-cover"
+                      width={60}
+                      height={60}
+                      className="rounded-lg object-cover w-[60px] h-[60px] md:w-[80px] md:h-[80px] flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-[#303A4D] mb-1">{item.product_name}</h4>
-                      <p className="text-sm text-gray-600">
-                        Quantity: {item.quantity} {item.unit_type}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-[#303A4D] mb-1 text-sm md:text-base truncate">{item.product_name}</h4>
+                      <p className="text-xs md:text-sm text-gray-600">
+                        Qty: {item.quantity} {item.unit_type}
                       </p>
                       <p className="text-xs text-gray-500">
-                        GH₵{(item.price_per_unit_cedis / 100).toFixed(2)} per {item.unit_type}
+                        GH₵{(item.price_per_unit_cedis / 100).toFixed(2)}/{item.unit_type}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-[#303A4D]">GH₵{(item.line_total_cedis / 100).toFixed(2)}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-bold text-[#303A4D] text-sm md:text-base">GH₵{(item.line_total_cedis / 100).toFixed(2)}</p>
                     </div>
                   </div>
                 )) : (
@@ -447,22 +447,22 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 )}
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 space-y-2">
-                <div className="flex justify-between text-gray-600">
+              <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200 space-y-2">
+                <div className="flex justify-between text-sm md:text-base text-gray-600">
                   <span>Subtotal</span>
                   <span>GH₵{order.subtotal ? order.subtotal.toFixed(2) : '0.00'}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-sm md:text-base text-gray-600">
                   <span>Delivery Fee</span>
                   <span>GH₵{order.delivery_fee ? order.delivery_fee.toFixed(2) : '0.00'}</span>
                 </div>
                 {order.tax && order.tax > 0 && (
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-sm md:text-base text-gray-600">
                     <span>Tax</span>
                     <span>GH₵{order.tax.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-xl font-bold text-[#303A4D] pt-2 border-t border-gray-200">
+                <div className="flex justify-between text-lg md:text-xl font-bold text-[#303A4D] pt-2 border-t border-gray-200">
                   <span>Total</span>
                   <span>GH₵{order.total ? order.total.toFixed(2) : '0.00'}</span>
                 </div>
@@ -471,9 +471,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Delivery Info */}
-            <Card className="p-6 bg-white">
+            <Card className="p-4 md:p-6 bg-white">
               <h3 className="text-lg font-bold text-[#303A4D] mb-4 flex items-center gap-2">
                 <Package className="w-5 h-5" />
                 Delivery Information
@@ -552,7 +552,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </Card>
 
             {/* Payment Info */}
-            <Card className="p-6 bg-white">
+            <Card className="p-4 md:p-6 bg-white">
               <h3 className="text-lg font-bold text-[#303A4D] mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
                 Payment Information
