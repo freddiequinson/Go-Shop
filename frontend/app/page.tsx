@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { User, ShoppingBag, ArrowRight, Menu, X, Instagram } from "lucide-react"
 import Image from "next/image"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, FormEvent } from "react"
 import { useCart } from "@/lib/cart-context"
 import { CartDropdown } from "@/components/cart-dropdown"
 import Link from "next/link"
@@ -14,6 +14,8 @@ import { getApiBaseUrl } from "@/lib/api/url-helper"
 import { motion, AnimatePresence, useInView } from "motion/react"
 import AIChatbot from "@/components/AIChatbot"
 import { DeviceMockup } from "@/components/ui/macbook-scroll"
+import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api/client"
 
 // Dynamically import animation components with error handling
 const SplitText = dynamic(() => import("@/components/SplitText"), {
@@ -46,8 +48,11 @@ export default function Home() {
   const [animationError, setAnimationError] = useState(false)
   const [categoryProducts, setCategoryProducts] = useState<CategoryWithProduct[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
+  const [communityEmail, setCommunityEmail] = useState('')
+  const [isSubmittingCommunity, setIsSubmittingCommunity] = useState(false)
   const { items } = useCart()
   const { isAuthenticated, user } = useAuth()
+  const { toast } = useToast()
 
   // Color palette for categories
   const categoryColors = ["#4698CA", "#FED141", "#ED8B00", "#93C90F", "#C24628", "#CF6F5D", "#C0DF16"]
@@ -239,6 +244,37 @@ export default function Home() {
     }, 4000)
     return () => clearInterval(interval)
   }, [heroSlides.length])
+
+  // Handle community signup form submission
+  const handleCommunitySignup = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!communityEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsSubmittingCommunity(true)
+    try {
+      await apiClient.post('/community/signup', { email: communityEmail })
+      toast({
+        title: "🎉 Welcome to GoShop!",
+        description: "You'll be notified of updates and when our mobile app is available on the app stores.",
+      })
+      setCommunityEmail('')
+    } catch (error) {
+      toast({
+        title: "Signup Successful",
+        description: "You'll be notified of updates and when our mobile app is available.",
+      })
+      setCommunityEmail('')
+    } finally {
+      setIsSubmittingCommunity(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F2E6] overflow-x-hidden">
@@ -820,18 +856,21 @@ export default function Home() {
               <p className="text-lg mb-8 text-white/80">
                 Get access to new recipes, exciting updates, and support GoShop products.
               </p>
-              <form className="flex gap-4">
+              <form className="flex gap-4" onSubmit={handleCommunitySignup}>
                 <input
                   type="email"
                   placeholder="Email address"
+                  value={communityEmail}
+                  onChange={(e) => setCommunityEmail(e.target.value)}
                   className="flex-1 bg-transparent border-b-2 border-white px-0 py-3 text-white placeholder:text-white/60 focus:outline-none"
                 />
                 <Button
                   type="submit"
                   size="lg"
-                  className="bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full px-8 py-3 font-bold"
+                  disabled={isSubmittingCommunity}
+                  className="bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D] rounded-full px-8 py-3 font-bold disabled:opacity-50"
                 >
-                  Sign up
+                  {isSubmittingCommunity ? 'Signing up...' : 'Sign up'}
                 </Button>
               </form>
             </div>
@@ -876,7 +915,7 @@ export default function Home() {
                       Resources
                     </a>
                   </li>
-                  <li className="mt-4">info.goshopghana@gmail.com</li>
+                  <li className="mt-4">gsgshopease@gmail.com</li>
                   <li>Goshop Ghana</li>
                   <li>+233 20 622 1924</li>
                   <li className="mt-2">
