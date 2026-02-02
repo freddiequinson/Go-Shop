@@ -252,9 +252,14 @@ export default function ShopPage() {
       // Add category filter if not "All" or "Others"
       if (selectedCategory !== "All" && selectedCategory !== "Others") {
         const categoriesToUse = categoriesData || allCategories
-        const category = categoriesToUse.find((c: any) => c.name === selectedCategory)
+        // Case-insensitive category matching to handle any casing differences
+        const category = categoriesToUse.find((c: any) => 
+          c.name && c.name.toLowerCase() === selectedCategory.toLowerCase()
+        )
         if (category) {
           url += `&category_id=${category.id}`
+        } else {
+          console.warn(`Category not found: "${selectedCategory}" in`, categoriesToUse.map((c: any) => c.name))
         }
       }
       
@@ -476,9 +481,9 @@ export default function ShopPage() {
     setHasMore(true)
     // Clear products immediately to prevent showing stale data from previous category
     setProducts([])
-    // Fetch products immediately for the new category
-    fetchProducts(undefined, false)
-  }, [debouncedSearchQuery, selectedCategory])
+    // Fetch products immediately for the new category, passing allCategories explicitly
+    fetchProducts(allCategories, false)
+  }, [debouncedSearchQuery, selectedCategory, allCategories])
 
   // Fetch more products when page changes (for infinite scroll, page > 1)
   useEffect(() => {

@@ -20,6 +20,14 @@ export const metadata: Metadata = {
   title: "go-shop - Fresh Groceries from the Market",
   description: "Get all your groceries delivered to your home",
   generator: "v0.app",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/favicon.png",
+  },
 }
 
 export const viewport = {
