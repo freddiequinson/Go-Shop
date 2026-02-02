@@ -223,7 +223,7 @@ export default function ShopPage() {
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Fetch products with category filtering and abort controller
-  const fetchProducts = useCallback(async (categoriesData?: any[], append = false) => {
+  const fetchProducts = useCallback(async (categoriesData?: any[], append = false, pageOverride?: number) => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -246,8 +246,10 @@ export default function ShopPage() {
       }
       setErrorMessage(null)
       const apiBaseUrl = getApiBaseUrl()
+      // Use pageOverride if provided (for category changes), otherwise use currentPage
+      const pageToFetch = pageOverride !== undefined ? pageOverride : currentPage
       // Use lightweight /shop endpoint to avoid base64 images
-      let url = `${apiBaseUrl}/products/shop?page=${currentPage}&per_page=${perPage}`
+      let url = `${apiBaseUrl}/products/shop?page=${pageToFetch}&per_page=${perPage}`
       
       // Add category filter if not "All" or "Others"
       if (selectedCategory !== "All" && selectedCategory !== "Others") {
@@ -482,7 +484,8 @@ export default function ShopPage() {
     // Clear products immediately to prevent showing stale data from previous category
     setProducts([])
     // Fetch products immediately for the new category, passing allCategories explicitly
-    fetchProducts(allCategories, false)
+    // Pass page 1 explicitly to avoid closure issue with currentPage
+    fetchProducts(allCategories, false, 1)
   }, [debouncedSearchQuery, selectedCategory, allCategories])
 
   // Fetch more products when page changes (for infinite scroll, page > 1)
