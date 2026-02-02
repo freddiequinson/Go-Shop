@@ -85,6 +85,7 @@ async def get_products_for_shop(
     """
     Lightweight endpoint for shop/mobile - returns minimal product data
     Excludes heavy fields like images array, descriptions, etc.
+    When viewing "All" products (no category filter), returns random order for dynamic display.
     """
     # Create filter object (only essential filters)
     filters = ProductFilter(
@@ -95,8 +96,12 @@ async def get_products_for_shop(
     # Calculate offset
     skip = (page - 1) * per_page
     
+    # Use random ordering when viewing "All" products (no category filter and no search)
+    # This makes the shop feel more dynamic and shows different products each time
+    use_random_order = category_id is None and not search
+    
     # Get products
-    products, total = get_products(db, skip=skip, limit=per_page, filters=filters)
+    products, total = get_products(db, skip=skip, limit=per_page, filters=filters, random_order=use_random_order)
     
     # Calculate pagination info
     pages = math.ceil(total / per_page) if total > 0 else 1

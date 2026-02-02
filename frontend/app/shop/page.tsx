@@ -466,10 +466,12 @@ export default function ShopPage() {
     }
   }, [])
 
-  // Reset to page 1 when search query or category changes
+  // Reset to page 1 and clear products when search query or category changes
   useEffect(() => {
     setCurrentPage(1)
     setHasMore(true)
+    // Clear products immediately to prevent showing stale data from previous category
+    setProducts([])
   }, [debouncedSearchQuery, selectedCategory])
 
   // Fetch products when page, search, or category changes (after initialization)

@@ -76,6 +76,52 @@ ACCOUNT FEATURES:
 
 === GHANAIAN RECIPES KNOWLEDGE BASE ===
 
+**GHANA JOLLOF RICE**
+Ingredients: Rice, Vegetable Oil, Fresh tomatoes, Tomato paste, Thyme, Scotch bonnet pepper/kpakposhito, Onion, Green bell pepper, Bayleaf, Salt, Protein of choice (Eggs, salted beef, chicken, mutton or herrings), Stock, Water.
+
+**GHANA WAAKYE (Rice & Beans)**
+Ingredients: Rice, Black-eyed beans or red beans, Dry sorghum leaves, Salt to taste, Onion, Coconut oil (optional), Bay-leaves for flavor (optional), Gari, Spaghetti, Eggs, Fish, Wele, Shito (spicy Ghanaian pepper sauce), Vegetables (tomatoes, onions, cabbage, lettuce for optional salad side).
+
+**WAAKYE STEW / ZONGO STEW**
+Ingredients: Beef or Mutton, Vegetable oil, Fresh tomato, Tomato paste, Scotch bonnet Pepper, Onions, Ginger, Garlic, Coriander seeds, Bay-leaves, Curry powder, Stock cube, Salt, Thyme, Rosemary, Cow skin (Wele).
+
+**KONTOMIRE (Palava Sauce)**
+Ingredients: Kontomire leaves or Potato Leaves, Palm oil or Vegetable oil, Onion, Tomatoes, Scotch bonnet pepper, Kpakposhito, Agushie (Melon seeds), Salt, Eggs, Wele, Tuna, Salmon, Momoni (optional), Crabs (optional), Beef (optional), Stock cube.
+Serve with: Rice, yam, cocoyam, plantains or banku.
+
+**GHANAIAN EGG STEW**
+Ingredients: Palm oil or vegetable oil, Fresh tomato, Tomato paste, Scotch bonnet, Kpakposhito, Onion, Stock cube, Agushie (optional), Momoni (optional), Wele (optional), Beef, Salmon, Bell peppers, Rosemary, Bay-leaf, Thyme.
+
+**TRADITIONAL GHANAIAN LIGHT SOUP**
+Ingredients: Tomatoes, Tomato paste, Scotch bonnet pepper, Onion, Garden eggs, Ginger, Garlic, Stock cube, Kpakposhito for flavor and colour, Protein of choice (chicken, beef, mutton, dry-fish, smoked fish).
+
+**TRADITIONAL PALM NUT SOUP**
+Ingredients: Palm nut paste, Tomatoes, Tomato paste, Scotch bonnet pepper, Kpakposhito, Ginger, Garlic, Onion, Stock cube, Garden eggs, Prekese (optional), Protein of choice (Wele, beef, mutton, dry fish, smoked salmon, crabs).
+
+**TRADITIONAL GROUNDNUT SOUP**
+Ingredients: Groundnut paste, Tomato paste, Scotch bonnet pepper, Onion, Fresh tomato, Garden eggs, Protein of choice (chicken, beef, mutton, smoked salmon, dry fish, tuna, crabs optional).
+
+**GARDEN EGG STEW**
+Ingredients: Palm oil or vegetable oil, Fresh tomatoes, Scotch bonnet pepper, Kpakposhito, Onion, Momoni (optional), Stock cube, Protein options (boiled eggs, Wele, salmon, smoked fish).
+
+**CLASSIC GHANAIAN VEGETABLE STEW**
+Ingredients: Vegetable oil, Fresh Tomatoes, Tomato paste, Scotch bonnet pepper, Kpakposhito, Bell peppers, Carrot, Green beans, Cabbage, Ginger, Garlic, Stock cube, Protein of choice (eggs, fish, chicken, beef, salmon).
+
+**GHANAIAN GARI FOTOR**
+Ingredients: Gari, Vegetable oil, Ripe tomatoes, Tomato paste, Onion, Ginger, Garlic, Scotch bonnet pepper, Kpakposhito, Spring onion, Carrot, Bell peppers, Protein of choice (boiled or fried eggs, smoked fish, chicken, beef, mutton).
+
+**GHANAIAN BRAISED RICE (Angwamo)**
+Ingredients: Rice, Vegetable or coconut oil, Onion, Rosemary, Toolo-beef, Salt, Protein of choice (fried or boiled eggs, sardine, canned beef), Vegetables (optional), Avocado (optional).
+
+**MPOTOMPOTO (Yam or Cocoyam Porridge)**
+Ingredients: Yam or Cocoyam, Palm oil, Onion, Momoni, Tomatoes, Scotch bonnet pepper, Kpakposhito, Salt, Dry fish (herrings), Smoked fish (salmon), Toolo-beef, Stock cube, Salt.
+
+**GHANAIAN SHITO (Black Pepper Sauce)**
+Ingredients: Vegetable oil, Dried shrimps, Dried herrings, Powdered pepper/scotch bonnet, Onion, Ginger, Garlic, Aniseed, Rosemary, Stock cube, Salt, Fried beef (optional).
+
+**GREEN CHILI SAUCE**
+Ingredients: Ginger, Garlic, Onion, Vegetable oil, Salt, Stock cube.
+
 **GHANAIAN FISH STEW (4-6 servings, 1hr 30min)**
 Fish: 1 whole fish (10-12 inches)
 Marinade: 1 tsp salt, 1.5 tsp fenugreek/fennel/turmeric, 4 green cardamom
@@ -85,155 +131,47 @@ Other: 3 tbsp sesame oil, 1 package tomato paste, 2 cups water
 Serve with: 2 cups rice, 1.5 cups beans
 
 **GHANA SALAD (12 servings, 20min)**
-- 2 Tomatoes (sliced)
-- 1 Onion (sliced)
-- 1 Cucumber (sliced)
-- 2 Eggs (boiled, sliced)
-- 1 can Heinz Baked Beans
-- 1 package Romaine Salad Mix
-- Heinz Salad Cream (to top)
+Ingredients: 2 Tomatoes (sliced), 1 Onion (sliced), 1 Cucumber (sliced), 2 Eggs (boiled, sliced), 1 can Heinz Baked Beans, 1 package Romaine Salad Mix, Heinz Salad Cream (to top).
 
 **KELEWELE (1 serving, 15min)**
-- 3 ripe plantains
-- 1/4 piece ginger (blended)
-- 1/2 hot pepper (blended)
-- Pinch of salt
-- 1 cup vegetable oil (for frying)
-Serve as: Side dish with rice/tilapia or snack with peanuts
-
-**KONTOMIRE (SPINACH) STEW (3-4 servings)**
-- 900g chopped spinach/kontomire
-- 2 onions
-- 1 can plum tomatoes
-- 2 red shito peppers
-- Agushi (blended pumpkin seeds)
-- Palm oil
-- Seasoning to taste
+Ingredients: 3 ripe plantains, 1/4 piece ginger (blended), 1/2 hot pepper (blended), Pinch of salt, 1 cup vegetable oil (for frying).
+Serve as: Side dish with rice/tilapia or snack with peanuts.
 
 **RED RED / GOBE / BEANS AND GARI (4-5 servings, 1hr)**
-- 3 cups black-eyed peas/beans
-- 1/2 cup palm oil
-- 2 onions (sliced)
-- 3 tomatoes (blended)
-- 4 ripe plantains (fried)
-- Smoked fish (optional)
-Tip: Palm oil gives the authentic red color
+Ingredients: 3 cups black-eyed peas/beans, 1/2 cup palm oil, 2 onions (sliced), 3 tomatoes (blended), 4 ripe plantains (fried), Smoked fish (optional).
+Tip: Palm oil gives the authentic red color.
 
 **BOFROT / TOGBE (Ghanaian Doughnuts)**
-- 4 cups flour
-- 1/2 cup sugar
-- Pinch baking powder
-- Pinch salt
-- 1 tbsp yeast
-- 1 tbsp butter
-- 1 egg
-- 1.25 cups lukewarm water
-- Oil for frying
-
-**SHITO (Ghana Black Pepper Sauce, 2-3hrs)**
-- Ata Gbegbi (Hausa dried pepper) - 1 derica
-- 5 bulbs onions
-- Groundnut oil (generous amount)
-- Crayfish (good amount)
-- Dried shrimps or dried herrings
-- Maggi cubes
-- Salt, Garlic, Ginger
-- Tomato paste
-- Optional: Fennel, cumin, or rosemary
-Tip: Fry on low/medium heat, stir constantly to avoid burning
-
-**GHANA LIGHT CHICKEN SOUP (5 servings, 45min)**
-- 1 whole fresh chicken (native preferred)
-- 1 big garden egg
-- 1 medium white onion + few red onion dices
-- 3 medium fresh tomatoes
-- 2 yellow scotch bonnet peppers
-- 6-7 green unripe scotch bonnet peppers
-- 1 tsp tomato paste
-- 2 deseeded uda spice
-- 1 clove garlic, big piece ginger
-- Seasoning cubes, salt
-Serve with: Fufu (boiled cassava + unripe plantain, pounded)
-
-**WAAKYE (Ghanaian Rice & Beans)**
-- 600g black-eyed beans (soaked overnight)
-- 350g perfumed/jasmine rice
-- 1 small bundle millet leaves
-- Water, salt to taste
-Serve with: Stew, shito, boiled eggs, chicken, or fish
-
-**GROUNDNUT SOUP (Peanut Soup)**
-- Ground peanuts or peanut butter
-- Meat or seafood of choice
-- Tomatoes, ginger, garlic, peppers, onions
-- Water or broth to thin
-Serve with: Fufu, rice balls, or other starchy sides
+Ingredients: 4 cups flour, 1/2 cup sugar, Pinch baking powder, Pinch salt, 1 tbsp yeast, 1 tbsp butter, 1 egg, 1.25 cups lukewarm water, Oil for frying.
 
 **KOKO WITH KOOSE (Breakfast)**
-Koko: Fermented corn porridge with ginger and pepper, optional sugar/evaporated milk
-Koose: Crunchy fritters from soaked black-eyed peas, ginger, scotch bonnet chiles
+Koko: Fermented corn porridge with ginger and pepper, optional sugar/evaporated milk.
+Koose: Crunchy fritters from soaked black-eyed peas, ginger, scotch bonnet chiles.
 
 **FUFU**
-- 1 cassava root (peeled, cubed)
-- 1 green plantain (peeled, cubed)
-- 1/4 cup water
-Blend cassava and plantain until smooth batter, then cook
-Serve with: Light soup, groundnut soup, palm nut soup
-
-**JOLLOF RICE (Ghanaian Style)**
-- Basmati or jasmine rice (preferred over long-grain)
-- Tomatoes (blended)
-- Tomato paste
-- Onions, garlic, ginger
-- Scotch bonnet pepper
-- Spices: thyme, curry, bay leaves
-- Stock cubes, salt
-Note: Ghanaian jollof is milder and sweeter than Nigerian
-Serve with: Plantains, chicken
-
-**ANGWAMU / OIL RICE (Braised Rice)**
-- Rice
-- Onions (fried in generous oil)
-- Salt
-- Optional vegetables
-Top with: Hot pepper sauce, sardines, eggs
+Ingredients: 1 cassava root (peeled, cubed), 1 green plantain (peeled, cubed), 1/4 cup water.
+Blend cassava and plantain until smooth batter, then cook.
+Serve with: Light soup, groundnut soup, palm nut soup.
 
 **BANKU**
-- Fermented corn dough
-- Cassava dough
-- Water
-Combine and swirl in boiling water until solidified
-Serve with: Tilapia, okra stew, pepper sauce, wele (cowskin)
+Ingredients: Fermented corn dough, Cassava dough, Water.
+Combine and swirl in boiling water until solidified.
+Serve with: Tilapia, okra stew, pepper sauce, wele (cowskin).
 
 **KENKEY (Dokono)**
-Ga Kenkey: Fermented 2-3 days, wrapped in corn husk
-Fante Kenkey: Fermented longer, wrapped in plantain leaves
-Serve with: Fried fish (tilapia/red snapper), spicy pepper sauce
+Ga Kenkey: Fermented 2-3 days, wrapped in corn husk.
+Fante Kenkey: Fermented longer, wrapped in plantain leaves.
+Serve with: Fried fish (tilapia/red snapper), spicy pepper sauce.
 
 **TUO ZAAFI (TZ)**
-- Millet flour
-- Water
-Cook like oatmeal until thick and gooey
-Serve with: Ayoyo soup (jute leaves with chilis, ginger, star anise)
-
-**GARDEN EGG STEW**
-- Garden eggs (small eggplant-like fruit)
-- Tomatoes, onions, garlic, ginger
-- Optional: salted fish, smoked salmon, smoked herring
-
-**YAM POTTAGE (Mpotompoto)**
-- Yam chunks
-- Onions, garlic
-- Shrimp powder
-- Habanero chiles, bell peppers
-- Smoked fish
-- Palm oil, tomatoes (optional)
-- Bouillon cubes
+Ingredients: Millet flour, Water.
+Cook like oatmeal until thick and gooey.
+Serve with: Ayoyo soup (jute leaves with chilis, ginger, star anise).
 
 **OMO TUO (Rice Balls)**
-- Rice (soft-boiled until very soft)
-- Form into balls
-Serve with: Various soups
+Ingredients: Rice (soft-boiled until very soft).
+Form into balls.
+Serve with: Various soups.
 
 === END RECIPES ===
 

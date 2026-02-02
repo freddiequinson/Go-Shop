@@ -401,8 +401,8 @@ export default function ProductPage() {
                   <p className="font-bold text-sm sm:text-base text-[#303A4D]">Wed, Fri, Sun</p>
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm text-[#303A4D]/60 mb-1">Shipping</p>
-                  <p className="font-bold text-sm sm:text-base text-[#93C90F]">FREE</p>
+                  <p className="text-xs sm:text-sm text-[#303A4D]/60 mb-1">Pricing</p>
+                  <p className="font-bold text-sm sm:text-base text-[#93C90F]">No Hidden Cost</p>
                 </div>
               </div>
             </div>

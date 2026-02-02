@@ -5,7 +5,7 @@ Ghana market focused with quantified sales support
 
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, desc
+from sqlalchemy import or_, and_, desc, func
 from app.models.product import Product, Category, UnitType
 from app.models.warehouse import WarehouseInventory
 from app.schemas.product import ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate, ProductFilter
@@ -20,7 +20,8 @@ def get_products(
     skip: int = 0, 
     limit: int = 20,
     filters: Optional[ProductFilter] = None,
-    for_shop: bool = True
+    for_shop: bool = True,
+    random_order: bool = False
 ) -> tuple[List[Product], int]:
     """Get products with filtering and pagination
     
@@ -77,7 +78,11 @@ def get_products(
     total = query.count()
     
     # Apply pagination and ordering
-    products = query.order_by(desc(Product.created_at)).offset(skip).limit(limit).all()
+    if random_order:
+        # Random ordering for dynamic product display
+        products = query.order_by(func.random()).offset(skip).limit(limit).all()
+    else:
+        products = query.order_by(desc(Product.created_at)).offset(skip).limit(limit).all()
     
     return products, total
 
