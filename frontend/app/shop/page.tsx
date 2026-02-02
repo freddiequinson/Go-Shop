@@ -675,17 +675,8 @@ export default function ShopPage() {
             </div>
           )}
 
-          {!loading && !errorMessage && products.length === 0 && (
-            <div className="text-center py-16">
-              <Package className="w-16 h-16 text-[#303A4D]/40 mx-auto mb-4" />
-              <p className="text-2xl text-[#303A4D]/60">No products available yet.</p>
-              <p className="text-[#303A4D]/40 mt-2">Check back soon!</p>
-            </div>
-          )}
-
-          {!loading && products.length > 0 && (
-            <>
-          {/* Category Filter - Dropdown on mobile, wrapping grid on desktop */}
+          {/* Category Filter - Always visible, even during loading */}
+          {categories.length > 1 && (
           <div className="mb-4 md:mb-5">
             {/* Mobile: Dropdown select */}
             <div className="md:hidden">
@@ -719,6 +710,15 @@ export default function ShopPage() {
               ))}
             </div>
           </div>
+          )}
+
+          {/* Loading state for category switching */}
+          {(isChangingCategory || (products.length === 0 && !loading && !errorMessage && categories.length > 1)) && (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-4 border-[#FED141] border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-[#303A4D]/60 mt-2">Loading products...</p>
+            </div>
+          )}
 
           {/* Products Grid */}
           <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
@@ -818,12 +818,10 @@ export default function ShopPage() {
             </div>
           )}
 
-          {filteredProducts.length === 0 && !loading && (
+          {filteredProducts.length === 0 && !loading && !isChangingCategory && (
             <div className="text-center py-16">
               <p className="text-2xl text-[#303A4D]/60">No products found matching your search.</p>
             </div>
-          )}
-            </>
           )}
 
           {/* Pagination - Hidden with infinite scroll, kept for fallback */}
