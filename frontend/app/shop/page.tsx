@@ -651,13 +651,6 @@ export default function ShopPage() {
       {/* Main Content */}
       <section className="px-4 md:px-8 pt-1 pb-4 md:pt-2 md:pb-6">
         <div className="w-full">
-          {loading && (
-            <div className="text-center py-16">
-              <Package className="w-16 h-16 text-[#303A4D]/40 mx-auto mb-4 animate-pulse" />
-              <p className="text-2xl text-[#303A4D]/60">Loading products...</p>
-            </div>
-          )}
-
           {errorMessage && !loading && (
             <div className="text-center py-16">
               <Package className="w-16 h-16 text-red-500/60 mx-auto mb-4" />
@@ -675,8 +668,8 @@ export default function ShopPage() {
             </div>
           )}
 
-          {/* Category Filter - Always visible, even during loading */}
-          {categories.length > 1 && (
+          {/* Category Filter - Only show after initial load completes */}
+          {!loading && categories.length > 1 && (
           <div className="mb-4 md:mb-5">
             {/* Mobile: Dropdown select */}
             <div className="md:hidden">
@@ -712,8 +705,16 @@ export default function ShopPage() {
           </div>
           )}
 
-          {/* Loading state for category switching */}
-          {(isChangingCategory || (products.length === 0 && !loading && !errorMessage && categories.length > 1)) && (
+          {/* Initial loading state - shows before categories load */}
+          {loading && (
+            <div className="text-center py-16">
+              <Package className="w-16 h-16 text-[#303A4D]/40 mx-auto mb-4 animate-pulse" />
+              <p className="text-2xl text-[#303A4D]/60">Loading products...</p>
+            </div>
+          )}
+
+          {/* Loading state for category switching - only when changing categories, not initial load */}
+          {isChangingCategory && !loading && (
             <div className="text-center py-8">
               <div className="w-8 h-8 border-4 border-[#FED141] border-t-transparent rounded-full animate-spin mx-auto"></div>
               <p className="text-[#303A4D]/60 mt-2">Loading products...</p>
