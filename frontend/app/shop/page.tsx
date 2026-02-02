@@ -221,6 +221,7 @@ export default function ShopPage() {
   const mountedRef = useRef(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const categoryChangeRef = useRef(false)
 
   // Fetch products with category filtering and abort controller
   const fetchProducts = useCallback(async (categoriesData?: any[], append = false, pageOverride?: number) => {
@@ -479,17 +480,24 @@ export default function ShopPage() {
     // Skip on initial mount - initialization effect handles that
     if (!initializedRef.current || allCategories.length === 0) return
     
+    // Mark that we're changing category to prevent infinite scroll from triggering
+    categoryChangeRef.current = true
     setCurrentPage(1)
     setHasMore(true)
     // Clear products immediately to prevent showing stale data from previous category
     setProducts([])
     // Fetch products immediately for the new category, passing allCategories explicitly
     // Pass page 1 explicitly to avoid closure issue with currentPage
-    fetchProducts(allCategories, false, 1)
+    fetchProducts(allCategories, false, 1).finally(() => {
+      // Reset the flag after fetch completes
+      categoryChangeRef.current = false
+    })
   }, [debouncedSearchQuery, selectedCategory, allCategories])
 
   // Fetch more products when page changes (for infinite scroll, page > 1)
   useEffect(() => {
+    // Don't fetch if we're in the middle of a category change
+    if (categoryChangeRef.current) return
     if (initializedRef.current && allCategories.length > 0 && currentPage > 1) {
       fetchProducts(undefined, true)
     }
