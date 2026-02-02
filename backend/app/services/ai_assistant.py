@@ -228,11 +228,24 @@ Example response with shopping list:
 
 CRITICAL RULES - YOU MUST FOLLOW THESE:
 1. **USE THE RECIPES** - When user mentions jollof, waakye, fufu, banku, light soup, groundnut soup, etc., ALWAYS look up the recipe in the GHANAIAN RECIPES KNOWLEDGE BASE and list ALL ingredients
-2. **NEVER invent products** - ONLY recommend products with EXACT names from the PRODUCT CATALOG
-3. **Use exact product names** - If catalog says "Premium Rice 65kg Bag", say that exact name, NOT "Rice 1kg"
-4. **Use exact prices** - Only quote prices shown in the catalog
-5. **List missing items** - If an ingredient isn't in our catalog, add it to "missing_items" so customer knows
-6. **Never make up quantities** - Use the unit sizes shown in the catalog
+2. **ONLY MATCH RELEVANT PRODUCTS** - A product is ONLY relevant if it matches a recipe ingredient:
+   - "Rice" ingredient → only products with "rice" in the name
+   - "Tomatoes" ingredient → only products with "tomato" in the name
+   - "Onion" ingredient → only products with "onion" in the name
+   - "Ginger" ingredient → only products with "ginger" in the name
+   - DO NOT include "Corn Dough" for Jollof - Jollof does NOT use corn dough!
+   - DO NOT include random products that don't match any ingredient!
+3. **Use exact product names and prices** from the PRODUCT CATALOG
+4. **List missing items** - If an ingredient isn't in our catalog, add it to "missing_items"
+5. **Never make up quantities** - Use the unit sizes shown in the catalog
+
+**IMPORTANT - PRODUCT MATCHING RULES:**
+- For JOLLOF: Only include products matching: Rice, Oil, Tomato, Pepper, Onion, Bell pepper, Thyme, Salt, Chicken/Beef/Fish, Stock
+- For WAAKYE: Only include products matching: Rice, Beans, Onion, Oil, Gari, Spaghetti, Eggs, Fish
+- For BANKU: Only include products matching: Corn dough, Cassava dough (Banku DOES use corn dough)
+- For FUFU: Only include products matching: Cassava, Plantain
+
+**DO NOT recommend a product unless it DIRECTLY matches a recipe ingredient!**
 
 RECIPE NAME MAPPINGS (treat these as the same):
 - "jollof" or "jollof rice" = "GHANA JOLLOF RICE"
@@ -250,13 +263,16 @@ RECIPE NAME MAPPINGS (treat these as the same):
 EXAMPLE - User says "I want to cook jollof":
 "For Ghana Jollof Rice, you'll need: Rice, Vegetable Oil, Fresh tomatoes, Tomato paste, Thyme, Scotch bonnet pepper, Onion, Green bell pepper, Bayleaf, Salt, Protein (chicken/beef/fish), Stock.
 
-From our catalog, I found:
-[list matching products with prices]
+From our catalog, I found these matching items:
+- [Rice product] - GH₵XX (matches: Rice)
+- [Tomato product] - GH₵XX (matches: Fresh tomatoes)
+- [Onion product] - GH₵XX (matches: Onion)
+- [Pepper product] - GH₵XX (matches: Scotch bonnet pepper)
 
-Missing items you'll need to get elsewhere:
-[list items not in catalog]"
+Missing items (not in our catalog):
+- Vegetable Oil, Tomato paste, Thyme, Bayleaf, Salt, Stock"
 
-BE HELPFUL AND USE THE RECIPES!"""
+NEVER include products like "Corn Dough" for Jollof - that's WRONG!"""
     
     def get_product_catalog(self, db: Session, message: str = "") -> str:
         """Fetch and format product catalog for AI context - limited to avoid token limits"""

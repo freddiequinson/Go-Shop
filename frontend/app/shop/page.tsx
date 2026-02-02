@@ -467,21 +467,26 @@ export default function ShopPage() {
   }, [])
 
   // Reset to page 1 and clear products when search query or category changes
+  // Then immediately fetch new products for the selected category
   useEffect(() => {
+    // Skip on initial mount - initialization effect handles that
+    if (!initializedRef.current || allCategories.length === 0) return
+    
     setCurrentPage(1)
     setHasMore(true)
     // Clear products immediately to prevent showing stale data from previous category
     setProducts([])
+    // Fetch products immediately for the new category
+    fetchProducts(undefined, false)
   }, [debouncedSearchQuery, selectedCategory])
 
-  // Fetch products when page, search, or category changes (after initialization)
+  // Fetch more products when page changes (for infinite scroll, page > 1)
   useEffect(() => {
-    if (initializedRef.current && allCategories.length > 0) {
-      const shouldAppend = currentPage > 1
-      fetchProducts(undefined, shouldAppend)
+    if (initializedRef.current && allCategories.length > 0 && currentPage > 1) {
+      fetchProducts(undefined, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearchQuery, selectedCategory])
+  }, [currentPage])
 
   // Infinite scroll: Load more products when user scrolls near bottom
   useEffect(() => {
