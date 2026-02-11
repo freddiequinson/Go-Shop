@@ -173,8 +173,9 @@ export default function NewPackagePage() {
       return
     }
 
-    if (selectedItems.length === 0) {
-      setError("Please add at least one product to the package")
+    // Either products OR contents_description is required
+    if (selectedItems.length === 0 && !formData.contents_description?.trim()) {
+      setError("Please add products OR provide a contents description")
       return
     }
 
