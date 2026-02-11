@@ -22,6 +22,7 @@ interface PackageData {
   items_count: number
   is_active: boolean
   is_featured: boolean
+  show_savings?: boolean
   items?: PackageItemData[]
 }
 
@@ -57,6 +58,7 @@ interface MenuItem {
   originalPrice: number | null
   description: string | null
   itemsCount: number
+  showSavings: boolean
 }
 
 const clipIds = ["clip-heart", "clip-hexagons", "clip-pixels"]
@@ -124,7 +126,8 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
       price: pkg.package_price,
       originalPrice: pkg.original_value,
       description: pkg.description,
-      itemsCount: pkg.items_count
+      itemsCount: pkg.items_count,
+      showSavings: pkg.show_savings !== false  // Default to true if not set
     }))
   }
 
@@ -351,7 +354,7 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                           >
                             {formatPrice(item.price)}
                           </span>
-                          {item.originalPrice && item.originalPrice > item.price && (
+                          {item.showSavings && item.originalPrice && item.originalPrice > item.price && (
                             <span className="text-lg text-gray-400 line-through">
                               {formatPrice(item.originalPrice)}
                             </span>

@@ -52,6 +52,7 @@ class PackageBase(BaseModel):
     display_order: int = 0
     is_active: bool = True
     is_featured: bool = True
+    show_savings: bool = True  # Show savings on landing/shop pages
 
 
 class PackageCreate(PackageBase):
@@ -70,6 +71,7 @@ class PackageUpdate(BaseModel):
     display_order: Optional[int] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
+    show_savings: Optional[bool] = None
 
 
 class PackageResponse(PackageBase):
@@ -99,6 +101,7 @@ class PackageListResponse(BaseModel):
     items_count: int = 0
     is_active: bool
     is_featured: bool
+    show_savings: bool = True
     display_order: int
 
     class Config:

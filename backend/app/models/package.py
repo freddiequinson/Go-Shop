@@ -76,6 +76,7 @@ class Package(Base):
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
     is_featured = Column(Boolean, default=True, nullable=False)  # Show in featured sections
+    show_savings = Column(Boolean, default=True, nullable=False)  # Show savings on landing/shop pages
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

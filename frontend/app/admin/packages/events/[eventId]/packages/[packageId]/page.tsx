@@ -24,12 +24,14 @@ interface SelectedItem {
   quantity: number
 }
 
-export default function NewPackagePage() {
+export default function EditPackagePage() {
   const params = useParams()
   const router = useRouter()
   const eventId = params.eventId as string
+  const packageId = params.packageId as string
   
   const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
   const [products, setProducts] = useState<Product[]>([])
@@ -42,9 +44,10 @@ export default function NewPackagePage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    contents_description: "",  // What's included (for packages without linked products)
+    contents_description: "",
     image_url: "",
     package_price: "",
+    original_value: "",
     stock_quantity: "",
     is_active: true,
     is_featured: true,
@@ -52,6 +55,59 @@ export default function NewPackagePage() {
   })
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
+
+  // Fetch existing package data
+  useEffect(() => {
+    if (packageId) {
+      fetchPackage()
+    }
+  }, [packageId])
+
+  const fetchPackage = async () => {
+    try {
+      setFetching(true)
+      const token = localStorage.getItem("access_token")
+      const response = await fetch(`${getApiBaseUrl()}/packages/admin/packages/${packageId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setFormData({
+          name: data.name || "",
+          description: data.description || "",
+          contents_description: data.contents_description || "",
+          image_url: data.image_url || "",
+          package_price: data.package_price?.toString() || "",
+          original_value: data.original_value?.toString() || "",
+          stock_quantity: data.stock_quantity?.toString() || "",
+          is_active: data.is_active ?? true,
+          is_featured: data.is_featured ?? true,
+          show_savings: data.show_savings ?? true,
+        })
+        
+        // Load existing items
+        if (data.items && data.items.length > 0) {
+          setSelectedItems(data.items.map((item: any) => ({
+            product_id: item.product_id,
+            product_name: item.product_name || item.product?.name || "Unknown",
+            product_image: item.product_image || item.product?.image || null,
+            product_price: item.product_price || item.product?.price || 0,
+            product_unit: item.product_unit || item.product?.unit || "unit",
+            quantity: item.quantity || 1,
+          })))
+        }
+      } else {
+        setError("Failed to load package")
+        router.push(`/admin/packages/events/${eventId}`)
+      }
+    } catch (error) {
+      console.error("Failed to fetch package:", error)
+      setError("Failed to load package")
+    } finally {
+      setFetching(false)
+    }
+  }
 
   const searchProducts = async (query: string) => {
     if (!query.trim()) {
@@ -184,20 +240,19 @@ export default function NewPackagePage() {
       setLoading(true)
       const token = localStorage.getItem("access_token")
       
-      const response = await fetch(`${getApiBaseUrl()}/packages/admin/packages`, {
-        method: "POST",
+      const response = await fetch(`${getApiBaseUrl()}/packages/admin/packages/${packageId}`, {
+        method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          event_id: eventId,
           name: formData.name,
           description: formData.description || null,
           contents_description: formData.contents_description || null,
           image_url: formData.image_url || null,
           package_price: parseFloat(formData.package_price),
-          original_value: calculateOriginalValue(),
+          original_value: selectedItems.length > 0 ? calculateOriginalValue() : (formData.original_value ? parseFloat(formData.original_value) : null),
           stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
           is_active: formData.is_active,
           is_featured: formData.is_featured,
@@ -213,14 +268,13 @@ export default function NewPackagePage() {
         router.push(`/admin/packages/events/${eventId}`)
       } else {
         const errorData = await response.json()
-        // Handle validation errors (422)
         if (errorData.detail && Array.isArray(errorData.detail)) {
           const messages = errorData.detail.map((err: { msg: string; loc: string[] }) => 
             `${err.loc?.join(' > ') || 'Field'}: ${err.msg}`
           ).join(', ')
           setError(messages)
         } else {
-          setError(typeof errorData.detail === 'string' ? errorData.detail : "Failed to create package")
+          setError(typeof errorData.detail === 'string' ? errorData.detail : "Failed to update package")
         }
       }
     } catch (err) {
@@ -231,6 +285,18 @@ export default function NewPackagePage() {
   }
 
   const formatPrice = (price: number) => price.toFixed(2)
+
+  if (fetching) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-40 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -243,8 +309,8 @@ export default function NewPackagePage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Event
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Create Package</h1>
-        <p className="text-gray-500 mt-1">Add a new promotional package with products</p>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Package</h1>
+        <p className="text-gray-500 mt-1">Update package details and contents</p>
       </div>
 
       {/* Form */}
@@ -537,6 +603,26 @@ export default function NewPackagePage() {
           </div>
         </div>
 
+        {/* Original Value (for description-only packages) */}
+        {selectedItems.length === 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Original Value (GH)
+              <span className="text-gray-400 font-normal ml-2">(optional - for showing savings)</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.original_value}
+              onChange={(e) => setFormData({ ...formData, original_value: e.target.value })}
+              placeholder="0.00"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#93C90F]/20 focus:border-[#93C90F]"
+            />
+            <p className="text-xs text-gray-500 mt-1">Set this to show "Save GHX" on the package</p>
+          </div>
+        )}
+
         {/* Toggles */}
         <div className="flex flex-col gap-3">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -575,7 +661,7 @@ export default function NewPackagePage() {
             disabled={loading}
             className="px-6 py-2 bg-[#93C90F] text-white rounded-lg hover:bg-[#7ab00d] transition-colors disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Package"}
+            {loading ? "Saving..." : "Save Changes"}
           </button>
           <Link
             href={`/admin/packages/events/${eventId}`}
