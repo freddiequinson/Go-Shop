@@ -23,7 +23,7 @@ class CartProductDetails(BaseModel):
 
 # Cart Item schemas
 class CartItemBase(BaseModel):
-    product_id: str
+    product_id: Optional[str] = None  # Optional for package items
     quantity: Decimal
 
     @validator('quantity')
@@ -49,9 +49,13 @@ class CartItemUpdate(BaseModel):
                 raise ValueError('Quantity cannot exceed 10,000 units')
         return v
 
-class CartItemResponse(CartItemBase):
+class CartItemResponse(BaseModel):
     id: str
     cart_id: str
+    product_id: Optional[str] = None  # Optional for package items
+    package_id: Optional[str] = None  # For package items
+    item_type: str = "product"  # 'product' or 'package'
+    quantity: Decimal
     price_per_unit_cedis: Decimal
     line_total_cedis: Decimal
     created_at: datetime
