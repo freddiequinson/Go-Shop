@@ -153,7 +153,7 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
       // Fetch the full package details with items
       const response = await fetch(`${getApiBaseUrl()}/packages/package/${packageId}`)
       if (!response.ok) {
-        throw new Error("Failed to fetch package details")
+        throw new Error("Failure to fetch package details")
       }
       
       const packageData = await response.json()
