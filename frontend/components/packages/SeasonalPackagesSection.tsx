@@ -23,6 +23,7 @@ interface PackageData {
   is_active: boolean
   is_featured: boolean
   show_savings?: boolean
+  image_shape?: string
   items?: PackageItemData[]
 }
 
@@ -59,6 +60,7 @@ interface MenuItem {
   description: string | null
   itemsCount: number
   showSavings: boolean
+  imageShape: string
 }
 
 const clipIds = ["clip-heart", "clip-hexagons", "clip-pixels"]
@@ -117,18 +119,22 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
     if (events.length === 0) return []
     
     const allPackages = events.flatMap(event => event.packages)
-    return allPackages.slice(0, 3).map((pkg, index) => ({
-      num: String(index + 1).padStart(2, '0'),
-      name: pkg.name,
-      clipId: clipIds[index % clipIds.length],
-      image: pkg.image_url || `https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1000`,
-      packageId: pkg.id,
-      price: pkg.package_price,
-      originalPrice: pkg.original_value,
-      description: pkg.description,
-      itemsCount: pkg.items_count,
-      showSavings: pkg.show_savings !== false  // Default to true if not set
-    }))
+    return allPackages.slice(0, 3).map((pkg, index) => {
+      const shape = pkg.image_shape || "heart"
+      return {
+        num: String(index + 1).padStart(2, '0'),
+        name: pkg.name,
+        clipId: `clip-${shape}`,
+        image: pkg.image_url || `https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1000`,
+        packageId: pkg.id,
+        price: pkg.package_price,
+        originalPrice: pkg.original_value,
+        description: pkg.description,
+        itemsCount: pkg.items_count,
+        showSavings: pkg.show_savings !== false,
+        imageShape: shape
+      }
+    })
   }
 
   const items = getMenuItems()
@@ -451,6 +457,52 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                   rx="4" 
                 />
               ))}
+            </clipPath>
+
+            {/* Gift Box Shape */}
+            <clipPath id="clip-giftbox">
+              <rect className="path" x="80" y="120" width="340" height="320" rx="20" />
+              <rect className="path" x="60" y="80" width="380" height="60" rx="12" />
+              <rect className="path" x="220" y="80" width="60" height="360" rx="0" />
+              <rect className="path" x="80" y="220" width="340" height="40" rx="0" />
+              <path className="path" d="M250,80 C250,80 200,20 150,40 C100,60 120,100 150,120 C180,140 250,80 250,80 Z" />
+              <path className="path" d="M250,80 C250,80 300,20 350,40 C400,60 380,100 350,120 C320,140 250,80 250,80 Z" />
+            </clipPath>
+
+            {/* Star Shape */}
+            <clipPath id="clip-star">
+              <path 
+                className="path" 
+                d="M250,30 L295,180 L450,180 L325,275 L370,430 L250,340 L130,430 L175,275 L50,180 L205,180 Z"
+              />
+            </clipPath>
+
+            {/* Circle Shape */}
+            <clipPath id="clip-circle">
+              <circle className="path" cx="250" cy="250" r="220" />
+            </clipPath>
+
+            {/* Diamond Shape */}
+            <clipPath id="clip-diamond">
+              <path 
+                className="path" 
+                d="M250,20 L450,250 L250,480 L50,250 Z"
+              />
+            </clipPath>
+
+            {/* Flower Shape */}
+            <clipPath id="clip-flower">
+              <circle className="path" cx="250" cy="150" r="100" />
+              <circle className="path" cx="150" cy="250" r="100" />
+              <circle className="path" cx="350" cy="250" r="100" />
+              <circle className="path" cx="200" cy="350" r="100" />
+              <circle className="path" cx="300" cy="350" r="100" />
+              <circle className="path" cx="250" cy="250" r="80" />
+            </clipPath>
+
+            {/* Rounded Square */}
+            <clipPath id="clip-rounded">
+              <rect className="path" x="40" y="40" width="420" height="420" rx="60" />
             </clipPath>
           </defs>
 

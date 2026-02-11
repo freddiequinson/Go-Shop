@@ -65,6 +65,7 @@ async def get_active_events(db: Session = Depends(get_db)):
                 is_active=pkg.is_active,
                 is_featured=pkg.is_featured,
                 show_savings=pkg.show_savings if hasattr(pkg, 'show_savings') else True,
+                image_shape=pkg.image_shape if hasattr(pkg, 'image_shape') else "heart",
                 display_order=pkg.display_order
             ))
         

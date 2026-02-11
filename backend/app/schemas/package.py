@@ -53,6 +53,7 @@ class PackageBase(BaseModel):
     is_active: bool = True
     is_featured: bool = True
     show_savings: bool = True  # Show savings on landing/shop pages
+    image_shape: str = "heart"  # Shape for image display: heart, hexagons, pixels, giftbox, star, circle, diamond
 
 
 class PackageCreate(PackageBase):
@@ -72,6 +73,7 @@ class PackageUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
     show_savings: Optional[bool] = None
+    image_shape: Optional[str] = None
 
 
 class PackageResponse(PackageBase):
@@ -102,6 +104,7 @@ class PackageListResponse(BaseModel):
     is_active: bool
     is_featured: bool
     show_savings: bool = True
+    image_shape: str = "heart"
     display_order: int
 
     class Config:

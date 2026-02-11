@@ -49,7 +49,20 @@ export default function NewPackagePage() {
     is_active: true,
     is_featured: true,
     show_savings: true,
+    image_shape: "heart",
   })
+
+  const shapeOptions = [
+    { value: "heart", label: "Heart", icon: "❤️" },
+    { value: "hexagons", label: "Grid Blocks", icon: "⬡" },
+    { value: "pixels", label: "Pixel Grid", icon: "▦" },
+    { value: "giftbox", label: "Gift Box", icon: "🎁" },
+    { value: "star", label: "Star", icon: "⭐" },
+    { value: "circle", label: "Circle", icon: "⬤" },
+    { value: "diamond", label: "Diamond", icon: "◆" },
+    { value: "flower", label: "Flower", icon: "🌸" },
+    { value: "rounded", label: "Rounded Square", icon: "▢" },
+  ]
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
 
@@ -202,6 +215,7 @@ export default function NewPackagePage() {
           is_active: formData.is_active,
           is_featured: formData.is_featured,
           show_savings: formData.show_savings,
+          image_shape: formData.image_shape,
           items: selectedItems.map((item) => ({
             product_id: item.product_id,
             quantity: item.quantity,
@@ -535,6 +549,31 @@ export default function NewPackagePage() {
             />
             <p className="text-xs text-gray-500 mt-1">Leave empty for unlimited</p>
           </div>
+        </div>
+
+        {/* Image Shape Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Image Shape
+          </label>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {shapeOptions.map((shape) => (
+              <button
+                key={shape.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, image_shape: shape.value })}
+                className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                  formData.image_shape === shape.value
+                    ? "border-[#93C90F] bg-[#93C90F]/10"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <span className="text-2xl">{shape.icon}</span>
+                <span className="text-xs text-gray-600">{shape.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">Select the shape for displaying the package image on landing/shop pages</p>
         </div>
 
         {/* Toggles */}

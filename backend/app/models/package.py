@@ -77,6 +77,7 @@ class Package(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_featured = Column(Boolean, default=True, nullable=False)  # Show in featured sections
     show_savings = Column(Boolean, default=True, nullable=False)  # Show savings on landing/shop pages
+    image_shape = Column(String(50), default="heart", nullable=False)  # Shape for image display: heart, hexagons, pixels, giftbox, star, circle, diamond
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
