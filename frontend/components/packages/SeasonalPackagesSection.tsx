@@ -282,15 +282,15 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
     <div 
       ref={containerRef} 
       className={cn(
-        "relative flex flex-col md:flex-row items-center justify-between min-h-screen w-full p-8 md:p-24 overflow-hidden transition-colors duration-500",
+        "relative flex flex-col md:flex-row items-center justify-between min-h-[80vh] md:min-h-screen w-full px-4 py-6 md:p-24 overflow-hidden transition-colors duration-500",
         "bg-white dark:bg-[#050505]"
       )}
     >
       {/* Event Header - Name, Description, Lottie */}
-      <div className="absolute top-8 left-8 md:left-24 z-30 max-w-md">
-        <div className="flex items-center gap-4 mb-3">
+      <div className="relative md:absolute md:top-8 md:left-24 z-30 max-w-md mb-6 md:mb-0">
+        <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
           {activeEvent?.lottie_animation && (
-            <div className="w-16 h-16 flex-shrink-0">
+            <div className="w-10 h-10 md:w-16 md:h-16 flex-shrink-0">
               <DotLottieReact
                 src={`/animations/${activeEvent.lottie_animation}`}
                 loop
@@ -300,34 +300,34 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
             </div>
           )}
           <h1 
-            className="text-3xl md:text-4xl font-black uppercase tracking-tight"
+            className="text-2xl md:text-4xl font-black uppercase tracking-tight"
             style={{ color: themeColor }}
           >
             {activeEvent?.name}
           </h1>
         </div>
         {activeEvent?.description && (
-          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-400 text-xs md:text-base leading-relaxed line-clamp-2 md:line-clamp-none">
             {activeEvent.description}
           </p>
         )}
       </div>
       
       {/* LEFT SIDE: HIGH CONTRAST MENU */}
-      <div className="z-20 w-full md:w-1/2 mt-32 md:mt-24">
+      <div className="z-20 w-full md:w-1/2 mt-4 md:mt-24">
         <nav>
-          <ul className="flex flex-col gap-10 md:gap-14">
+          <ul className="flex flex-col gap-6 md:gap-14">
             {items.map((item, index) => (
               <li
                 key={item.num}
                 onMouseEnter={() => handleItemHover(index)}
                 className="group cursor-pointer"
               >
-                <div className="flex items-start gap-4 md:gap-6">
+                <div className="flex items-start gap-3 md:gap-6">
                   {/* Numbers */}
                   <span 
                     className={cn(
-                      "text-2xl md:text-3xl font-bold transition-all duration-500 mt-2",
+                      "text-lg md:text-3xl font-bold transition-all duration-500 mt-1 md:mt-2",
                       activeIndex === index 
                         ? "scale-110" 
                         : "text-zinc-400 dark:text-zinc-600" 
@@ -338,11 +338,11 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                   </span>
                   
                   {/* Main Content */}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h2 className={cn(
-                      "text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-tight transition-all duration-700",
+                      "text-xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-tight transition-all duration-700 truncate md:whitespace-normal",
                       activeIndex === index 
-                        ? "text-zinc-950 dark:text-white opacity-100 translate-x-4" 
+                        ? "text-zinc-950 dark:text-white opacity-100 md:translate-x-4" 
                         : "opacity-40 translate-x-0 " + 
                           "text-zinc-500 dark:text-transparent " + 
                           "dark:[text-stroke:1.5px_#52525b] dark:[-webkit-text-stroke:1.5px_#52525b]"
@@ -352,16 +352,16 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                     
                     {/* Price and Add to Cart - visible when active */}
                     {activeIndex === index && (
-                      <div className="mt-4 flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-300">
-                        <div className="flex items-baseline gap-2">
+                      <div className="mt-2 md:mt-4 flex flex-wrap items-center gap-2 md:gap-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                        <div className="flex items-baseline gap-1 md:gap-2">
                           <span 
-                            className="text-2xl md:text-3xl font-bold"
+                            className="text-lg md:text-3xl font-bold"
                             style={{ color: themeColor }}
                           >
                             {formatPrice(item.price)}
                           </span>
                           {item.showSavings && item.originalPrice && item.originalPrice > item.price && (
-                            <span className="text-lg text-gray-400 line-through">
+                            <span className="text-sm md:text-lg text-gray-400 line-through">
                               {formatPrice(item.originalPrice)}
                             </span>
                           )}
@@ -370,7 +370,7 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                           onClick={() => handleAddToCart(item.packageId, item.name)}
                           disabled={addingToCart === item.packageId || addedToCart === item.packageId}
                           className={cn(
-                            "flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-white transition-all duration-300",
+                            "flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-1.5 md:py-2.5 rounded-full font-semibold text-white text-sm md:text-base transition-all duration-300",
                             "hover:scale-105 active:scale-95 disabled:opacity-70",
                             addedToCart === item.packageId && "bg-green-500"
                           )}
@@ -379,26 +379,27 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                           {addingToCart === item.packageId ? (
                             <>
                               <span className="animate-spin">⏳</span>
-                              Adding...
+                              <span className="hidden sm:inline">Adding...</span>
                             </>
                           ) : addedToCart === item.packageId ? (
                             <>
-                              <Check className="w-5 h-5" />
-                              Added!
+                              <Check className="w-4 h-4 md:w-5 md:h-5" />
+                              <span className="hidden sm:inline">Added!</span>
                             </>
                           ) : (
                             <>
-                              <Plus className="w-5 h-5" />
-                              Add to Cart
+                              <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                              <span className="hidden sm:inline">Add to Cart</span>
+                              <span className="sm:hidden">Add</span>
                             </>
                           )}
                         </button>
                       </div>
                     )}
                     
-                    {/* Description - visible when active */}
+                    {/* Description - visible when active (hidden on mobile) */}
                     {activeIndex === index && item.description && (
-                      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm animate-in fade-in slide-in-from-left-4 duration-300 delay-100">
+                      <p className="hidden md:block mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm animate-in fade-in slide-in-from-left-4 duration-300 delay-100">
                         {item.description}
                       </p>
                     )}
@@ -411,13 +412,13 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
       </div>
 
       {/* RIGHT SIDE: HEART SHAPE SVG */}
-      <div className="relative w-full md:w-1/2 flex justify-center items-center mt-16 md:mt-0">
+      <div className="relative w-full md:w-1/2 flex justify-center items-center mt-8 md:mt-0">
         <div 
-          className="absolute w-[120%] h-[120%] blur-[120px] rounded-full transition-opacity duration-1000 opacity-20"
+          className="absolute w-[100%] md:w-[120%] h-[100%] md:h-[120%] blur-[80px] md:blur-[120px] rounded-full transition-opacity duration-1000 opacity-20"
           style={{ backgroundColor: themeColor }}
         />
         
-        <svg viewBox="0 0 500 500" className="w-[100%] max-w-[500px] h-auto z-10 drop-shadow-xl dark:drop-shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+        <svg viewBox="0 0 500 500" className="w-[70%] md:w-[100%] max-w-[280px] md:max-w-[500px] h-auto z-10 drop-shadow-xl dark:drop-shadow-[0_0_60px_rgba(0,0,0,0.8)]">
           <defs>
             {/* Heart Shape Clip Path */}
             <clipPath id="clip-heart">
