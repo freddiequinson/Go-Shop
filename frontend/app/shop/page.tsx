@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { getApiBaseUrl, buildApiUrl } from "@/lib/api/url-helper"
 import AIChatbot from "@/components/AIChatbot"
+import SeasonalPackagesSection from "@/components/packages/SeasonalPackagesSection"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import {
@@ -668,6 +669,9 @@ export default function ShopPage() {
           </div>
         </div>
       </section>
+
+      {/* Seasonal Packages Section */}
+      <SeasonalPackagesSection variant="shop" />
 
       {/* Main Content */}
       <section className="px-4 md:px-8 pt-1 pb-4 md:pt-2 md:pb-6">

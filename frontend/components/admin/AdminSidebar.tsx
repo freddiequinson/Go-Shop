@@ -33,6 +33,11 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Packages",
+    href: "/admin/packages",
+    icon: Gift
+  },
+  {
     title: "Warehouse",
     icon: Warehouse,
     children: [

@@ -16,6 +16,8 @@ import AIChatbot from "@/components/AIChatbot"
 import { DeviceMockup } from "@/components/ui/macbook-scroll"
 import { useToast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api/client"
+import SeasonalPackagesSection from "@/components/packages/SeasonalPackagesSection"
+import SeasonalPopup from "@/components/packages/SeasonalPopup"
 
 // CDN base URL for static images (faster loading)
 const CDN_URL = "https://goshop-images.lon1.cdn.digitaloceanspaces.com/static/images"
@@ -550,6 +552,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Seasonal Packages Section */}
+      <SeasonalPackagesSection variant="landing" />
+
       {/* Community Section */}
       <motion.section 
         initial={{ opacity: 0, y: 60 }}
@@ -963,6 +968,9 @@ export default function Home() {
 
       {/* AI Chatbot */}
       <AIChatbot />
+
+      {/* Seasonal Popup */}
+      <SeasonalPopup />
     </div>
   )
 }
