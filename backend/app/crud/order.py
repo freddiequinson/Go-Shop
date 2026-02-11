@@ -117,15 +117,25 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
         if item_type == 'package' and cart_item.get('package_id'):
             from app.models.package import Package
             package = db.query(Package).filter(Package.id == cart_item['package_id']).first()
-            if package and package.items:
-                package_items_snapshot = [
-                    {
-                        'product_id': item.product_id,
-                        'product_name': item.product.name if item.product else 'Unknown',
-                        'quantity': item.quantity
-                    }
-                    for item in package.items
-                ]
+            if package:
+                if package.items:
+                    # Package has linked products
+                    package_items_snapshot = [
+                        {
+                            'product_id': item.product_id,
+                            'product_name': item.product.name if item.product else 'Unknown',
+                            'quantity': item.quantity
+                        }
+                        for item in package.items
+                    ]
+                elif package.contents_description:
+                    # Package has description-only contents (no linked products)
+                    package_items_snapshot = [
+                        {
+                            'contents_description': package.contents_description,
+                            'type': 'description_only'
+                        }
+                    ]
         
         order_item = OrderItem(
             order_id=order.id,

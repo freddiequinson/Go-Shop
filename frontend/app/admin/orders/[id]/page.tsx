@@ -445,14 +445,20 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
                       {item.item_type === 'package' && item.package_items_snapshot && item.package_items_snapshot.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-pink-200">
                           <p className="text-xs font-semibold text-pink-600 mb-2">Package Contents:</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {item.package_items_snapshot.map((pkgItem: any, pkgIndex: number) => (
-                              <div key={pkgIndex} className="text-xs text-[#303A4D]/70 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
-                                {pkgItem.quantity}x {pkgItem.product_name}
-                              </div>
-                            ))}
-                          </div>
+                          {item.package_items_snapshot[0]?.type === 'description_only' ? (
+                            <p className="text-xs text-[#303A4D]/70 whitespace-pre-line">
+                              {item.package_items_snapshot[0].contents_description}
+                            </p>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              {item.package_items_snapshot.map((pkgItem: any, pkgIndex: number) => (
+                                <div key={pkgIndex} className="text-xs text-[#303A4D]/70 flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                                  {pkgItem.quantity}x {pkgItem.product_name}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

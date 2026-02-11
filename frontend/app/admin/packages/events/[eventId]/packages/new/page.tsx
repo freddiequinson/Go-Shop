@@ -42,6 +42,7 @@ export default function NewPackagePage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    contents_description: "",  // What's included (for packages without linked products)
     image_url: "",
     package_price: "",
     stock_quantity: "",
@@ -191,6 +192,7 @@ export default function NewPackagePage() {
           event_id: eventId,
           name: formData.name,
           description: formData.description || null,
+          contents_description: formData.contents_description || null,
           image_url: formData.image_url || null,
           package_price: parseFloat(formData.package_price),
           original_value: calculateOriginalValue(),
@@ -273,10 +275,28 @@ export default function NewPackagePage() {
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Brief description of what's included..."
+            placeholder="Brief marketing description of the package..."
+            rows={2}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#93C90F]/20 focus:border-[#93C90F]"
+          />
+        </div>
+
+        {/* Contents Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Package Contents
+            <span className="text-gray-400 font-normal ml-2">(optional - use if not adding products below)</span>
+          </label>
+          <textarea
+            value={formData.contents_description}
+            onChange={(e) => setFormData({ ...formData, contents_description: e.target.value })}
+            placeholder="e.g., 1x Bottle of Wine, 2x Chocolate Boxes, 1x Rose Bouquet, Romantic Dinner for 2..."
             rows={3}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#93C90F]/20 focus:border-[#93C90F]"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Describe what's included in the package. Use this for packages that don't have products in our inventory.
+          </p>
         </div>
 
         {/* Package Image Upload */}

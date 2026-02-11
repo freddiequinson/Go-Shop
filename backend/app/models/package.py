@@ -56,6 +56,10 @@ class Package(Base):
     name = Column(String(255), nullable=False, index=True)  # e.g., "Romantic Dinner Package"
     description = Column(Text, nullable=True)
     
+    # Contents description - what's included (for packages without linked products)
+    # e.g., "1x Bottle of Wine, 2x Chocolate Boxes, 1x Rose Bouquet"
+    contents_description = Column(Text, nullable=True)
+    
     # Package image (stored on CDN)
     image_url = Column(String(500), nullable=True)
     

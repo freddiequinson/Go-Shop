@@ -513,7 +513,7 @@ export default function CheckoutPage() {
               ← Continue Shopping
             </Link>
             <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-              <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="md:w-[124px] md:h-[39px]" />
+              <Image src="/images/logo.png" alt="go-shop" width={124} height={39} className="w-[80px] h-auto md:w-[124px] object-contain" />
             </Link>
             <Link href={isAuthenticated ? "/profile" : "/login"}>
               <button className="w-12 h-12 rounded-full bg-[#303A4D] flex items-center justify-center overflow-hidden relative cursor-pointer">
@@ -546,7 +546,7 @@ export default function CheckoutPage() {
           </Link>
 
           <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <Image src="/images/logo.png" alt="go-shop" width={80} height={25} className="md:w-[124px] md:h-[39px]" />
+            <Image src="/images/logo.png" alt="go-shop" width={124} height={39} className="w-[80px] h-auto md:w-[124px] object-contain" />
           </Link>
 
           <Link href={isAuthenticated ? "/profile" : "/login"}>

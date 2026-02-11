@@ -44,6 +44,7 @@ class PackageItemResponse(PackageItemBase):
 class PackageBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
+    contents_description: Optional[str] = None  # What's included (for packages without linked products)
     image_url: Optional[str] = None
     package_price: Decimal = Field(..., gt=0)
     original_value: Optional[Decimal] = None
@@ -61,6 +62,7 @@ class PackageCreate(PackageBase):
 class PackageUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    contents_description: Optional[str] = None
     image_url: Optional[str] = None
     package_price: Optional[Decimal] = None
     original_value: Optional[Decimal] = None
@@ -89,6 +91,7 @@ class PackageListResponse(BaseModel):
     id: str
     name: str
     description: Optional[str] = None
+    contents_description: Optional[str] = None
     image_url: Optional[str] = None
     package_price: Decimal
     original_value: Optional[Decimal] = None
