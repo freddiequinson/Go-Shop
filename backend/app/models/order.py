@@ -111,19 +111,26 @@ class Order(Base):
 
 
 class OrderItem(Base):
-    """Order item model - snapshot of product at time of order"""
+    """Order item model - snapshot of product or package at time of order"""
     __tablename__ = "order_items"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     order_id = Column(String, ForeignKey("orders.id"), nullable=False)
-    product_id = Column(String, ForeignKey("products.id"), nullable=False)
+    product_id = Column(String, ForeignKey("products.id"), nullable=True)  # Nullable when it's a package
+    package_id = Column(String, ForeignKey("packages.id"), nullable=True)  # For package orders
     
-    # Snapshot of product details at time of order
-    product_name = Column(String(255), nullable=False)
+    # Item type: 'product' or 'package'
+    item_type = Column(String(20), default="product", nullable=False)
+    
+    # Snapshot of product/package details at time of order
+    product_name = Column(String(255), nullable=False)  # Used for both products and packages
     product_image_url = Column(Text, nullable=True)  # TEXT to support base64 images
     price_per_unit_cedis = Column(Numeric(10, 0), nullable=False)  # Store in cedis
     unit_type = Column(String(20), nullable=False)
     quantity = Column(Numeric(8, 2), nullable=False)
+    
+    # For packages: store the included items as JSON for reference
+    package_items_snapshot = Column(JSON, nullable=True)
     
     # Calculated totals
     line_total_cedis = Column(Numeric(12, 0), nullable=False)

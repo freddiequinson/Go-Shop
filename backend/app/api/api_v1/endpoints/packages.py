@@ -121,6 +121,90 @@ async def get_package_details(
     )
 
 
+@router.post("/package/{package_id}/add-to-cart")
+async def add_package_to_cart(
+    package_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Add a package to the user's cart as a single item.
+    The package is added with its package price, not the sum of individual products.
+    """
+    from app.models.cart import Cart, CartItem
+    from decimal import Decimal
+    
+    # Get the package with details
+    result = get_package_with_product_details(db, package_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    pkg = result["package"]
+    
+    if not pkg.is_active:
+        raise HTTPException(status_code=400, detail="Package is not available")
+    
+    # Check stock if applicable
+    if pkg.stock_quantity is not None and pkg.stock_quantity <= 0:
+        raise HTTPException(status_code=400, detail="Package is out of stock")
+    
+    # Get or create user's cart
+    cart = db.query(Cart).filter(Cart.user_id == current_user.id).first()
+    if not cart:
+        cart = Cart(user_id=current_user.id)
+        db.add(cart)
+        db.flush()
+    
+    # Check if package already in cart
+    existing_item = db.query(CartItem).filter(
+        CartItem.cart_id == cart.id,
+        CartItem.package_id == package_id
+    ).first()
+    
+    if existing_item:
+        # Increment quantity
+        existing_item.quantity = existing_item.quantity + 1
+        existing_item.line_total_cedis = existing_item.price_per_unit_cedis * existing_item.quantity
+        db.commit()
+        return {
+            "message": "Package quantity updated in cart",
+            "cart_item_id": existing_item.id,
+            "quantity": float(existing_item.quantity),
+            "package_name": pkg.name,
+            "package_price": float(pkg.package_price),
+            "line_total": float(existing_item.line_total_cedis) / 100
+        }
+    
+    # Create new cart item for the package
+    # Price is stored in cedis (multiply by 100)
+    price_cedis = int(Decimal(str(pkg.package_price)) * 100)
+    
+    cart_item = CartItem(
+        cart_id=cart.id,
+        product_id=None,  # No product, it's a package
+        package_id=package_id,
+        item_type="package",
+        item_name=pkg.name,
+        quantity=1,
+        price_per_unit_cedis=price_cedis,
+        line_total_cedis=price_cedis
+    )
+    
+    db.add(cart_item)
+    db.commit()
+    db.refresh(cart_item)
+    
+    return {
+        "message": "Package added to cart",
+        "cart_item_id": cart_item.id,
+        "quantity": 1,
+        "package_name": pkg.name,
+        "package_price": float(pkg.package_price),
+        "line_total": float(pkg.package_price),
+        "items_included": len(result["items"])
+    }
+
+
 # ============== Admin Endpoints - Seasonal Events ==============
 
 @router.get("/admin/events", response_model=List[SeasonalEventListResponse])

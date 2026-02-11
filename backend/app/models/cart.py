@@ -28,12 +28,19 @@ class Cart(Base):
 
 
 class CartItem(Base):
-    """Cart item model - products added to cart with quantities"""
+    """Cart item model - products or packages added to cart with quantities"""
     __tablename__ = "cart_items"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     cart_id = Column(String, ForeignKey("carts.id"), nullable=False)
-    product_id = Column(String, ForeignKey("products.id"), nullable=False)
+    product_id = Column(String, ForeignKey("products.id"), nullable=True)  # Nullable when it's a package
+    package_id = Column(String, ForeignKey("packages.id"), nullable=True)  # For package items
+    
+    # Item type: 'product' or 'package'
+    item_type = Column(String(20), default="product", nullable=False)
+    
+    # For packages: store the package name for display
+    item_name = Column(String(255), nullable=True)
     
     # Quantity in the product's unit type (kg, piece, liter, etc.)
     quantity = Column(Numeric(8, 2), nullable=False)

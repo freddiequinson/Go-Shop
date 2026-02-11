@@ -150,41 +150,39 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
     setAddingToCart(packageId)
     
     try {
-      // Fetch the full package details with items
-      const response = await fetch(`${getApiBaseUrl()}/packages/package/${packageId}`)
-      if (!response.ok) {
-        throw new Error("Failure to fetch package details")
+      // Get auth token
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        throw new Error("Please sign in to add items to cart")
       }
       
-      const packageData = await response.json()
-      
-      // Add each product in the package to the cart
-      if (packageData.items && packageData.items.length > 0) {
-        for (const item of packageData.items) {
-          await cartService.addToCart({
-            product_id: item.product_id,
-            quantity: item.quantity,
-          })
+      // Add the package as a single item to cart (not broken down into products)
+      const response = await fetch(`${getApiBaseUrl()}/packages/package/${packageId}/add-to-cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
-        
-        // Refresh cart to update count
-        await refreshCart()
-        
-        // Show success state
-        setAddedToCart(packageId)
-        setTimeout(() => setAddedToCart(null), 2000)
-        
-        toast({
-          title: "Added to cart!",
-          description: `${packageName} (${packageData.items.length} items) has been added to your cart`,
-        })
-      } else {
-        toast({
-          title: "Package is empty",
-          description: "This package doesn't have any items yet",
-          variant: "destructive",
-        })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || "Failed to add package to cart")
       }
+      
+      const result = await response.json()
+      
+      // Refresh cart to update count
+      await refreshCart()
+      
+      // Show success state
+      setAddedToCart(packageId)
+      setTimeout(() => setAddedToCart(null), 2000)
+      
+      toast({
+        title: "Added to cart!",
+        description: `${packageName} has been added to your cart`,
+      })
     } catch (error: any) {
       console.error("Failed to add package to cart:", error)
       toast({
@@ -333,15 +331,14 @@ export default function SeasonalPackagesSection({ variant = "landing" }: Seasona
                   {/* Main Content */}
                   <div className="flex-1">
                     <h2 className={cn(
-                      "text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-[0.85] transition-all duration-700",
+                      "text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-tight transition-all duration-700",
                       activeIndex === index 
                         ? "text-zinc-950 dark:text-white opacity-100 translate-x-4" 
                         : "opacity-40 translate-x-0 " + 
                           "text-zinc-500 dark:text-transparent " + 
                           "dark:[text-stroke:1.5px_#52525b] dark:[-webkit-text-stroke:1.5px_#52525b]"
                     )}>
-                      {item.name.split(' ')[0]}<br />
-                      {item.name.split(' ')[1] || ''}
+                      {item.name}
                     </h2>
                     
                     {/* Price and Add to Cart - visible when active */}

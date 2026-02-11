@@ -108,17 +108,37 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
         print(f"Full traceback: {traceback.format_exc()}")
         raise
     
-    # Create order items from cart items
+    # Create order items from cart items (supports both products and packages)
     for cart_item in cart_data['items']:
+        item_type = cart_item.get('item_type', 'product')
+        
+        # Build package items snapshot if it's a package
+        package_items_snapshot = None
+        if item_type == 'package' and cart_item.get('package_id'):
+            from app.models.package import Package
+            package = db.query(Package).filter(Package.id == cart_item['package_id']).first()
+            if package and package.items:
+                package_items_snapshot = [
+                    {
+                        'product_id': item.product_id,
+                        'product_name': item.product.name if item.product else 'Unknown',
+                        'quantity': item.quantity
+                    }
+                    for item in package.items
+                ]
+        
         order_item = OrderItem(
             order_id=order.id,
-            product_id=cart_item['product_id'],
+            product_id=cart_item.get('product_id'),
+            package_id=cart_item.get('package_id'),
+            item_type=item_type,
             product_name=cart_item['product_name'],
-            product_image_url=None,  # Don't store image, fetch from products table when needed
+            product_image_url=None,  # Don't store image, fetch from products/packages table when needed
             price_per_unit_cedis=cart_item['price_per_unit_cedis'],
             unit_type=cart_item['product_unit_type'],
             quantity=cart_item['quantity'],
-            line_total_cedis=cart_item['line_total_cedis']
+            line_total_cedis=cart_item['line_total_cedis'],
+            package_items_snapshot=package_items_snapshot
         )
         db.add(order_item)
     

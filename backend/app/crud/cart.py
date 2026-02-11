@@ -144,7 +144,9 @@ def clear_cart(db: Session, user_id: str) -> bool:
     return True
 
 def get_cart_with_details(db: Session, user_id: str) -> dict:
-    """Get cart with full product details and calculations"""
+    """Get cart with full product/package details and calculations"""
+    from app.models.package import Package
+    
     cart = get_cart_by_user_id(db, user_id)
     if not cart:
         return {
@@ -155,50 +157,89 @@ def get_cart_with_details(db: Session, user_id: str) -> dict:
             'total_amount': 0.0
         }
     
-    # Get cart items with product details
-    items_query = db.query(CartItem, Product).join(
-        Product, CartItem.product_id == Product.id
-    ).filter(CartItem.cart_id == cart.id)
+    # Get all cart items
+    cart_items = db.query(CartItem).filter(CartItem.cart_id == cart.id).all()
     
-    items_with_products = items_query.all()
-    
-    # Build response with product details
+    # Build response with product/package details
     items = []
     total_cents = Decimal('0')
     
-    for cart_item, product in items_with_products:
-        # Get primary image (first image in array)
-        primary_image = product.images[0] if product.images else None
+    for cart_item in cart_items:
+        # Check if it's a package or product
+        item_type = getattr(cart_item, 'item_type', 'product') or 'product'
         
-        item_data = {
-            'id': cart_item.id,
-            'cart_id': cart_item.cart_id,
-            'product_id': cart_item.product_id,
-            'quantity': cart_item.quantity,
-            'price_per_unit_cedis': cart_item.price_per_unit_cedis,
-            'line_total_cedis': cart_item.line_total_cedis,
-            'price_per_unit': cart_item.price_per_unit,
-            'line_total': cart_item.line_total,
-            'subtotal': cart_item.line_total,  # For frontend compatibility
-            'created_at': cart_item.created_at,
-            'updated_at': cart_item.updated_at,
-            # Nested product object (for frontend)
-            'product': {
-                'id': product.id,
-                'name': product.name,
-                'price_per_unit_cedis': cart_item.price_per_unit_cedis,  # Use cart item price (already in cedis)
-                'unit_type': product.unit_type.value,
-                'image_url': primary_image,
-                'primary_image_url': primary_image
-            },
-            # Flat product details (for backward compatibility)
-            'product_name': product.name,
-            'product_unit_type': product.unit_type.value,
-            'product_minimum_quantity': product.minimum_quantity,
-            'product_images': product.images or []
-        }
-        items.append(item_data)
-        total_cents += cart_item.line_total_cedis
+        if item_type == 'package' and cart_item.package_id:
+            # It's a package
+            package = db.query(Package).filter(Package.id == cart_item.package_id).first()
+            if package:
+                item_data = {
+                    'id': cart_item.id,
+                    'cart_id': cart_item.cart_id,
+                    'product_id': None,
+                    'package_id': cart_item.package_id,
+                    'item_type': 'package',
+                    'quantity': cart_item.quantity,
+                    'price_per_unit_cedis': cart_item.price_per_unit_cedis,
+                    'line_total_cedis': cart_item.line_total_cedis,
+                    'price_per_unit': float(cart_item.price_per_unit_cedis) / 100,
+                    'line_total': float(cart_item.line_total_cedis) / 100,
+                    'subtotal': float(cart_item.line_total_cedis) / 100,
+                    'created_at': cart_item.created_at,
+                    'updated_at': cart_item.updated_at,
+                    # Nested product object (for frontend compatibility)
+                    'product': {
+                        'id': cart_item.package_id,
+                        'name': cart_item.item_name or package.name,
+                        'price_per_unit_cedis': cart_item.price_per_unit_cedis,
+                        'unit_type': 'package',
+                        'image_url': package.image_url,
+                        'primary_image_url': package.image_url
+                    },
+                    # Flat details
+                    'product_name': cart_item.item_name or package.name,
+                    'product_unit_type': 'package',
+                    'product_minimum_quantity': 1,
+                    'product_images': [package.image_url] if package.image_url else []
+                }
+                items.append(item_data)
+                total_cents += cart_item.line_total_cedis
+        elif cart_item.product_id:
+            # It's a product
+            product = db.query(Product).filter(Product.id == cart_item.product_id).first()
+            if product:
+                primary_image = product.images[0] if product.images else None
+                
+                item_data = {
+                    'id': cart_item.id,
+                    'cart_id': cart_item.cart_id,
+                    'product_id': cart_item.product_id,
+                    'package_id': None,
+                    'item_type': 'product',
+                    'quantity': cart_item.quantity,
+                    'price_per_unit_cedis': cart_item.price_per_unit_cedis,
+                    'line_total_cedis': cart_item.line_total_cedis,
+                    'price_per_unit': cart_item.price_per_unit,
+                    'line_total': cart_item.line_total,
+                    'subtotal': cart_item.line_total,
+                    'created_at': cart_item.created_at,
+                    'updated_at': cart_item.updated_at,
+                    # Nested product object (for frontend)
+                    'product': {
+                        'id': product.id,
+                        'name': product.name,
+                        'price_per_unit_cedis': cart_item.price_per_unit_cedis,
+                        'unit_type': product.unit_type.value,
+                        'image_url': primary_image,
+                        'primary_image_url': primary_image
+                    },
+                    # Flat product details (for backward compatibility)
+                    'product_name': product.name,
+                    'product_unit_type': product.unit_type.value,
+                    'product_minimum_quantity': product.minimum_quantity,
+                    'product_images': product.images or []
+                }
+                items.append(item_data)
+                total_cents += cart_item.line_total_cedis
     
     return {
         'cart': cart,

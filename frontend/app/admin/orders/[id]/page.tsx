@@ -409,30 +409,52 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
               <div className="space-y-4">
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item: any, index: number) => (
-                    <div key={index} className="flex items-center gap-4 p-4 bg-[#F4F2E6] rounded-lg">
-                      {item.product?.images && item.product.images[0] && (
-                        <Image
-                          src={item.product.images[0]}
-                          alt={item.product_name || 'Product'}
-                          width={60}
-                          height={60}
-                          className="rounded-lg object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium text-[#303A4D]">{item.product_name || item.product?.name}</p>
-                        <p className="text-sm text-[#303A4D]/60">
-                          Quantity: {item.quantity} {item.unit_type || 'pcs'}
-                        </p>
-                        {item.price_per_unit && (
-                          <p className="text-sm text-[#303A4D]/60">
-                            @ GH₵{Number(item.price_per_unit).toFixed(2)} per {item.unit_type || 'unit'}
-                          </p>
+                    <div key={index} className={`p-4 rounded-lg ${item.item_type === 'package' ? 'bg-pink-50 border-2 border-pink-200' : 'bg-[#F4F2E6]'}`}>
+                      <div className="flex items-center gap-4">
+                        {(item.product?.images?.[0] || item.product?.image_url) && (
+                          <Image
+                            src={item.product.images?.[0] || item.product.image_url}
+                            alt={item.product_name || 'Product'}
+                            width={60}
+                            height={60}
+                            className="rounded-lg object-cover"
+                          />
                         )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-[#303A4D]">{item.product_name || item.product?.name}</p>
+                            {item.item_type === 'package' && (
+                              <Badge className="bg-pink-500 text-white text-xs">📦 Package</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-[#303A4D]/60">
+                            Quantity: {item.quantity} {item.item_type === 'package' ? 'package(s)' : (item.unit_type || 'pcs')}
+                          </p>
+                          {item.price_per_unit && (
+                            <p className="text-sm text-[#303A4D]/60">
+                              @ GH₵{Number(item.price_per_unit).toFixed(2)} per {item.item_type === 'package' ? 'package' : (item.unit_type || 'unit')}
+                            </p>
+                          )}
+                        </div>
+                        <p className="font-bold text-[#303A4D]">
+                          GH₵{Number(item.price || item.total_price || item.line_total || (item.price_per_unit * item.quantity) || 0).toFixed(2)}
+                        </p>
                       </div>
-                      <p className="font-bold text-[#303A4D]">
-                        GH₵{Number(item.price || item.total_price || (item.price_per_unit * item.quantity) || 0).toFixed(2)}
-                      </p>
+                      
+                      {/* Show package contents if it's a package */}
+                      {item.item_type === 'package' && item.package_items_snapshot && item.package_items_snapshot.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-pink-200">
+                          <p className="text-xs font-semibold text-pink-600 mb-2">Package Contents:</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {item.package_items_snapshot.map((pkgItem: any, pkgIndex: number) => (
+                              <div key={pkgIndex} className="text-xs text-[#303A4D]/70 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                                {pkgItem.quantity}x {pkgItem.product_name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (

@@ -444,21 +444,34 @@ async def get_order_details(
     items = get_order_items(db, order_id)
     items_data = []
     for item in items:
-        # Fallback to product image if not in order item
+        # Check if it's a package or product
+        item_type = getattr(item, 'item_type', 'product') or 'product'
+        package_id = getattr(item, 'package_id', None)
+        package_items_snapshot = getattr(item, 'package_items_snapshot', None)
+        
+        # Fallback to product/package image if not in order item
         product_image = item.product_image_url
         if not product_image:
-            product = db.query(Product).filter(Product.id == item.product_id).first()
-            if product and product.images:
-                # Get first image from images array
-                if isinstance(product.images, list) and len(product.images) > 0:
-                    product_image = product.images[0]
-                elif isinstance(product.images, str):
-                    product_image = product.images
+            if item_type == 'package' and package_id:
+                from app.models.package import Package
+                package = db.query(Package).filter(Package.id == package_id).first()
+                if package:
+                    product_image = package.image_url
+            elif item.product_id:
+                product = db.query(Product).filter(Product.id == item.product_id).first()
+                if product and product.images:
+                    # Get first image from images array
+                    if isinstance(product.images, list) and len(product.images) > 0:
+                        product_image = product.images[0]
+                    elif isinstance(product.images, str):
+                        product_image = product.images
         
         items_data.append({
             "id": item.id,
             "order_id": item.order_id,
             "product_id": item.product_id,
+            "package_id": package_id,
+            "item_type": item_type,
             "product_name": item.product_name,
             "product_image_url": product_image,
             "price_per_unit_cedis": item.price_per_unit_cedis,
@@ -466,7 +479,8 @@ async def get_order_details(
             "quantity": item.quantity,
             "line_total_cedis": item.line_total_cedis,
             "price_per_unit": float(item.price_per_unit_cedis) / 100,
-            "line_total": float(item.line_total_cedis) / 100
+            "line_total": float(item.line_total_cedis) / 100,
+            "package_items_snapshot": package_items_snapshot
         })
     
     # Get user information
