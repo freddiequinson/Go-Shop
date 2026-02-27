@@ -18,8 +18,6 @@ COPY . .
 # Accept environment variable from build args
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ARG LAUNCH_EJS_ORIGIN
-ENV LAUNCH_EJS_ORIGIN=$LAUNCH_EJS_ORIGIN
 
 # Set environment variable for build
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -34,8 +32,6 @@ WORKDIR /app
 # Accept environment variable from build args
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ARG LAUNCH_EJS_ORIGIN
-ENV LAUNCH_EJS_ORIGIN=$LAUNCH_EJS_ORIGIN
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -45,6 +41,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/launch-ejs ./launch-ejs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
