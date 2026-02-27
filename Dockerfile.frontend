@@ -15,6 +15,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ .
 
+# Launch EJS proxy origin for Next rewrites at build time
+ARG LAUNCH_EJS_ORIGIN=http://127.0.0.1:3001
+ENV LAUNCH_EJS_ORIGIN=$LAUNCH_EJS_ORIGIN
+
 # Set environment variable for build
 ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -27,6 +31,8 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG LAUNCH_EJS_ORIGIN=http://127.0.0.1:3001
+ENV LAUNCH_EJS_ORIGIN=$LAUNCH_EJS_ORIGIN
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

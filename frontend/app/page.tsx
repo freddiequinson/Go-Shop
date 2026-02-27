@@ -367,6 +367,9 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-6">
+          <Link href="/launch" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
+            Launch
+          </Link>
           <Link href="/orders" className="text-lg font-medium text-[#303A4D] hover:opacity-80">
             Orders
           </Link>
@@ -453,6 +456,13 @@ export default function Home() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Shop
+            </Link>
+            <Link 
+              href="/launch" 
+              className="block text-2xl font-bold text-[#303A4D]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Launch
             </Link>
             <Link 
               href="/orders" 

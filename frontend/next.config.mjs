@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const launchEjsOrigin = process.env.LAUNCH_EJS_ORIGIN || "http://127.0.0.1:3001"
+
 const nextConfig = {
   reactStrictMode: false, // Disable to prevent double mounting
   typescript: {
@@ -26,6 +28,18 @@ const nextConfig = {
   // Expose environment variables to the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/launch",
+        destination: `${launchEjsOrigin}/`,
+      },
+      {
+        source: "/launch-assets/:path*",
+        destination: `${launchEjsOrigin}/:path*`,
+      },
+    ]
   },
 }
 

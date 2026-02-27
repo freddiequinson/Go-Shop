@@ -1,0 +1,169 @@
+<div z-5="" overflow-hidden="" clr-offwhite-02="" class="c-section padding-y-2x">
+    <div class="o-container">
+        <div class="o-row justify-items-center margin-80">
+            <div class="o-col _w-20 md-w-24 margin-64">
+                <div class="margin-48">
+                    <h1 split-text="" class="t-display-2 text-center">Plenty <span class="span-wrap">Shops.</span>
+                        Infinite
+                        possibilities.</h1>
+                </div>
+                <div class="t-body-1 text-center">Over 100 shops and categories to shop from.</div>
+                <div class="hide">
+                    <div class="span-bg w-embed">
+                        <svg aria-hidden="true" width="100%" height="0.7em" preserveAspectRatio="none"
+                            viewBox="0 0 251 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect y="17.3237" width="248.346" height="46" transform="rotate(-4 0 17.3237)"
+                                fill="#FED141" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <a aria-label="Get started" href="/profile" class="c-btn is-large w-inline-block">
+                <div class="c-btn-bg">
+
+                </div>
+                <div class="c-btn-inner">
+                    <div class="c-btn-txt">
+                        <div btn-split-text="" class="c-btn-label line-1">Get started</div>
+                        <div no-click="" btn-split-text="" class="c-btn-label line-2">Get started</div>
+                    </div>
+                    <div class="c-btn-icon-wrap">
+                        <div class="c-btn-icon w-embed">
+                            <svg width="1.9375em" height="2em" viewBox="0 0 31 32" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M30.4 17.3333C30.4 25.9556 23.5947 32 15.2 32C6.80527 32 0 25.2444 0 17.3333C0 9.42222 6.80527 0 15.2 0C23.5947 0 30.4 8.71111 30.4 17.3333Z"
+                                    fill="white" />
+                            </svg>
+                        </div>
+                        <div class="c-btn-icon-arrow w-embed">
+                            <svg aria-hidden="true" width="0.75em" height="0.75em" viewBox="0 0 12 12" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.5 6H9.5" stroke="#303A4D" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M6 2.5L9.5 6L6 9.5" stroke="#303A4D" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div fade="" class="swiper-component hide">
+            <div class="swiper recipe w-dyn-list">
+                <div role="list" class="o-row swiper-wrapper recipes w-dyn-items">
+                    <% const swiperCategories=[ { color: '#4698ca' , name: 'Fruits and Vegetables' }, { color: '#fed141'
+                        , name: 'Milk and Dairy' }, { color: '#fed141' , name: 'Meat and Poultry' }, { color: '#cf6f5d'
+                        , name: 'Fish and Seafood' }, { color: '#ed8b00' , name: 'Herbs and Spices' }, {
+                        color: '#c0df16' , name: 'Provisions' }, { color: '#4698ca' , name: 'Drinks' }, {
+                        color: '#ed8b00' , name: 'Snacks' }, { color: '#fed141' , name: 'Desserts' } ]; %>
+                        <% swiperCategories.forEach(function(cat) { %>
+                            <div role="listitem" class="swiper-slide recipe w-dyn-item">
+                                <a style="background-color:<%= cat.color %>" href="/shop" class="c-recipe w-inline-block">
+                                    <div class="c-recipe-inner">
+                                        <div class="c-recipe_top">
+                                            <div class="c-img-contain recipe margin-8">
+                                                <img loading="lazy" alt=""
+                                                    src="https://ik.imagekit.io/fqsfbn5ad/images/nkatie.png"
+                                                    class="c-img recipe" />
+                                            </div>
+                                            <div class="c-recipe-label w-condition-invisible">
+                                                <div class="t-body-3 w-dyn-bind-empty">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="c-recipe_bt">
+                                            <h2 class="t-display-7">
+                                                <%= cat.name %>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="c-marquee-track">
+        <% const marqueeCategories = [
+            { color: '#4698CA', name: 'Fruits' },
+            { color: '#FED141', name: 'Vegetables' },
+            { color: '#ED8B00', name: 'Grains & Rice' },
+            { color: '#93C90F', name: 'Nuts & Seeds' },
+            { color: '#C24628', name: 'Fresh Produce' },
+            { color: '#CF6F5D', name: 'Groceries' },
+            { color: '#C0DF16', name: 'Herbs & Spices' },
+            { color: '#4698CA', name: 'Household' },
+            { color: '#FED141', name: 'Bundles' }
+        ]; %>
+        <% const marqueeImages = [
+            'https://ik.imagekit.io/fqsfbn5ad/images/cart.png?updatedAt=1772160488835',
+            'https://ik.imagekit.io/fqsfbn5ad/images/rice.png?updatedAt=1772160488563',
+            'https://ik.imagekit.io/fqsfbn5ad/images/products/banana.png?updatedAt=1772160488953',
+            'https://ik.imagekit.io/fqsfbn5ad/images/tomato.png?updatedAt=1772160495381',
+            'https://ik.imagekit.io/fqsfbn5ad/images/bags.png?updatedAt=1772160497348'
+        ]; %>
+        <div class="c-marquee-wrap w-dyn-list">
+            <div role="list" class="c-marquee-list w-dyn-items">
+                <% marqueeCategories.forEach(function(cat, index) { %>
+                    <div role="listitem" class="c-marquee-item recipe w-dyn-item">
+                        <a style="background-color:<%= cat.color %>" href="/shop"
+                            class="c-recipe marquee w-inline-block">
+                            <div class="c-recipe-inner">
+                                <div class="c-recipe_top">
+                                    <div class="c-img-contain recipe margin-8">
+                                        <img loading="lazy" alt="<%= cat.name %>"
+                                            src="<%= marqueeImages[index % marqueeImages.length] %>"
+                                            class="c-img recipe" />
+                                    </div>
+                                    <div class="c-recipe-label w-condition-invisible">
+                                        <div class="t-body-3 w-dyn-bind-empty">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="c-recipe_bt">
+                                    <h2 class="t-display-7">
+                                        <%= cat.name %>
+                                    </h2>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <% }); %>
+            </div>
+        </div>
+        <div class="c-marquee-wrap w-dyn-list">
+            <div role="list" class="c-marquee-list w-dyn-items">
+                <% marqueeCategories.forEach(function(cat, index) { %>
+                    <div role="listitem" class="c-marquee-item recipe w-dyn-item">
+                        <a style="background-color:<%= cat.color %>" href="/shop"
+                            class="c-recipe marquee w-inline-block">
+                            <div class="c-recipe-inner">
+                                <div class="c-recipe_top">
+                                    <div class="c-img-contain recipe margin-8">
+                                        <img loading="lazy" alt="<%= cat.name %>"
+                                            src="<%= marqueeImages[(index + 2) % marqueeImages.length] %>"
+                                            class="c-img recipe" />
+                                    </div>
+                                    <div class="c-recipe-label w-condition-invisible">
+                                        <div class="t-body-3 w-dyn-bind-empty">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="c-recipe_bt">
+                                    <h2 class="t-display-7">
+                                        <%= cat.name %>
+                                    </h2>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <% }); %>
+            </div>
+        </div>
+    </div>
+</div>

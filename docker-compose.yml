@@ -53,17 +53,33 @@ services:
     restart: unless-stopped
 
   # Next.js Frontend
+  launch-ejs:
+    image: node:20-alpine
+    container_name: goshop-launch-ejs
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    volumes:
+      - ./frontend/launch-ejs:/app
+    expose:
+      - "3001"
+    restart: unless-stopped
+
+  # Next.js Frontend
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        LAUNCH_EJS_ORIGIN: ${LAUNCH_EJS_ORIGIN:-http://launch-ejs:3001}
     container_name: goshop-frontend
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      LAUNCH_EJS_ORIGIN: ${LAUNCH_EJS_ORIGIN:-http://launch-ejs:3001}
     ports:
       - "3000:3000"
     depends_on:
       - backend
+      - launch-ejs
     restart: unless-stopped
 
 volumes:
