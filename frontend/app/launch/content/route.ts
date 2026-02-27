@@ -1,14 +1,11 @@
-import ejs from "ejs"
-import path from "path"
+import { renderLaunchHtml } from "@/lib/launch/render-launch-html"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const viewsDir = path.join(process.cwd(), "launch-ejs", "views")
-    const templatePath = path.join(viewsDir, "index.ejs")
-    const html = await ejs.renderFile(templatePath, {}, { views: [viewsDir] })
+    const html = await renderLaunchHtml({ forceTopNavigation: true })
 
     return new Response(html, {
       status: 200,

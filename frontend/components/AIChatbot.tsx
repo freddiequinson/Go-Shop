@@ -13,9 +13,10 @@ import Image from 'next/image'
 interface AIChatbotProps {
   showOnPages?: string[] // Pages where chatbot should appear
   onOpenChange?: (isOpen: boolean) => void // Callback when chatbot opens/closes
+  compact?: boolean
 }
 
-export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }: AIChatbotProps) {
+export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange, compact = false }: AIChatbotProps) {
   const [isOpen, setIsOpen] = useState(false)
   
   // Notify parent when open state changes
@@ -292,13 +293,16 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
     }
   }
 
+  const launchFontStyle = compact ? { fontFamily: 'Sofiapro, Arial, sans-serif' } : undefined
+
   return (
     <>
       {/* Floating Chat Button */}
       {!isOpen && (
         <button
           onClick={() => handleOpenChange(true)}
-          className="fixed bottom-6 right-6 z-50 group"
+          style={launchFontStyle}
+          className={`fixed z-50 group ${compact ? 'bottom-4 right-4' : 'bottom-6 right-6'}`}
           aria-label="Open chat with Gloria"
         >
           {/* Main bubble */}
@@ -308,26 +312,26 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
             
             {/* Main bubble */}
             <div className="relative">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300 border-2 border-white">
+              <div className={`bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300 border-2 border-white ${compact ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-14 h-14 sm:w-16 sm:h-16'}`}>
                 {/* Icon container */}
                 <div className="relative">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+                  <div className={`${compact ? 'w-9 h-9 sm:w-10 sm:h-10' : 'w-12 h-12'} bg-white rounded-full flex items-center justify-center shadow-inner`}>
                     <span className="text-3xl">👩🏾‍🍳</span>
                   </div>
                   {/* Sparkle */}
-                  <Sparkles className="w-5 h-5 text-white absolute -top-1 -right-1 animate-pulse drop-shadow-lg" />
+                  <Sparkles className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-white absolute -top-1 -right-1 animate-pulse drop-shadow-lg`} />
                 </div>
                 
                 {/* Online indicator */}
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg">
+                <div className={`absolute -top-1 -right-1 bg-green-500 rounded-full border-white shadow-lg ${compact ? 'w-5 h-5 border-2' : 'w-6 h-6 border-4'}`}>
                   <div className="w-full h-full bg-green-400 rounded-full animate-ping" />
                 </div>
               </div>
             </div>
             
             {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="bg-[#303A4D] text-white px-4 py-2 rounded-xl shadow-xl whitespace-nowrap text-sm font-medium">
+            <div className={`absolute bottom-full right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${compact ? 'mb-3' : 'mb-4'}`}>
+              <div style={launchFontStyle} className={`bg-[#303A4D] text-white rounded-xl shadow-xl whitespace-nowrap font-medium ${compact ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'}`}>
                 Chat with Gloria 💬
                 <div className="absolute top-full right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-[#303A4D]" />
               </div>
@@ -338,46 +342,54 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
 
       {/* Chat Window */}
       {isOpen && (
-        <div ref={chatWindowRef} className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 z-50 sm:w-[400px] h-[85vh] sm:h-[600px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border-2 border-[#FED141]">
+        <div
+          ref={chatWindowRef}
+          style={launchFontStyle}
+          className={`fixed bottom-4 right-4 left-4 sm:left-auto z-50 bg-white shadow-2xl flex flex-col overflow-hidden border-2 border-[#FED141] ${
+            compact
+              ? 'sm:right-4 sm:w-[340px] h-[76vh] sm:h-[500px] rounded-2xl'
+              : 'sm:right-6 sm:w-[400px] h-[85vh] sm:h-[600px] rounded-3xl'
+          }`}
+        >
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#FED141] to-[#F1B424] p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <div className={`bg-gradient-to-r from-[#FED141] to-[#F1B424] flex items-center justify-between ${compact ? 'p-3' : 'p-4'}`}>
+            <div className={`flex items-center ${compact ? 'gap-2' : 'gap-3'}`}>
+              <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} bg-white rounded-full flex items-center justify-center`}>
                 <span className="text-2xl">👩🏾‍🍳</span>
               </div>
               <div>
-                <h3 className="font-bold text-[#303A4D]">Gloria</h3>
+                <h3 className={`font-bold text-[#303A4D] ${compact ? 'text-sm' : ''}`}>Gloria</h3>
                 <p className="text-xs text-[#303A4D]/70">Your Shopping Assistant</p>
               </div>
             </div>
             <button
               onClick={() => handleOpenChange(false)}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              className={`${compact ? 'w-7 h-7' : 'w-8 h-8'} rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors`}
             >
-              <X className="w-5 h-5 text-[#303A4D]" />
+              <X className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-[#303A4D]`} />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F4F2E6] scrollbar-hide">
+          <div className={`flex-1 overflow-y-auto bg-[#F4F2E6] scrollbar-hide ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${compact ? 'gap-2' : 'gap-3'} ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+                  <div className={`${compact ? 'w-7 h-7' : 'w-8 h-8'} rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0`}>
                     <span className="text-lg">👩🏾‍🍳</span>
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                  className={`max-w-[80%] rounded-2xl ${compact ? 'px-3 py-1.5' : 'px-4 py-2'} ${
                     msg.role === 'user'
                       ? 'bg-[#303A4D] text-white'
                       : 'bg-gray-100 text-[#303A4D]'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className={`${compact ? 'text-xs leading-5' : 'text-sm'} whitespace-pre-wrap`}>{msg.content}</p>
                   {msg.shoppingList && (
                     <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
                       <p className="font-semibold text-[#303A4D] mb-2">{msg.shoppingList.dish}</p>
@@ -396,7 +408,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
                   )}
                 </div>
                 {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+                  <div className={`${compact ? 'w-7 h-7' : 'w-8 h-8'} rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0`}>
                     <span className="text-lg">👤</span>
                   </div>
                 )}
@@ -405,11 +417,11 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
 
             {/* Typing indicator */}
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0">
+              <div className={`flex justify-start ${compact ? 'gap-2' : 'gap-3'}`}>
+                <div className={`${compact ? 'w-7 h-7' : 'w-8 h-8'} rounded-full bg-[#FED141] flex items-center justify-center flex-shrink-0`}>
                   <span className="text-lg">👩🏾‍🍳</span>
                 </div>
-                <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                <div className={`bg-gray-100 rounded-2xl ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                     <div className="w-2 h-2 bg-[#303A4D] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -421,15 +433,15 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
 
             {/* Shopping List Preview */}
             {shoppingList && (
-              <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-[#FED141]">
-                <div className="flex items-center justify-between mb-3">
+              <div className={`bg-white rounded-2xl shadow-lg border-2 border-[#FED141] ${compact ? 'p-3' : 'p-4'}`}>
+                <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-3'}`}>
                   <h4 className="font-bold text-[#303A4D]">🛒 {shoppingList.dish}</h4>
-                  <span className="text-sm text-[#303A4D]/60">{shoppingList.servings} servings</span>
+                  <span className={`${compact ? 'text-xs' : 'text-sm'} text-[#303A4D]/60`}>{shoppingList.servings} servings</span>
                 </div>
                 
-                <div className="space-y-2 mb-3 max-h-40 overflow-y-auto scrollbar-hide">
+                <div className={`space-y-2 ${compact ? 'mb-2 max-h-32' : 'mb-3 max-h-40'} overflow-y-auto scrollbar-hide`}>
                   {shoppingList.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
+                    <div key={idx} className={`flex justify-between ${compact ? 'text-xs' : 'text-sm'}`}>
                       <span className="text-[#303A4D]">
                         {item.name} ({item.quantity} {item.unit})
                       </span>
@@ -463,7 +475,9 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
                   <button
                     key={action.id}
                     onClick={() => handleQuickAction(action.prompt)}
-                    className="w-full bg-white hover:bg-[#FED141]/20 text-[#303A4D] rounded-xl px-4 py-3 text-sm text-left transition-colors border border-[#303A4D]/10 hover:border-[#FED141]"
+                    className={`w-full bg-white hover:bg-[#FED141]/20 text-[#303A4D] rounded-xl text-left transition-colors border border-[#303A4D]/10 hover:border-[#FED141] ${
+                      compact ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'
+                    }`}
                   >
                     <span className="mr-2">{action.icon}</span>
                     {action.text}
@@ -476,7 +490,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
           </div>
 
           {/* Input */}
-          <div className="p-4 bg-white border-t border-[#303A4D]/10">
+          <div className={`bg-white border-t border-[#303A4D]/10 ${compact ? 'p-3' : 'p-4'}`}>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -484,15 +498,17 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange }
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Ask me anything..."
-                className="flex-1 bg-[#F4F2E6] border-2 border-transparent rounded-full px-4 py-3 text-sm text-[#303A4D] placeholder:text-[#303A4D]/40 focus:outline-none focus:border-[#FED141] transition-colors"
+                className={`flex-1 bg-[#F4F2E6] border-2 border-transparent rounded-full px-4 text-[#303A4D] placeholder:text-[#303A4D]/40 focus:outline-none focus:border-[#FED141] transition-colors ${
+                  compact ? 'py-2 text-xs' : 'py-3 text-sm'
+                }`}
                 disabled={isLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}
-                className="w-12 h-12 bg-[#303A4D] hover:bg-[#3B4559] disabled:bg-[#303A4D]/50 rounded-full flex items-center justify-center transition-colors"
+                className={`${compact ? 'w-10 h-10' : 'w-12 h-12'} bg-[#303A4D] hover:bg-[#3B4559] disabled:bg-[#303A4D]/50 rounded-full flex items-center justify-center transition-colors`}
               >
-                <Send className="w-5 h-5 text-white" />
+                <Send className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
               </button>
             </div>
           </div>
