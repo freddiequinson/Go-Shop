@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/lib/contexts/auth-context'
 import { apiClient } from '@/lib/api/client'
+import { usePathname } from 'next/navigation'
 
 export default function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,6 +28,9 @@ export default function FeedbackWidget() {
   
   const { toast } = useToast()
   const { user } = useAuth()
+  const pathname = usePathname()
+  const isLaunchPage = pathname?.startsWith('/launch')
+  const launchFontStyle = isLaunchPage ? { fontFamily: 'Sofiapro, Arial, sans-serif' } : undefined
 
   // Show tooltip periodically
   useEffect(() => {
@@ -120,10 +124,15 @@ export default function FeedbackWidget() {
   return (
     <>
       {/* Floating Button */}
-      <div className="fixed bottom-6 left-6 z-50">
+      <div className={`fixed z-50 ${isLaunchPage ? 'bottom-4 left-4' : 'bottom-6 left-6'}`}>
         {/* Tooltip */}
         {showTooltip && !isOpen && (
-          <div className="absolute bottom-full left-0 mb-2 bg-[#303A4D] text-white px-4 py-2 rounded-lg shadow-lg text-sm whitespace-nowrap animate-bounce">
+          <div
+            style={launchFontStyle}
+            className={`absolute bottom-full left-0 mb-2 bg-[#303A4D] text-white rounded-lg shadow-lg whitespace-nowrap animate-bounce ${
+              isLaunchPage ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+            }`}
+          >
               Share your feedback!
             <div className="absolute bottom-0 left-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-[#303A4D]"></div>
           </div>
@@ -131,10 +140,13 @@ export default function FeedbackWidget() {
 
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 border-2 border-white group"
+          style={launchFontStyle}
+          className={`bg-gradient-to-br from-[#FED141] to-[#F1B424] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 border-2 border-white group ${
+            isLaunchPage ? 'w-11 h-11 sm:w-12 sm:h-12' : 'w-14 h-14 sm:w-16 sm:h-16'
+          }`}
           aria-label="Give feedback"
         >
-          <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-[#303A4D] group-hover:rotate-12 transition-transform" />
+          <MessageSquare className={`${isLaunchPage ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-6 h-6 sm:w-8 sm:h-8'} text-[#303A4D] group-hover:rotate-12 transition-transform`} />
         </button>
       </div>
 
@@ -148,19 +160,26 @@ export default function FeedbackWidget() {
 
       {/* Feedback Modal */}
       {isOpen && (
-        <Card className="fixed bottom-20 left-4 right-4 sm:left-6 sm:right-auto sm:w-96 max-h-[80vh] sm:max-h-[600px] overflow-y-auto bg-white shadow-2xl z-50 rounded-2xl scrollbar-hide">
-          <div className="p-6">
+        <Card
+          style={launchFontStyle}
+          className={`fixed overflow-y-auto bg-white shadow-2xl z-50 scrollbar-hide ${
+            isLaunchPage
+              ? 'bottom-16 left-3 right-3 sm:left-4 sm:right-auto sm:w-[320px] max-h-[72vh] sm:max-h-[520px] rounded-xl'
+              : 'bottom-20 left-4 right-4 sm:left-6 sm:right-auto sm:w-96 max-h-[80vh] sm:max-h-[600px] rounded-2xl'
+          }`}
+        >
+          <div className={isLaunchPage ? 'p-4' : 'p-6'}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-[#303A4D]">Share Your Feedback</h3>
+              <h3 className={`${isLaunchPage ? 'text-lg' : 'text-xl'} font-bold text-[#303A4D]`}>Share Your Feedback</h3>
               <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className={isLaunchPage ? 'space-y-3' : 'space-y-4'}>
               {/* Feedback Type */}
               <div>
-                <label className="block text-sm font-medium text-[#303A4D] mb-2">
+                <label className={`block font-medium text-[#303A4D] mb-2 ${isLaunchPage ? 'text-xs' : 'text-sm'}`}>
                   Type of Feedback
                 </label>
                 <select
@@ -178,7 +197,7 @@ export default function FeedbackWidget() {
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-medium text-[#303A4D] mb-2">
+                <label className={`block font-medium text-[#303A4D] mb-2 ${isLaunchPage ? 'text-xs' : 'text-sm'}`}>
                   Subject
                 </label>
                 <Input
@@ -192,7 +211,7 @@ export default function FeedbackWidget() {
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-medium text-[#303A4D] mb-2">
+                <label className={`block font-medium text-[#303A4D] mb-2 ${isLaunchPage ? 'text-xs' : 'text-sm'}`}>
                   Message
                 </label>
                 <Textarea
@@ -200,7 +219,7 @@ export default function FeedbackWidget() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Tell us more..."
                   required
-                  rows={4}
+                  rows={isLaunchPage ? 3 : 4}
                   maxLength={2000}
                 />
               </div>
@@ -210,7 +229,7 @@ export default function FeedbackWidget() {
                 <button
                   type="button"
                   onClick={() => setShowSurvey(!showSurvey)}
-                  className="text-sm text-[#303A4D] hover:underline"
+                  className={`${isLaunchPage ? 'text-xs' : 'text-sm'} text-[#303A4D] hover:underline`}
                 >
                   {showSurvey ? '− Hide' : '+ Add'} Quick Survey (Optional)
                 </button>
@@ -218,8 +237,8 @@ export default function FeedbackWidget() {
 
               {/* Survey Questions */}
               {showSurvey && (
-                <div className="space-y-3 p-4 bg-[#F4F2E6] rounded-lg">
-                  <p className="text-sm font-medium text-[#303A4D] mb-3">Quick Survey (Optional)</p>
+                <div className={`space-y-3 bg-[#F4F2E6] rounded-lg ${isLaunchPage ? 'p-3' : 'p-4'}`}>
+                  <p className={`${isLaunchPage ? 'text-xs' : 'text-sm'} font-medium text-[#303A4D] mb-3`}>Quick Survey (Optional)</p>
                   
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">
@@ -287,7 +306,7 @@ export default function FeedbackWidget() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full py-6"
+                className={`w-full bg-[#303A4D] hover:bg-[#3B4559] text-white rounded-full ${isLaunchPage ? 'py-5 text-sm' : 'py-6'}`}
               >
                 {isSubmitting ? (
                   <>
