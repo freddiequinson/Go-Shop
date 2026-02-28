@@ -81,7 +81,7 @@ class CartManager {
             image,
             market = 'Unknown Market',
             description = '',
-            category = 'Groceries'
+            category = 'foodstuff'
         } = item;
 
         // Validate required fields
@@ -429,7 +429,7 @@ class CartManager {
                     <div class="cart-empty-content">
                         <div class="cart-empty-icon">🛒</div>
                         <h3>Your cart is empty</h3>
-                        <p>Add some fresh groceries to get started!</p>
+                        <p>Add some fresh foodstuff to get started!</p>
                         <a href="/shop" class="cart-empty-btn">Start Shopping</a>
                     </div>
                 </li>
