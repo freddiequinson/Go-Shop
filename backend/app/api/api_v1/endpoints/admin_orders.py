@@ -952,14 +952,15 @@ async def bulk_approve_orders(
 
 
 @router.delete("/orders/{order_id}")
-async def cancel_order_admin(
+async def delete_order_admin(
     order_id: str,
     current_admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
     """
-    Cancel an order (Admin only)
+    Permanently delete an order and all its items (Admin only)
     """
+    from app.models.order import OrderItem, PaymentAttempt as PaymentAttemptModel
     order = get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(
@@ -967,12 +968,16 @@ async def cancel_order_admin(
             detail="Order not found"
         )
     
-    # Update status to cancelled
-    order.status = OrderStatus.CANCELLED
+    # Delete related payment attempts
+    db.query(PaymentAttemptModel).filter(PaymentAttemptModel.order_id == order_id).delete()
+    # Delete order items
+    db.query(OrderItem).filter(OrderItem.order_id == order_id).delete()
+    # Delete the order itself
+    db.delete(order)
     db.commit()
     
     return {
-        "message": "Order cancelled successfully",
+        "message": "Order deleted successfully",
         "order_id": order_id
     }
 

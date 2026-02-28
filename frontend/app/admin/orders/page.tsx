@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Search, ArrowLeft, Eye, Loader2, Package, Clock, CheckCircle, TrendingUp, Calendar } from "lucide-react"
+import { Search, ArrowLeft, Eye, Loader2, Package, Clock, CheckCircle, TrendingUp, Calendar, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
 import Link from "next/link"
@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import { adminService } from "@/lib/api/services"
 import { useToast } from "@/hooks/use-toast"
 import OnboardingTour, { TourStep } from "@/components/onboarding/OnboardingTour"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 
 export default function OrdersManagement() {
@@ -21,6 +22,8 @@ export default function OrdersManagement() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [dateFilter, setDateFilter] = useState<string>("")
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const getErrorMessage = (error: any, fallback: string): string => {
     const detail = error.response?.data?.detail
@@ -71,6 +74,27 @@ export default function OrdersManagement() {
     }
   }
 
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      setDeletingOrderId(orderId)
+      await adminService.cancelOrder(orderId)
+      setOrders(prev => prev.filter(o => o.id !== orderId))
+      toast({
+        title: '✅ Order Deleted',
+        description: 'The order has been permanently deleted.',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: getErrorMessage(error, 'Failed to delete order'),
+        variant: 'destructive'
+      })
+    } finally {
+      setDeletingOrderId(null)
+      setConfirmDeleteId(null)
+    }
+  }
+
   const fetchStats = async () => {
     try {
       const data = await adminService.getOrderStats()
@@ -116,6 +140,32 @@ export default function OrdersManagement() {
   return (
     <>
       <OnboardingTour tourId="orders" steps={tourSteps} />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!confirmDeleteId} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Order?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            This will <span className="font-bold text-red-600">permanently delete</span> the order and all its items. This action cannot be undone.
+          </p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={!!deletingOrderId}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => confirmDeleteId && handleDeleteOrder(confirmDeleteId)}
+              disabled={!!deletingOrderId}
+            >
+              {deletingOrderId === confirmDeleteId ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="min-h-screen bg-[#F4F2E6]">
       <div className="w-full px-6 md:px-8 py-8">
         {/* Header */}
@@ -295,12 +345,22 @@ export default function OrdersManagement() {
                         })}
                       </td>
                       <td className="py-4 px-4">
-                        <Link href={`/admin/orders/${order.id}`}>
-                          <Button size="sm" className="bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D]">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View
+                        <div className="flex items-center gap-2">
+                          <Link href={`/admin/orders/${order.id}`}>
+                            <Button size="sm" className="bg-[#FED141] hover:bg-[#F1B424] text-[#303A4D]">
+                              <Eye className="w-4 h-4 mr-2" />
+                              View
+                            </Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                            onClick={() => setConfirmDeleteId(order.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
-                        </Link>
+                        </div>
                       </td>
                     </tr>
                   ))

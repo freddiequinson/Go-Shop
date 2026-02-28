@@ -354,6 +354,19 @@ export default function CheckoutPage() {
       document.getElementById('address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
+
+    if (isAuthenticated && selectedAddressId) {
+      const selectedAddress = addresses.find(a => a.id === selectedAddressId)
+      if (!selectedAddress?.phone) {
+        toast({
+          title: '❌ Phone Number Required',
+          description: 'The selected address is missing a phone number. Please edit the address and add a phone number for delivery.',
+          variant: 'destructive',
+        })
+        document.getElementById('address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
+    }
     
     if (!isAuthenticated && (!guestInfo.name || !guestInfo.phone || !guestInfo.address)) {
       const missingFields = []
