@@ -11,13 +11,16 @@ from app.models.order import OrderStatus, PaymentStatus
 
 # Order Item schemas
 class OrderItemBase(BaseModel):
-    product_id: str
+    product_id: Optional[str] = None  # Nullable for package items
+    package_id: Optional[str] = None  # For package orders
+    item_type: str = "product"  # 'product' or 'package'
     product_name: str
     product_image_url: Optional[str] = None
     price_per_unit_cedis: Decimal
     unit_type: str
     quantity: Decimal
     line_total_cedis: Decimal
+    package_items_snapshot: Optional[List[Dict[str, Any]]] = None  # For packages
 
 class OrderItemCreate(BaseModel):
     product_id: str

@@ -263,23 +263,34 @@ def get_order_with_items(db: Session, order_id: str, user_id: str = None) -> Dic
     # Convert to dict format for response
     items_data = []
     for item in items:
-        # Fetch product image from products table if not stored in order item
+        # Fetch product/package image if not stored in order item
         product_image = item.product_image_url
         if not product_image:
-            product = db.query(Product).filter(Product.id == item.product_id).first()
-            if product and product.images:
-                product_image = product.images[0] if isinstance(product.images, list) else product.images
+            if item.item_type == 'package' and item.package_id:
+                # Fetch package image
+                from app.models.package import Package
+                package = db.query(Package).filter(Package.id == item.package_id).first()
+                if package and package.image_url:
+                    product_image = package.image_url
+            elif item.product_id:
+                # Fetch product image
+                product = db.query(Product).filter(Product.id == item.product_id).first()
+                if product and product.images:
+                    product_image = product.images[0] if isinstance(product.images, list) else product.images
         
         item_data = {
             'id': item.id,
             'order_id': item.order_id,
             'product_id': item.product_id,
+            'package_id': item.package_id,
+            'item_type': item.item_type or 'product',
             'product_name': item.product_name,
             'product_image_url': product_image,
             'price_per_unit_cedis': item.price_per_unit_cedis,
             'unit_type': item.unit_type,
             'quantity': item.quantity,
             'line_total_cedis': item.line_total_cedis,
+            'package_items_snapshot': item.package_items_snapshot,
             'price_per_unit': float(item.price_per_unit_cedis) / 100,
             'line_total': float(item.line_total_cedis) / 100
         }

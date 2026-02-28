@@ -225,7 +225,7 @@ async def verify_order_payment(
             try:
                 from app.core.notifications import send_payment_confirmation_with_receipt
                 print(f"   - 📧 Sending payment confirmation email with PDF receipt...")
-                send_payment_confirmation_with_receipt(order, user)
+                send_payment_confirmation_with_receipt(order, current_user)
                 print(f"   - ✅ Payment confirmation sent!")
             except Exception as e:
                 print(f"   - ⚠️ Failed to send payment confirmation: {e}")
