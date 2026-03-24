@@ -24,8 +24,27 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // Initialize user from localStorage immediately to prevent flash of unauthenticated state
+  const [user, setUser] = useState<UserResponse | null>(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        try {
+          return JSON.parse(storedUser)
+        } catch {
+          return null
+        }
+      }
+    }
+    return null
+  })
+  const [isLoading, setIsLoading] = useState(() => {
+    // If we have a token, start as loading; otherwise not loading
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('access_token')
+    }
+    return true
+  })
   const [hasInitialized, setHasInitialized] = useState(false)
   const router = useRouter()
 
@@ -41,8 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Try to get stored user first (instant, no API call)
           const storedUser = authService.getStoredUser()
           if (storedUser) {
+            // User already set from initial state, just ensure loading is false
             setUser(storedUser)
-            setIsLoading(false) // Set loading false immediately with cached data
+            setIsLoading(false)
           } else {
             // Token exists but no stored user - fetch immediately
             try {
