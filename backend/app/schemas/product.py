@@ -187,6 +187,20 @@ class CategoryResponse(CategoryBase):
     class Config:
         from_attributes = True
 
+
+class CategoryWithChildren(BaseModel):
+    """Parent category with nested sub-categories and aggregate product count"""
+    id: str
+    name: str
+    description: Optional[str] = None
+    parent_id: Optional[str] = None
+    is_active: bool
+    product_count: int = 0
+    children: List[CategoryResponse] = []
+
+    class Config:
+        from_attributes = True
+
 # Product search and filtering
 class ProductFilter(BaseModel):
     category_id: Optional[str] = None

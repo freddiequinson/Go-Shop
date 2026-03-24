@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.product import (
     ProductCreate, ProductUpdate, ProductResponse, ProductFilter, ProductListResponse,
-    CategoryCreate, CategoryUpdate, CategoryResponse, GhanaProductSuggestion,
+    CategoryCreate, CategoryUpdate, CategoryResponse, CategoryWithChildren, GhanaProductSuggestion,
     ProductShopResponse, ProductShopListResponse
 )
 from app.crud.product import (
@@ -78,7 +78,8 @@ async def get_products_list(
 async def get_products_for_shop(
     page: int = Query(1, ge=1, description="Page number"),
     per_page: int = Query(20, ge=1, le=100, description="Items per page"),
-    category_id: Optional[str] = Query(None, description="Filter by category"),
+    category_id: Optional[str] = Query(None, description="Filter by sub-category"),
+    parent_category_id: Optional[str] = Query(None, description="Filter by parent category (returns products from all sub-categories)"),
     search: Optional[str] = Query(None, description="Search in name"),
     db: Session = Depends(get_db)
 ):
@@ -86,10 +87,26 @@ async def get_products_for_shop(
     Lightweight endpoint for shop/mobile - returns minimal product data
     Excludes heavy fields like images array, descriptions, etc.
     When viewing "All" products (no category filter), returns random order for dynamic display.
+    Supports parent_category_id to filter by all sub-categories of a parent.
     """
+    from app.models.product import Category
+    
+    # If parent_category_id is provided, find all child category IDs
+    effective_category_id = category_id
+    child_category_ids = None
+    if parent_category_id and not category_id:
+        children = db.query(Category.id).filter(
+            Category.parent_id == parent_category_id,
+            Category.is_active == True
+        ).all()
+        child_category_ids = [c.id for c in children]
+        # If parent has no children, it might be a leaf category itself
+        if not child_category_ids:
+            effective_category_id = parent_category_id
+    
     # Create filter object (only essential filters)
     filters = ProductFilter(
-        category_id=category_id,
+        category_id=effective_category_id,
         search=search
     )
     
@@ -98,10 +115,11 @@ async def get_products_for_shop(
     
     # Use random ordering when viewing "All" products (no category filter and no search)
     # This makes the shop feel more dynamic and shows different products each time
-    use_random_order = category_id is None and not search
+    has_category_filter = category_id is not None or parent_category_id is not None
+    use_random_order = not has_category_filter and not search
     
     # Get products
-    products, total = get_products(db, skip=skip, limit=per_page, filters=filters, random_order=use_random_order)
+    products, total = get_products(db, skip=skip, limit=per_page, filters=filters, random_order=use_random_order, category_ids=child_category_ids)
     
     # Calculate pagination info
     pages = math.ceil(total / per_page) if total > 0 else 1
@@ -421,6 +439,70 @@ async def get_categories_list(
         
         category_dict['product_count'] = product_count
         result.append(category_dict)
+    
+    return result
+
+
+@router.get("/categories/hierarchical", response_model=List[CategoryWithChildren])
+async def get_categories_hierarchical(
+    db: Session = Depends(get_db)
+):
+    """
+    Get categories organized hierarchically - parent categories with nested children.
+    Only returns categories that have products (directly or via children).
+    """
+    from app.models.product import Category as CategoryModel
+    
+    # Get all active categories
+    all_cats = db.query(CategoryModel).filter(CategoryModel.is_active == True).all()
+    
+    # Build product count map
+    product_counts = {}
+    for cat in all_cats:
+        count = db.query(Product).filter(
+            Product.category_id == cat.id,
+            Product.is_active == True,
+            Product.is_published == True,
+            Product.stock_quantity > 0
+        ).count()
+        product_counts[cat.id] = count
+    
+    # Separate parents and children
+    parents = [c for c in all_cats if c.parent_id is None]
+    children_map = {}
+    for c in all_cats:
+        if c.parent_id:
+            children_map.setdefault(c.parent_id, []).append(c)
+    
+    result = []
+    for parent in sorted(parents, key=lambda x: x.name):
+        kids = children_map.get(parent.id, [])
+        
+        # Build children list with product counts
+        children_response = []
+        total_child_products = 0
+        for kid in sorted(kids, key=lambda x: x.name):
+            kid_count = product_counts.get(kid.id, 0)
+            total_child_products += kid_count
+            child_dict = CategoryResponse.from_orm(kid).dict()
+            child_dict['product_count'] = kid_count
+            children_response.append(child_dict)
+        
+        # Parent product count = its own products + all children's products
+        parent_own_count = product_counts.get(parent.id, 0)
+        total_count = parent_own_count + total_child_products
+        
+        # Only include parents that have products (directly or via children)
+        if total_count > 0 or len(kids) > 0:
+            result.append(CategoryWithChildren(
+                id=parent.id,
+                name=parent.name,
+                description=parent.description,
+                parent_id=None,
+                is_active=parent.is_active,
+                product_count=total_count,
+                children=[CategoryResponse(**c) for c in children_response]
+            ))
     
     return result
 

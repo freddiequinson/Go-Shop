@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
-import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react"
+import { User, ShoppingBag, Search, Package, ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ArrowUp, ChevronRight as ChevronRightIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -193,8 +193,12 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>(["All"])
   const [allCategories, setAllCategories] = useState<any[]>([])
+  const [hierarchicalCategories, setHierarchicalCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null)
+  const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
+  const [hoveredParent, setHoveredParent] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [showNotification, setShowNotification] = useState(false)
@@ -212,6 +216,7 @@ export default function ShopPage() {
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
   const [isChangingCategory, setIsChangingCategory] = useState(false)
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   // Infinite scroll: Load smaller batches more frequently
   // Mobile: 6 products, Tablet: 9 products, Desktop: 12 products per batch
   const perPage = typeof window !== 'undefined' 
@@ -253,18 +258,13 @@ export default function ShopPage() {
       // Use lightweight /shop endpoint to avoid base64 images
       let url = `${apiBaseUrl}/products/shop?page=${pageToFetch}&per_page=${perPage}`
       
-      // Add category filter if not "All" or "Others"
-      if (selectedCategory !== "All" && selectedCategory !== "Others") {
-        const categoriesToUse = categoriesData || allCategories
-        // Case-insensitive category matching to handle any casing differences
-        const category = categoriesToUse.find((c: any) => 
-          c.name && c.name.toLowerCase() === selectedCategory.toLowerCase()
-        )
-        if (category) {
-          url += `&category_id=${category.id}`
-        } else {
-          console.warn(`Category not found: "${selectedCategory}" in`, categoriesToUse.map((c: any) => c.name))
-        }
+      // Add category filter
+      if (selectedSubId) {
+        // Specific sub-category selected
+        url += `&category_id=${selectedSubId}`
+      } else if (selectedParentId) {
+        // Parent category selected - filter by all its children
+        url += `&parent_category_id=${selectedParentId}`
       }
       
       // Add search query if exists (using debounced value)
@@ -382,9 +382,9 @@ export default function ShopPage() {
         setIsChangingCategory(false)
       }
     }
-  }, [currentPage, perPage, selectedCategory, debouncedSearchQuery, allCategories, products.length])
+  }, [currentPage, perPage, selectedCategory, selectedParentId, selectedSubId, debouncedSearchQuery, allCategories, products.length])
 
-  // Fetch all categories
+  // Fetch all categories (flat + hierarchical)
   const fetchAllCategories = useCallback(async () => {
     try {
       const apiBaseUrl = getApiBaseUrl()
@@ -393,33 +393,46 @@ export default function ShopPage() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 30000)
       
-      const response = await fetch(`${apiBaseUrl}/products/categories/`, {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-        }
-      }).catch(() => null)
+      // Fetch both flat and hierarchical categories in parallel
+      const [flatRes, hierRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/products/categories/`, {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        }).catch(() => null),
+        fetch(`${apiBaseUrl}/products/categories/hierarchical`, {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        }).catch(() => null)
+      ])
       
       clearTimeout(timeoutId)
       
-      if (!response || !response.ok) {
-        // Backend not available - show friendly message
+      if (!flatRes || !flatRes.ok) {
         setErrorMessage('Unable to connect to server. Please check your connection and try again.')
         return []
       }
       
-      const categoriesData = await response.json()
+      const categoriesData = await flatRes.json()
       setAllCategories(categoriesData)
       
-      // Filter out categories with 0 products and set category tabs
-      const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
-      const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
-      // Start with All + named categories, "Others" will be added dynamically if uncategorized products exist
-      setCategories(["All", ...categoryNames])
+      // Parse hierarchical data if available
+      if (hierRes && hierRes.ok) {
+        const hierData = await hierRes.json()
+        // Only keep parents that have products
+        const filtered = hierData.filter((p: any) => p.product_count > 0)
+        setHierarchicalCategories(filtered)
+        // Set parent category names as tabs
+        const parentNames = filtered.map((p: any) => p.name)
+        setCategories(["All", ...parentNames])
+      } else {
+        // Fallback to flat categories
+        const categoriesWithProducts = categoriesData.filter((c: any) => (c.product_count || 0) > 0)
+        const categoryNames = categoriesWithProducts.map((c: any) => c.name).sort()
+        setCategories(["All", ...categoryNames])
+      }
       
       return categoriesData
     } catch (error: any) {
-      // Silently handle - show user-friendly message
       setErrorMessage('Unable to connect to server. Please check your connection and try again.')
       return []
     }
@@ -475,6 +488,29 @@ export default function ShopPage() {
     }
   }, [])
 
+  // Handle category selection: resolve parent/sub IDs from selectedCategory name
+  const handleCategorySelect = useCallback((categoryName: string, subCategoryId?: string) => {
+    setSelectedCategory(categoryName)
+    if (categoryName === "All") {
+      setSelectedParentId(null)
+      setSelectedSubId(null)
+    } else if (subCategoryId) {
+      // Sub-category clicked from mega-menu
+      setSelectedSubId(subCategoryId)
+      // Keep parent selected for UI
+      const parent = hierarchicalCategories.find((p: any) => 
+        p.children?.some((c: any) => c.id === subCategoryId)
+      )
+      setSelectedParentId(parent?.id || null)
+    } else {
+      // Parent category clicked
+      const parent = hierarchicalCategories.find((p: any) => p.name === categoryName)
+      setSelectedParentId(parent?.id || null)
+      setSelectedSubId(null)
+    }
+    setHoveredParent(null)
+  }, [hierarchicalCategories])
+
   // Reset to page 1 and clear products when search query or category changes
   // Then immediately fetch new products for the selected category
   useEffect(() => {
@@ -493,7 +529,7 @@ export default function ShopPage() {
       // Reset the flag after fetch completes
       categoryChangeRef.current = false
     })
-  }, [debouncedSearchQuery, selectedCategory, allCategories])
+  }, [debouncedSearchQuery, selectedCategory, selectedParentId, selectedSubId, allCategories])
 
   // Fetch more products when page changes (for infinite scroll, page > 1)
   useEffect(() => {
@@ -656,16 +692,81 @@ export default function ShopPage() {
         <div className="text-center">
           <h1 className="text-base md:text-lg font-bold text-[#303A4D] mb-1">Shop Fresh Groceries</h1>
 
-          {/* Search Bar */}
-          <div className="max-w-xl mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#303A4D]/60" />
+          {/* Search Bar with Auto-suggest */}
+          <div className="max-w-xl mx-auto relative" onBlur={(e) => {
+            // Delay hiding to allow click on suggestions
+            setTimeout(() => {
+              if (!e.currentTarget.contains(document.activeElement)) {
+                setShowSearchSuggestions(false)
+              }
+            }, 200)
+          }}>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#303A4D]/60 z-10" />
             <input
               type="text"
-              placeholder="Search for products..."
+              placeholder="Search for products or categories..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setShowSearchSuggestions(e.target.value.length > 0)
+              }}
+              onFocus={() => searchQuery.length > 0 && setShowSearchSuggestions(true)}
               className="w-full bg-white rounded-full px-10 py-2.5 text-sm text-[#303A4D] placeholder:text-[#303A4D]/60 focus:outline-none focus:ring-2 focus:ring-[#303A4D] shadow-sm transition-shadow duration-200 focus:shadow-md"
             />
+            {/* Search suggestions dropdown */}
+            {showSearchSuggestions && searchQuery.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 max-h-[300px] overflow-y-auto">
+                {/* Category suggestions */}
+                {(() => {
+                  const q = searchQuery.toLowerCase()
+                  const matchingCategories: { parent: any; child: any }[] = []
+                  hierarchicalCategories.forEach((parent: any) => {
+                    parent.children?.forEach((child: any) => {
+                      if (child.name.toLowerCase().includes(q) && child.product_count > 0) {
+                        matchingCategories.push({ parent, child })
+                      }
+                    })
+                    if (parent.name.toLowerCase().includes(q)) {
+                      matchingCategories.push({ parent, child: null })
+                    }
+                  })
+                  if (matchingCategories.length === 0) return null
+                  return (
+                    <>
+                      <div className="px-4 py-1 text-xs font-semibold text-[#303A4D]/50 uppercase">Categories</div>
+                      {matchingCategories.slice(0, 5).map((match, idx) => (
+                        <button
+                          key={`cat-${idx}`}
+                          className="w-full text-left px-4 py-2 text-sm text-[#303A4D] hover:bg-[#FED141]/20 transition-colors flex items-center gap-2"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            if (match.child) {
+                              handleCategorySelect(match.child.name, match.child.id)
+                            } else {
+                              handleCategorySelect(match.parent.name)
+                            }
+                            setSearchQuery("")
+                            setShowSearchSuggestions(false)
+                          }}
+                        >
+                          <Package className="w-3.5 h-3.5 text-[#303A4D]/40" />
+                          <span>{match.child ? match.child.name : match.parent.name}</span>
+                          <span className="text-xs text-[#303A4D]/40 ml-auto">
+                            {match.child ? `in ${match.parent.name}` : `${match.parent.product_count} items`}
+                          </span>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-100 my-1" />
+                    </>
+                  )
+                })()}
+                <div className="px-4 py-1 text-xs font-semibold text-[#303A4D]/50 uppercase">Search Products</div>
+                <div className="px-4 py-2 text-sm text-[#303A4D]/60 flex items-center gap-2">
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Search for &quot;{searchQuery}&quot;</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -696,36 +797,113 @@ export default function ShopPage() {
           {/* Category Filter - Only show after initial load completes */}
           {!loading && categories.length > 1 && (
           <div className="mb-4 md:mb-5">
-            {/* Mobile: Dropdown select */}
+            {/* Mobile: Grouped dropdown */}
             <div className="md:hidden">
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={selectedSubId || selectedParentId || "All"}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === "All") {
+                    handleCategorySelect("All")
+                  } else {
+                    // Check if it's a parent or sub ID
+                    const parent = hierarchicalCategories.find((p: any) => p.id === val)
+                    if (parent) {
+                      handleCategorySelect(parent.name)
+                    } else {
+                      // Find which parent this sub belongs to
+                      for (const p of hierarchicalCategories) {
+                        const sub = p.children?.find((c: any) => c.id === val)
+                        if (sub) {
+                          handleCategorySelect(sub.name, sub.id)
+                          break
+                        }
+                      }
+                    }
+                  }
+                }}
                 className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium text-[#303A4D] focus:outline-none focus:ring-2 focus:ring-[#FED141] focus:border-transparent appearance-none cursor-pointer shadow-sm"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23303A4D'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+                <option value="All">All Categories</option>
+                {hierarchicalCategories.map((parent: any) => (
+                  <optgroup key={parent.id} label={parent.name}>
+                    <option value={parent.id}>All {parent.name} ({parent.product_count})</option>
+                    {parent.children?.filter((c: any) => c.product_count > 0).map((child: any) => (
+                      <option key={child.id} value={child.id}>
+                        {child.name} ({child.product_count})
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
-            {/* Desktop: Wrapping flex grid */}
-            <div className="hidden md:flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-xl shadow-sm p-2.5">
-              {categories.map((category) => (
+            {/* Desktop: Mega-menu with hover sub-categories */}
+            <div className="hidden md:block relative">
+              <div className="flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-xl shadow-sm p-2.5">
                 <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => handleCategorySelect("All")}
                   className={`px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 ${
-                    selectedCategory === category
+                    selectedCategory === "All"
                       ? 'bg-[#303A4D] text-white shadow-md'
                       : 'text-[#303A4D] hover:bg-[#FED141]/30'
                   }`}
                 >
-                  {category}
+                  All
                 </button>
-              ))}
+                {hierarchicalCategories.map((parent: any) => (
+                  <div
+                    key={parent.id}
+                    className="relative"
+                    onMouseEnter={() => setHoveredParent(parent.id)}
+                    onMouseLeave={() => setHoveredParent(null)}
+                  >
+                    <button
+                      onClick={() => handleCategorySelect(parent.name)}
+                      className={`px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 flex items-center gap-1 ${
+                        selectedCategory === parent.name || (selectedParentId === parent.id)
+                          ? 'bg-[#303A4D] text-white shadow-md'
+                          : 'text-[#303A4D] hover:bg-[#FED141]/30'
+                      }`}
+                    >
+                      {parent.name}
+                      {parent.children?.length > 0 && (
+                        <ChevronDown className="w-3 h-3" />
+                      )}
+                    </button>
+                    {/* Mega-menu dropdown */}
+                    {hoveredParent === parent.id && parent.children?.length > 0 && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <button
+                          onClick={() => handleCategorySelect(parent.name)}
+                          className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${
+                            selectedParentId === parent.id && !selectedSubId
+                              ? 'bg-[#FED141]/30 text-[#303A4D]'
+                              : 'text-[#303A4D] hover:bg-[#FED141]/20'
+                          }`}
+                        >
+                          All {parent.name} ({parent.product_count})
+                        </button>
+                        <div className="border-t border-gray-100 my-1" />
+                        {parent.children.filter((c: any) => c.product_count > 0).map((child: any) => (
+                          <button
+                            key={child.id}
+                            onClick={() => handleCategorySelect(child.name, child.id)}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                              selectedSubId === child.id
+                                ? 'bg-[#FED141]/30 text-[#303A4D] font-medium'
+                                : 'text-[#303A4D]/80 hover:bg-[#FED141]/20 hover:text-[#303A4D]'
+                            }`}
+                          >
+                            <span>{child.name}</span>
+                            <span className="text-xs text-[#303A4D]/40">{child.product_count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           )}
@@ -925,19 +1103,56 @@ export default function ShopPage() {
       {showStickyTabs && (
         <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl z-50 shadow-md border-b border-[#303A4D]/10 animate-in slide-in-from-top duration-300 py-3 px-4">
           <div className="w-full overflow-x-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-              <TabsList className="inline-flex h-auto bg-[#F4F2E6]/80 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max mx-auto">
-                {categories.map((category) => (
-                  <TabsTrigger
-                    key={category}
-                    value={category}
-                    className="px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 data-[state=active]:bg-[#303A4D] data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-[#303A4D] data-[state=inactive]:hover:bg-[#FED141]/30 whitespace-nowrap"
+            <div className="inline-flex h-auto bg-[#F4F2E6]/80 backdrop-blur-sm border border-[#303A4D]/10 rounded-full shadow-sm p-1 gap-1 w-max mx-auto">
+              <button
+                onClick={() => handleCategorySelect("All")}
+                className={`px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
+                  selectedCategory === "All"
+                    ? 'bg-[#303A4D] text-white shadow-md'
+                    : 'text-[#303A4D] hover:bg-[#FED141]/30'
+                }`}
+              >
+                All
+              </button>
+              {hierarchicalCategories.map((parent: any) => (
+                <div
+                  key={parent.id}
+                  className="relative"
+                  onMouseEnter={() => setHoveredParent(parent.id)}
+                  onMouseLeave={() => setHoveredParent(null)}
+                >
+                  <button
+                    onClick={() => handleCategorySelect(parent.name)}
+                    className={`px-4 py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap flex items-center gap-1 ${
+                      selectedParentId === parent.id
+                        ? 'bg-[#303A4D] text-white shadow-md'
+                        : 'text-[#303A4D] hover:bg-[#FED141]/30'
+                    }`}
                   >
-                    {category}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+                    {parent.name}
+                    {parent.children?.length > 0 && <ChevronDown className="w-3 h-3" />}
+                  </button>
+                  {hoveredParent === parent.id && parent.children?.length > 0 && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50">
+                      {parent.children.filter((c: any) => c.product_count > 0).map((child: any) => (
+                        <button
+                          key={child.id}
+                          onClick={() => handleCategorySelect(child.name, child.id)}
+                          className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
+                            selectedSubId === child.id
+                              ? 'bg-[#FED141]/30 text-[#303A4D] font-medium'
+                              : 'text-[#303A4D]/80 hover:bg-[#FED141]/20'
+                          }`}
+                        >
+                          <span>{child.name}</span>
+                          <span className="text-xs text-[#303A4D]/40">{child.product_count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

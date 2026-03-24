@@ -21,7 +21,8 @@ def get_products(
     limit: int = 20,
     filters: Optional[ProductFilter] = None,
     for_shop: bool = True,
-    random_order: bool = False
+    random_order: bool = False,
+    category_ids: Optional[List[str]] = None
 ) -> tuple[List[Product], int]:
     """Get products with filtering and pagination
     
@@ -34,9 +35,13 @@ def get_products(
     if for_shop:
         query = query.filter(Product.is_active == True, Product.is_published == True)
     
+    # Apply multi-category filter (for parent category filtering)
+    if category_ids:
+        query = query.filter(Product.category_id.in_(category_ids))
+    
     # Apply additional filters
     if filters:
-        if filters.category_id:
+        if filters.category_id and not category_ids:
             query = query.filter(Product.category_id == filters.category_id)
         
         if filters.min_price:
