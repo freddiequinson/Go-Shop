@@ -84,9 +84,10 @@ async def create_order(
             detail=str(e)
         )
     except Exception as e:
+        logger.error(f"Failed to create order: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create order: {str(e)}"
+            detail="Failed to create order. Please try again."
         )
 
 

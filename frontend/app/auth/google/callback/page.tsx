@@ -37,10 +37,15 @@ function GoogleCallbackContent() {
         const response = await apiClient.post('/oauth/google/callback', { code })
         
         // Store token and user in localStorage
-        localStorage.setItem('access_token', response.data.access_token)
+        const accessToken = response.data.access_token
+        localStorage.setItem('access_token', accessToken)
         localStorage.setItem('user', JSON.stringify(response.data.user))
         
-        // CRITICAL FIX: Update AuthContext by refreshing user data
+        // CRITICAL: Also set the cookie like regular login does (for middleware route protection)
+        const expires = new Date(Date.now() + 30 * 60 * 1000).toUTCString()
+        document.cookie = `access_token=${accessToken}; path=/; expires=${expires}; SameSite=Strict; Secure`
+        
+        // Update AuthContext by refreshing user data
         await refreshUser()
         
         // Get user name and profile picture from response

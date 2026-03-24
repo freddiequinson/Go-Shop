@@ -10,15 +10,20 @@ from passlib.context import CryptContext
 from app.core.config import settings
 import hashlib
 
-# Password hashing context - with fallback for bcrypt version issues
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Password hashing context
 try:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     # Test if bcrypt works
     pwd_context.hash("test")
     BCRYPT_AVAILABLE = True
-except Exception:
+except Exception as _bcrypt_err:
     pwd_context = None
     BCRYPT_AVAILABLE = False
+    logger.critical("bcrypt is not available - password hashing will fail. Fix bcrypt installation immediately.")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
@@ -54,18 +59,20 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     
     return False
 
+
 def get_password_hash(password: str) -> str:
     """
-    Hash a password
-    Uses bcrypt if available, falls back to SHA256 if bcrypt is broken
+    Hash a password using bcrypt.
+    Raises RuntimeError if bcrypt is unavailable.
     """
     if BCRYPT_AVAILABLE and pwd_context:
         try:
             return pwd_context.hash(password)
-        except Exception:
-            pass
-    # Fallback to SHA256 if bcrypt is broken
-    return hashlib.sha256(password.encode()).hexdigest()
+        except Exception as e:
+            logger.error(f"bcrypt hashing failed: {type(e).__name__}")
+            raise RuntimeError("Password hashing failed. Please contact support.") from e
+    raise RuntimeError("Password hashing is unavailable. bcrypt is not installed correctly.")
+
 
 def verify_token(token: str) -> Optional[dict]:
     """

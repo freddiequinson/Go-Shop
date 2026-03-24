@@ -23,6 +23,9 @@ from app.models.wallet import PaymentMethod
 from app.core.deps import get_current_active_user, get_current_admin
 from app.models.user import User
 from app.models.giftcard import GiftCardStatus, GiftCardType
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -55,12 +58,10 @@ async def generate_giftcard(
             created_at=giftcard.created_at
         )
     except Exception as e:
-        import traceback
-        print(f"Error generating gift card: {str(e)}")
-        print(traceback.format_exc())
+        logger.error(f"Failed to generate gift card: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate gift card: {str(e)}"
+            detail="Failed to generate gift card. Please try again."
         )
 
 
@@ -95,9 +96,10 @@ async def generate_batch_giftcards(
             for gc in giftcards
         ]
     except Exception as e:
+        logger.error(f"Failed to generate gift cards batch: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate gift cards: {str(e)}"
+            detail="Failed to generate gift cards. Please try again."
         )
 
 
@@ -167,12 +169,10 @@ async def redeem_giftcard_endpoint(
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
-        print(f"Error redeeming gift card: {str(e)}")
-        print(traceback.format_exc())
+        logger.error(f"Failed to redeem gift card: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to redeem gift card: {str(e)}"
+            detail="Failed to redeem gift card. Please try again."
         )
 
 

@@ -15,7 +15,7 @@ from app.schemas.rider import (
     RiderPerformance, RiderFilter, RiderStatusUpdate, DeliveryStatusUpdate
 )
 from app.crud.rider import (
-    create_rider, get_rider_by_id, get_riders, update_rider,
+    create_rider, get_rider_by_id, get_rider_by_user_id, get_riders, update_rider,
     update_rider_status, delete_rider, verify_rider, get_available_riders,
     create_delivery_assignment, get_delivery_assignment, get_delivery_by_order,
     get_rider_deliveries, get_active_deliveries, update_delivery_assignment,
@@ -62,6 +62,14 @@ async def create_new_rider(
         if existing_user:
             logger.info(f"User already exists for phone {rider.phone}, using existing user")
             user_id = existing_user.id
+            
+            # Check if a rider already exists for this user
+            existing_rider = get_rider_by_user_id(db, user_id)
+            if existing_rider:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"A rider account already exists for this phone number. Rider code: {existing_rider.rider_code}"
+                )
         else:
             logger.info("Creating new user account for rider...")
             

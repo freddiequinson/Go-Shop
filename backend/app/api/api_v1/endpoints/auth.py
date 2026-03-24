@@ -2,7 +2,8 @@
 Authentication endpoints for GoShopGhana
 """
 
-from datetime import timedelta
+from datetime import timedelta, datetime
+from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, status, Form, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -16,9 +17,36 @@ from app.models.user import User
 from app.core.email import send_welcome_email
 from app.core.sms import send_welcome_sms
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# In-memory login rate limiter: max 5 failed attempts per IP per 15 minutes
+_login_attempts: dict = defaultdict(list)
+_RATE_LIMIT_MAX = 5
+_RATE_LIMIT_WINDOW = 900  # seconds
+
+
+def _check_login_rate_limit(ip: str) -> None:
+    now = time.monotonic()
+    window_start = now - _RATE_LIMIT_WINDOW
+    attempts = [t for t in _login_attempts[ip] if t > window_start]
+    _login_attempts[ip] = attempts
+    if len(attempts) >= _RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed login attempts. Please try again in 15 minutes.",
+            headers={"Retry-After": "900"},
+        )
+
+
+def _record_failed_login(ip: str) -> None:
+    _login_attempts[ip].append(time.monotonic())
+
+
+def _clear_login_attempts(ip: str) -> None:
+    _login_attempts.pop(ip, None)
 
 
 @router.post("/register", response_model=Token)
@@ -48,17 +76,17 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     # Send welcome email (don't block registration if it fails)
     try:
         send_welcome_email(db_user.email, user_name)
-        logger.info(f"Welcome email sent to {db_user.email}")
+        logger.info(f"Welcome email sent to user {db_user.id}")
     except Exception as e:
-        logger.error(f"Failed to send welcome email to {db_user.email}: {str(e)}")
+        logger.error(f"Failed to send welcome email for user {db_user.id}: {type(e).__name__}")
     
     # Send welcome SMS if phone number provided (don't block registration if it fails)
     if db_user.phone:
         try:
             send_welcome_sms(db_user.phone, user_name)
-            logger.info(f"Welcome SMS sent to {db_user.phone}")
+            logger.info(f"Welcome SMS sent to user {db_user.id}")
         except Exception as e:
-            logger.error(f"Failed to send welcome SMS to {db_user.phone}: {str(e)}")
+            logger.error(f"Failed to send welcome SMS for user {db_user.id}: {type(e).__name__}")
     
     # Determine redirect based on user type
     redirect_to = None
@@ -121,16 +149,20 @@ async def login(
     Accepts form data (OAuth2 compatible)
     """
     from app.utils.audit_logger import log_login_success, log_login_failed
-    
+
+    ip = request.client.host if request.client else "unknown"
+    _check_login_rate_limit(ip)
+
     # Authenticate user (username can be email or username)
     user = authenticate_user(db, username, password)
     if not user:
+        _record_failed_login(ip)
         # Log failed login
         log_login_failed(
             db=db,
             email=username,
             reason="Incorrect username/email or password",
-            ip_address=request.client.host if request.client else None,
+            ip_address=ip,
             user_agent=request.headers.get("user-agent")
         )
         
@@ -139,7 +171,8 @@ async def login(
             detail="Incorrect username/email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
+    _clear_login_attempts(ip)
     # Log successful login
     log_login_success(
         db=db,
@@ -257,9 +290,9 @@ async def request_password_reset(identifier: str = Form(...), db: Session = Depe
     try:
         user_name = user.full_name if hasattr(user, 'full_name') and user.full_name else user.username
         send_password_reset_email(user.email, user_name, reset_code)
-        logger.info(f"Password reset email sent to {user.email}")
+        logger.info(f"Password reset email sent to user {user.id}")
     except Exception as e:
-        logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")
+        logger.error(f"Failed to send password reset email for user {user.id}: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send reset email. Please try again later."
@@ -359,6 +392,6 @@ async def reset_password(
     user.password_reset_expires = None
     db.commit()
     
-    logger.info(f"Password reset successful for {user.email}")
+    logger.info(f"Password reset successful for user {user.id}")
     
     return {"message": "Password reset successful. You can now log in with your new password."}

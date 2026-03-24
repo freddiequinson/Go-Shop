@@ -28,20 +28,10 @@ export default function PaymentVerifyPage() {
           setAttemptNumber(attempts)
           const delay = delays[attempts - 1]
           
-          console.log(`⏳ Attempt ${attempts}/${maxAttempts}: Waiting ${delay/1000}s for Paystack to process...`)
-          
           // Wait before checking
           await new Promise(resolve => setTimeout(resolve, delay))
           
-          console.log(`🔍 Verifying payment for order: ${orderId}`)
-          console.log(`   - API Endpoint: /orders/${orderId}/verify-payment`)
-          console.log(`   - Timestamp: ${new Date().toISOString()}`)
-          
           const response = await apiClient.post(`/orders/${orderId}/verify-payment`)
-          
-          console.log('   - ✅ API call successful')
-          console.log('   - Response status:', response.status)
-          console.log('   - Response data:', JSON.stringify(response.data, null, 2))
 
           if (response.data.status === 'success') {
             setStatus('success')
@@ -57,7 +47,6 @@ export default function PaymentVerifyPage() {
             return // Exit the retry loop
           } else if (response.data.status === 'processing' && attempts < maxAttempts) {
             // Payment still processing, retry
-            console.log('⏳ Payment still processing, retrying...')
             continue
           } else {
             // Payment failed or max attempts reached
@@ -94,7 +83,6 @@ export default function PaymentVerifyPage() {
           }
           
           // Continue to next attempt
-          console.log('🔄 Retrying...')
         }
       }
     }

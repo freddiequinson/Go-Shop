@@ -325,9 +325,11 @@ export default function AddRiderPage() {
                   <SelectContent>
                     <SelectItem value="motorcycle">Motorcycle</SelectItem>
                     <SelectItem value="bicycle">Bicycle</SelectItem>
+                    <SelectItem value="tricycle">Tricycle</SelectItem>
                     <SelectItem value="car">Car</SelectItem>
                     <SelectItem value="van">Van</SelectItem>
                     <SelectItem value="truck">Truck</SelectItem>
+                    <SelectItem value="foot">On Foot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

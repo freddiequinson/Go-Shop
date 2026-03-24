@@ -6,6 +6,7 @@ Ghana market focused order management
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+import logging
 from app.db.database import get_db
 from app.schemas.order import (
     OrderResponse, OrderCreate, OrderUpdate, OrderSummary, 
@@ -19,6 +20,8 @@ from app.crud.order import (
 )
 from app.core.deps import get_current_active_user, get_current_admin
 from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -67,12 +70,10 @@ async def create_order(
             detail=str(e)
         )
     except Exception as e:
-        import traceback
-        print(f"Full error creating order: {e}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Failed to create order: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create order: {str(e)}"
+            detail="Failed to create order. Please try again."
         )
 
 

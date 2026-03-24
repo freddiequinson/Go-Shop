@@ -11,6 +11,9 @@ from app.crud.user import update_user, deactivate_user, get_all_users, delete_us
 from app.core.deps import get_current_active_user, get_current_admin
 from app.models.user import User
 from app.core.security import verify_password, get_password_hash
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -221,12 +224,8 @@ async def delete_user_by_id(
     except HTTPException:
         raise
     except Exception as e:
-        # Log the error
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error deleting user {user_id}: {str(e)}")
-        
+        logger.error(f"Error deleting user {user_id}: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete user: {str(e)}"
+            detail="Failed to delete user. Please try again."
         )

@@ -52,17 +52,17 @@ apiClient.interceptors.response.use(
     
     // Handle 403 Forbidden
     if (error.response?.status === 403) {
-      console.error('Access forbidden:', error.response.data)
+      console.error('Access forbidden')
     }
     
     // Handle 404 Not Found
     if (error.response?.status === 404) {
-      console.error('Resource not found:', error.response.data)
+      console.error('Resource not found')
     }
     
     // Handle 500 Server Error
     if (error.response?.status === 500) {
-      console.error('Server error:', error.response.data)
+      console.error('Server error')
     }
     
     return Promise.reject(error)

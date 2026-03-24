@@ -77,10 +77,10 @@ def send_order_confirmation(order: Order, user: User) -> bool:
             html_content=email_html
         )
         
-        logger.info(f"Order confirmation email sent to {user.email} for order {order.id}")
+        logger.info(f"Order confirmation email sent for order {order.id}")
         success = True
     except Exception as e:
-        logger.error(f"Failed to send order confirmation email: {e}")
+        logger.error(f"Failed to send order confirmation email: {type(e).__name__}")
     
     # Send SMS
     if user.phone:
@@ -100,10 +100,10 @@ def send_order_confirmation(order: Order, user: User) -> bool:
             )
             
             send_sms(user.phone, sms_message)
-            logger.info(f"Order confirmation SMS sent to {user.phone} for order {order.id}")
+            logger.info(f"Order confirmation SMS sent for order {order.id}")
             success = True
         except Exception as e:
-            logger.error(f"Failed to send order confirmation SMS: {e}")
+            logger.error(f"Failed to send order confirmation SMS: {type(e).__name__}")
     
     return success
 
@@ -155,10 +155,10 @@ def send_order_status_update(
             html_content=email_html
         )
         
-        logger.info(f"Order status update email sent to {user.email} for order {order.id}")
+        logger.info(f"Order status update email sent for order {order.id}")
         success = True
     except Exception as e:
-        logger.error(f"Failed to send order status update email: {e}")
+        logger.error(f"Failed to send order status update email: {type(e).__name__}")
     
     # Send SMS
     if user.phone:
@@ -171,10 +171,10 @@ def send_order_status_update(
             )
             
             send_sms(user.phone, sms_message)
-            logger.info(f"Order status update SMS sent to {user.phone} for order {order.id}")
+            logger.info(f"Order status update SMS sent for order {order.id}")
             success = True
         except Exception as e:
-            logger.error(f"Failed to send order status update SMS: {e}")
+            logger.error(f"Failed to send order status update SMS: {type(e).__name__}")
     
     return success
 
@@ -209,10 +209,10 @@ def send_delivery_notification(order: Order, user: User, rider_info: Dict[str, A
             )
             
             send_sms(user.phone, sms_message)
-            logger.info(f"Delivery notification SMS sent to {user.phone} for order {order.id}")
+            logger.info(f"Delivery notification SMS sent for order {order.id}")
             success = True
         except Exception as e:
-            logger.error(f"Failed to send delivery notification SMS: {e}")
+            logger.error(f"Failed to send delivery notification SMS: {type(e).__name__}")
     
     return success
 
@@ -273,10 +273,10 @@ def send_payment_receipt(
             html_content=html_content
         )
         
-        logger.info(f"Payment receipt sent to {user.email}")
+        logger.info(f"Payment receipt sent for user {user.id}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send payment receipt: {e}")
+        logger.error(f"Failed to send payment receipt: {type(e).__name__}")
         return False
 
 
@@ -399,13 +399,13 @@ def send_payment_confirmation_with_receipt(order: Order, user: User) -> bool:
                 attachment_type="application/pdf"
             )
             
-            logger.info(f"Payment confirmation email with PDF sent to {user.email} for order {order.id}")
+            logger.info(f"Payment confirmation email with PDF sent for order {order.id}")
             success = True
         except Exception as e:
-            logger.error(f"Failed to send payment confirmation email: {e}")
+            logger.error(f"Failed to send payment confirmation email: {type(e).__name__}")
     
     except Exception as e:
-        logger.error(f"Failed to generate PDF receipt: {e}")
+        logger.error(f"Failed to generate PDF receipt: {type(e).__name__}")
     
     # Send SMS notification
     if user.phone:
@@ -426,9 +426,9 @@ def send_payment_confirmation_with_receipt(order: Order, user: User) -> bool:
             )
             
             send_sms(user.phone, sms_message)
-            logger.info(f"Payment confirmation SMS sent to {user.phone} for order {order.id}")
+            logger.info(f"Payment confirmation SMS sent for order {order.id}")
             success = True
         except Exception as e:
-            logger.error(f"Failed to send payment confirmation SMS: {e}")
+            logger.error(f"Failed to send payment confirmation SMS: {type(e).__name__}")
     
     return success

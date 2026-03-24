@@ -69,19 +69,11 @@ export default function OrderPaymentPage() {
     try {
       setIsInitializing(true)
 
-      console.log('🚀 Initializing Paystack payment...')
-      console.log('   - Order ID:', orderId)
-      console.log('   - Amount:', order.total)
-      
       // Initialize payment with redirect callback URL
       const response = await apiClient.post(`/orders/${orderId}/initialize-payment`, {
         callback_url: `${window.location.origin}/checkout/payment/${orderId}/verify`
       })
       
-      console.log('   - ✅ Payment initialized')
-      console.log('   - Payment reference:', response.data.payment_reference)
-      console.log('   - Authorization URL:', response.data.authorization_url)
-
       const { authorization_url } = response.data
 
       // Show loading message
@@ -91,8 +83,6 @@ export default function OrderPaymentPage() {
       })
 
       // Redirect to Paystack payment page
-      console.log('   - 🔄 Redirecting to Paystack...')
-      
       // Small delay to show the toast
       setTimeout(() => {
         window.location.href = authorization_url
@@ -111,18 +101,9 @@ export default function OrderPaymentPage() {
 
   const verifyPayment = async () => {
     try {
-      console.log('\n📞 verifyPayment() function called')
-      console.log('   - Order ID:', orderId)
-      console.log('   - Setting isVerifying to true...')
       setIsVerifying(true)
 
-      console.log('   - Making API call to verify payment...')
       const response = await apiClient.post(`/orders/${orderId}/verify-payment`)
-      
-      console.log('   - ✅ API Response received:')
-      console.log('   - Status:', response.data.status)
-      console.log('   - Message:', response.data.message)
-      console.log('   - Full response:', response.data)
 
       if (response.data.status === 'success') {
         setPaymentStatus('success')

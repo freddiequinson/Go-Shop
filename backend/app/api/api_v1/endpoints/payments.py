@@ -23,11 +23,13 @@ from app.services.paystack import paystack_service
 from app.core.deps import get_current_active_user, get_current_admin
 from app.models.user import User
 import json
-
-router = APIRouter()
-
+import logging
 import hashlib
 import hmac
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
 
 
 @router.get("/wallet", response_model=WalletResponse)
@@ -151,12 +153,10 @@ async def initialize_payment(
         )
         
     except Exception as e:
-        import traceback
-        print(f"Payment initialization error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Payment initialization error: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Payment initialization failed: {str(e)}"
+            detail="Payment initialization failed. Please try again."
         )
 
 
@@ -170,36 +170,21 @@ async def verify_payment(
     No authentication required - uses payment reference for security
     """
     try:
-        print(f"\n{'='*50}")
-        print(f"PAYMENT VERIFICATION STARTED")
-        print(f"Reference: {reference}")
-        print(f"{'='*50}\n")
+        logger.info(f"Payment verification started for reference")
         
         # Get payment session
         payment_session = get_payment_session_by_reference(db, reference)
         
         if not payment_session:
-            print(f"❌ Payment session not found for reference: {reference}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Payment session not found"
             )
         
-        print(f"✅ Payment session found:")
-        print(f"   - User ID: {payment_session.user_id}")
-        print(f"   - Amount: {payment_session.amount_cedis / 100} GHS")
-        print(f"   - Current Status: {payment_session.status}")
-        
         # Verify payment with Paystack
-        print(f"\n🔍 Verifying with Paystack...")
         paystack_response = await paystack_service.verify_payment(reference)
         
-        print(f"📥 Paystack Response:")
-        print(f"   - Status: {paystack_response.get('status')}")
-        print(f"   - Data: {paystack_response.get('data', {})}")
-        
         if not paystack_response.get("status"):
-            print(f"❌ Paystack verification failed")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Payment verification failed: {paystack_response.get('message', 'Unknown error')}"
@@ -209,10 +194,8 @@ async def verify_payment(
         data = paystack_response["data"]
         payment_status = data.get("status")
         
-        print(f"\n💳 Payment Status from Paystack: {payment_status}")
-        
         if payment_status == "success":
-            print(f"\n✅ Payment SUCCESSFUL - Processing...")
+            logger.info("Payment successful - processing wallet credit")
             
             # Process successful payment
             try:
@@ -221,11 +204,6 @@ async def verify_payment(
                     paystack_reference=reference,
                     payment_method=PaymentMethod.MOBILE_MONEY if "mobile" in str(data.get("channel", "")).lower() else PaymentMethod.CARD
                 )
-                
-                print(f"💰 Wallet credited successfully!")
-                print(f"   - Transaction ID: {transaction.id if transaction else 'Already processed'}")
-                print(f"   - Amount: {payment_session.amount_cedis / 100} GHS")
-                print(f"\n{'='*50}\n")
                 
                 return {
                     "payment_session_id": payment_session.id,
@@ -238,9 +216,7 @@ async def verify_payment(
                     "message": "Payment verified and wallet credited successfully"
                 }
             except Exception as e:
-                print(f"❌ Error processing payment: {str(e)}")
-                import traceback
-                print(traceback.format_exc())
+                logger.error(f"Error processing wallet credit: {type(e).__name__}")
                 raise
         elif payment_status in ["failed", "cancelled", "abandoned"]:
             # Payment failed
@@ -269,9 +245,10 @@ async def verify_payment(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Payment verification error: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Payment verification failed: {str(e)}"
+            detail="Payment verification failed. Please try again."
         )
 
 
@@ -291,18 +268,12 @@ async def paystack_webhook(
         # Verify webhook signature (if secret is configured)
         signature = request.headers.get("x-paystack-signature")
         
-        print(f"\n{'='*50}")
-        print(f"WEBHOOK RECEIVED FROM PAYSTACK")
-        print(f"Signature: {signature}")
-        print(f"{'='*50}\n")
+        logger.info("Webhook received from Paystack")
         
         # Parse webhook data
         webhook_data = json.loads(body)
         event = webhook_data.get("event")
         data = webhook_data.get("data", {})
-        
-        print(f"Event: {event}")
-        print(f"Data: {data}")
         
         # Handle charge.success event
         if event == "charge.success":
@@ -311,16 +282,12 @@ async def paystack_webhook(
             reference = data.get("reference")
             status_paystack = data.get("status")
             
-            print(f"\n✅ Charge Success Event")
-            print(f"   - Reference: {reference}")
-            print(f"   - Status: {status_paystack}")
-            
             if reference and status_paystack == "success":
                 # Get payment session
                 payment_session = get_payment_session_by_reference(db, reference)
                 
                 if payment_session and payment_session.status != TransactionStatus.SUCCESS:
-                    print(f"   - Processing payment...")
+                    logger.info("Webhook: processing payment")
                     
                     # Process the payment
                     transaction = process_successful_payment(
@@ -341,10 +308,9 @@ async def paystack_webhook(
                             payment_method=str(data.get("channel", "paystack"))
                         )
                     
-                    print(f"   - ✅ Wallet credited!")
-                    print(f"   - Transaction ID: {transaction.id if transaction else 'Already processed'}")
+                    logger.info("Webhook: wallet credited")
                 else:
-                    print(f"   - ⚠️ Payment already processed or session not found")
+                    logger.warning("Webhook: payment already processed or session not found")
             elif status_paystack != "success":
                 # Log failed payment
                 from app.utils.audit_logger import log_payment_failed
@@ -361,17 +327,13 @@ async def paystack_webhook(
                         payment_reference=reference
                     )
         
-        print(f"\n{'='*50}\n")
-        
         # Return 200 OK to Paystack
         return {"status": "success"}
         
     except Exception as e:
-        print(f"❌ Webhook error: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
+        logger.error(f"Webhook error: {type(e).__name__}")
         # Still return 200 to prevent Paystack from retrying
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": "Webhook processing error"}
 
 
 class WalletFundRequest(BaseModel):
@@ -543,12 +505,10 @@ async def fund_wallet(
         }
         
     except Exception as e:
-        import traceback
-        print(f"Wallet funding error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Wallet funding error: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Wallet funding failed: {str(e)}"
+            detail="Wallet funding failed. Please try again."
         )
 
 
@@ -672,10 +632,8 @@ async def get_ghana_banks(
         banks = await paystack_service.list_banks("ghana")
         return banks
     except Exception as e:
-        import traceback
-        print(f"Ghana banks error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Ghana banks fetch error: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch Ghana banks: {str(e)}"
+            detail="Failed to fetch Ghana banks. Please try again."
         )

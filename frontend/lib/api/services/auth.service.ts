@@ -31,9 +31,12 @@ export const authService = {
       },
     })
 
-    // Store token in localStorage
+    // Store token in localStorage and a JS-readable cookie for middleware route protection
     if (response.data.access_token) {
       localStorage.setItem('access_token', response.data.access_token)
+      // Secure cookie for middleware to check (not httpOnly so JS can also clear it)
+      const expires = new Date(Date.now() + 30 * 60 * 1000).toUTCString()
+      document.cookie = `access_token=${response.data.access_token}; path=/; expires=${expires}; SameSite=Strict; Secure`
     }
 
     return response.data
@@ -46,9 +49,10 @@ export const authService = {
     try {
       await apiClient.post(API_ENDPOINTS.auth.logout)
     } finally {
-      // Clear local storage regardless of API response
+      // Clear local storage and cookie regardless of API response
       localStorage.removeItem('access_token')
       localStorage.removeItem('user')
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict; Secure'
     }
   },
 

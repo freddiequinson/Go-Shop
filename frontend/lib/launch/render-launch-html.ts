@@ -11,7 +11,15 @@ function injectTopNavigationBase(html: string) {
 export async function renderLaunchHtml(options?: { forceTopNavigation?: boolean }) {
   const viewsDir = path.join(process.cwd(), "launch-ejs", "views")
   const templatePath = path.join(viewsDir, "index.ejs")
-  const renderedHtml = await ejs.renderFile(templatePath, {}, { views: [viewsDir] })
+  const renderedHtml = await ejs.renderFile(templatePath, {}, {
+    views: [viewsDir],
+    outputFunctionName: undefined,
+    escapeXML: true,
+    strict: false,
+    _with: false,
+    localsName: '__locals__',
+    rmWhitespace: false,
+  })
 
   if (options?.forceTopNavigation) {
     return injectTopNavigationBase(renderedHtml)

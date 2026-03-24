@@ -43,17 +43,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (storedUser) {
             setUser(storedUser)
             setIsLoading(false) // Set loading false immediately with cached data
-          }
-          
-          // Then fetch fresh user data in background (deferred)
-          setTimeout(async () => {
+          } else {
+            // Token exists but no stored user - fetch immediately
             try {
               const currentUser = await authService.getCurrentUser()
               setUser(currentUser)
             } catch (error) {
-              console.error('Background auth refresh error:', error)
+              console.error('Failed to fetch user:', error)
             }
-          }, 1500) // Wait 1.5 seconds to not block page load
+            setIsLoading(false)
+          }
+          
+          // Then fetch fresh user data in background (deferred) - only if we had cached data
+          if (storedUser) {
+            setTimeout(async () => {
+              try {
+                const currentUser = await authService.getCurrentUser()
+                setUser(currentUser)
+              } catch (error) {
+                console.error('Background auth refresh error:', error)
+              }
+            }, 1500) // Wait 1.5 seconds to not block page load
+          }
         } else {
           setIsLoading(false)
         }
@@ -138,16 +149,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
+      // First, try to get stored user from localStorage (instant)
+      const storedUser = authService.getStoredUser()
+      if (storedUser && !user) {
+        setUser(storedUser)
+        setIsLoading(false)
+      }
+      
+      // Then fetch fresh user data from API
       const currentUser = await authService.getCurrentUser()
       setUser(currentUser)
+      setIsLoading(false)
     } catch (error) {
       console.error('Refresh user error:', error)
+      // If API fails but we have stored user, still use it
+      const storedUser = authService.getStoredUser()
+      if (storedUser) {
+        setUser(storedUser)
+        setIsLoading(false)
+      }
     }
   }
 
+  // isAuthenticated should be true if we have a user OR if we have a token in localStorage
+  // This prevents race conditions where the user state hasn't loaded yet but the token exists
+  const isAuthenticated = !!user || authService.isAuthenticated()
+
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     login,
     register,

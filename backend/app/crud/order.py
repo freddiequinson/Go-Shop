@@ -6,6 +6,7 @@ Order management with Ghana market support
 from typing import Optional, List, Dict, Any
 from decimal import Decimal
 import json
+import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_, cast, type_coerce
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,6 +14,8 @@ from app.models.order import Order, OrderItem, OrderStatus
 from app.models.product import Product
 from app.schemas.order import OrderCreate, OrderUpdate, OrderCalculations
 from app.crud.cart import get_cart_with_details, clear_cart
+
+logger = logging.getLogger(__name__)
 
 def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -> Order:
     """Create order from user's cart"""
@@ -51,26 +54,15 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
     
     # Parse delivery_address if it's a JSON string
     delivery_addr = order_data.delivery_address
-    print(f"DEBUG: delivery_addr type BEFORE parsing: {type(delivery_addr)}")
-    print(f"DEBUG: delivery_addr value BEFORE parsing: {delivery_addr}")
     
     if isinstance(delivery_addr, str):
-        print("DEBUG: delivery_addr is a string, parsing...")
         try:
             delivery_addr = json.loads(delivery_addr)
-            print(f"DEBUG: Successfully parsed to: {delivery_addr}")
-        except Exception as e:
-            print(f"DEBUG: Failed to parse: {e}")
+        except Exception:
             delivery_addr = {"address": delivery_addr}
-    else:
-        print("DEBUG: delivery_addr is already a dict")
-    
-    print(f"DEBUG: delivery_addr type AFTER parsing: {type(delivery_addr)}")
-    print(f"DEBUG: delivery_addr value AFTER parsing: {delivery_addr}")
     
     # Convert dict to JSON string for JSONB column (psycopg2 expects string)
     delivery_addr_json = json.dumps(delivery_addr) if delivery_addr else None
-    print(f"DEBUG: delivery_addr_json: {delivery_addr_json}")
     
     # Create order with proper type conversions
     try:
@@ -91,21 +83,15 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
             coupon_discount=Decimal(str(order_data.coupon_discount)) if order_data.coupon_discount is not None else None
         )
     except Exception as e:
-        print(f"Error creating order object: {e}")
-        print(f"Order data: {order_data}")
-        print(f"Delivery addr: {delivery_addr}, type: {type(delivery_addr)}")
+        logger.error(f"Error creating order object: {type(e).__name__}")
         raise
     
     db.add(order)
     
     try:
-        print("DEBUG: About to flush order to database...")
         db.flush()  # Get order ID
-        print(f"DEBUG: Order flushed successfully, ID: {order.id}")
     except Exception as e:
-        import traceback
-        print(f"ERROR at db.flush(): {e}")
-        print(f"Full traceback: {traceback.format_exc()}")
+        logger.error(f"Error flushing order to database: {type(e).__name__}")
         raise
     
     # Create order items from cart items (supports both products and packages)
@@ -153,13 +139,9 @@ def create_order_from_cart(db: Session, user_id: str, order_data: OrderCreate) -
         db.add(order_item)
     
     try:
-        print("DEBUG: About to commit transaction...")
         db.commit()
-        print("DEBUG: Transaction committed successfully")
     except Exception as e:
-        import traceback
-        print(f"ERROR at db.commit(): {e}")
-        print(f"Full traceback: {traceback.format_exc()}")
+        logger.error(f"Error committing order transaction: {type(e).__name__}")
         raise
     
     # Clear cart after successful order creation

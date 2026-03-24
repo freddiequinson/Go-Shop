@@ -17,6 +17,9 @@ from app.schemas.fund_transfer import (
     UserTransferSummary, BubbleTransferSummary, GhanaTransferTypes
 )
 from app.crud import fund_transfer as crud_fund_transfer
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -39,12 +42,10 @@ async def create_fund_transfer(
             detail=str(e)
         )
     except Exception as e:
-        import traceback
-        print(f"Fund transfer creation error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Failed to create fund transfer: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create fund transfer: {str(e)}"
+            detail="Failed to create fund transfer. Please try again."
         )
 
 
@@ -75,12 +76,10 @@ async def get_my_transfers(
         )
         return [FundTransferResponse.from_orm(transfer) for transfer in transfers]
     except Exception as e:
-        import traceback
-        print(f"Get transfers error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Failed to get transfers: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get transfers: {str(e)}"
+            detail="Failed to retrieve transfers. Please try again."
         )
 
 
@@ -96,9 +95,10 @@ async def get_pending_approvals(
         transfers = crud_fund_transfer.get_pending_approvals(db, current_user.id)
         return [FundTransferResponse.from_orm(transfer) for transfer in transfers]
     except Exception as e:
+        logger.error(f"Failed to get pending approvals: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get pending approvals: {str(e)}"
+            detail="Failed to retrieve pending approvals. Please try again."
         )
 
 
@@ -161,9 +161,10 @@ async def approve_transfer(
             detail=str(e)
         )
     except Exception as e:
+        logger.error(f"Failed to approve transfer: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to approve transfer: {str(e)}"
+            detail="Failed to approve transfer. Please try again."
         )
 
 
@@ -185,9 +186,10 @@ async def cancel_transfer(
             detail=str(e)
         )
     except Exception as e:
+        logger.error(f"Failed to cancel transfer: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to cancel transfer: {str(e)}"
+            detail="Failed to cancel transfer. Please try again."
         )
 
 
@@ -224,9 +226,10 @@ async def get_bubble_transfers(
         transfers = crud_fund_transfer.get_bubble_transfers(db, bubble_id, skip, limit)
         return [FundTransferResponse.from_orm(transfer) for transfer in transfers]
     except Exception as e:
+        logger.error(f"Failed to get bubble transfers: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get bubble transfers: {str(e)}"
+            detail="Failed to retrieve bubble transfers. Please try again."
         )
 
 
@@ -248,9 +251,10 @@ async def get_system_transfer_statistics(
         stats = crud_fund_transfer.get_transfer_statistics(db)
         return TransferStats(**stats)
     except Exception as e:
+        logger.error(f"Failed to get transfer statistics: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get transfer statistics: {str(e)}"
+            detail="Failed to retrieve transfer statistics. Please try again."
         )
 
 
@@ -285,9 +289,10 @@ async def get_bubble_transfer_statistics(
         stats = crud_fund_transfer.get_transfer_statistics(db, bubble_id)
         return TransferStats(**stats)
     except Exception as e:
+        logger.error(f"Failed to get bubble transfer statistics: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get bubble transfer statistics: {str(e)}"
+            detail="Failed to retrieve bubble transfer statistics. Please try again."
         )
 
 
@@ -346,9 +351,10 @@ async def validate_transfer(
         )
         
     except Exception as e:
+        logger.error(f"Failed to validate transfer: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to validate transfer: {str(e)}"
+            detail="Failed to validate transfer. Please try again."
         )
 
 
@@ -402,7 +408,8 @@ async def get_user_transfer_summary(
         )
         
     except Exception as e:
+        logger.error(f"Failed to get user transfer summary: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get user transfer summary: {str(e)}"
+            detail="Failed to retrieve transfer summary. Please try again."
         )

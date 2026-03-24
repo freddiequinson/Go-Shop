@@ -29,7 +29,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="GoShopGhana - Social Commerce Platform for Ghana",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.DEBUG else None,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
     lifespan=lifespan
 )
 
@@ -69,10 +71,6 @@ async def root():
     return {
         "message": "Welcome to GoShopGhana API",
         "version": settings.VERSION,
-        "docs": "/docs",
-        "redoc": "/redoc",
-        "openapi": "/openapi.json",
-        "api_docs": f"{settings.API_V1_STR}/docs",
         "status": "running"
     }
 
@@ -83,19 +81,19 @@ async def health_check():
     return {"status": "healthy", "service": "goshopghana-api"}
 
 
-# API docs endpoints
-@app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
-    """Custom Swagger UI redirect"""
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=f"{settings.API_V1_STR}/docs")
+# API docs endpoints (only available in DEBUG mode)
+if settings.DEBUG:
+    @app.get("/docs", include_in_schema=False)
+    async def custom_swagger_ui_html():
+        """Custom Swagger UI redirect"""
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=f"{settings.API_V1_STR}/docs")
 
-
-@app.get("/redoc", include_in_schema=False)
-async def redoc_html():
-    """Custom ReDoc redirect"""
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=f"{settings.API_V1_STR}/redoc")
+    @app.get("/redoc", include_in_schema=False)
+    async def redoc_html():
+        """Custom ReDoc redirect"""
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=f"{settings.API_V1_STR}/redoc")
 
 
 if __name__ == "__main__":
