@@ -173,7 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // isAuthenticated should be true if we have a user OR if we have a token in localStorage
   // This prevents race conditions where the user state hasn't loaded yet but the token exists
-  const isAuthenticated = !!user || authService.isAuthenticated()
+  // Check for window to avoid SSR issues with localStorage
+  const isAuthenticated = !!user || (typeof window !== 'undefined' && authService.isAuthenticated())
 
   const value: AuthContextType = {
     user,
