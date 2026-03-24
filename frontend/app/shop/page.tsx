@@ -751,9 +751,11 @@ export default function ShopPage() {
                         >
                           <Package className="w-3.5 h-3.5 text-[#303A4D]/40" />
                           <span>{match.child ? match.child.name : match.parent.name}</span>
-                          <span className="text-xs text-[#303A4D]/40 ml-auto">
-                            {match.child ? `in ${match.parent.name}` : `${match.parent.product_count} items`}
-                          </span>
+                          {match.child && (
+                            <span className="text-xs text-[#303A4D]/40 ml-auto">
+                              in {match.parent.name}
+                            </span>
+                          )}
                         </button>
                       ))}
                       <div className="border-t border-gray-100 my-1" />
@@ -828,10 +830,10 @@ export default function ShopPage() {
                 <option value="All">All Categories</option>
                 {hierarchicalCategories.map((parent: any) => (
                   <optgroup key={parent.id} label={parent.name}>
-                    <option value={parent.id}>All {parent.name} ({parent.product_count})</option>
+                    <option value={parent.id}>All {parent.name}</option>
                     {parent.children?.filter((c: any) => c.product_count > 0).map((child: any) => (
                       <option key={child.id} value={child.id}>
-                        {child.name} ({child.product_count})
+                        {child.name}
                       </option>
                     ))}
                   </optgroup>
@@ -883,7 +885,7 @@ export default function ShopPage() {
                               : 'text-[#303A4D] hover:bg-[#FED141]/20'
                           }`}
                         >
-                          All {parent.name} ({parent.product_count})
+                          All {parent.name}
                         </button>
                         <div className="border-t border-gray-100 my-1" />
                         {parent.children.filter((c: any) => c.product_count > 0).map((child: any) => (
@@ -897,7 +899,6 @@ export default function ShopPage() {
                             }`}
                           >
                             <span>{child.name}</span>
-                            <span className="text-xs text-[#303A4D]/40">{child.product_count}</span>
                           </button>
                         ))}
                         </div>
