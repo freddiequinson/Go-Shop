@@ -871,9 +871,10 @@ export default function ShopPage() {
                         <ChevronDown className="w-3 h-3" />
                       )}
                     </button>
-                    {/* Mega-menu dropdown */}
+                    {/* Mega-menu dropdown - pt-2 creates invisible hover bridge */}
                     {hoveredParent === parent.id && parent.children?.length > 0 && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[220px] z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-[100]">
+                        <div className="bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[220px] animate-in fade-in slide-in-from-top-2 duration-200">
                         <button
                           onClick={() => handleCategorySelect(parent.name)}
                           className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${
@@ -899,6 +900,7 @@ export default function ShopPage() {
                             <span className="text-xs text-[#303A4D]/40">{child.product_count}</span>
                           </button>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>
