@@ -185,6 +185,10 @@
                 var ordersLinkMobile = document.getElementById('orders-link-mobile');
                 if (!ordersLink) return;
                 var isLoggedIn = !!(window.GoShopAuth && typeof window.GoShopAuth.isLoggedIn === 'function' && window.GoShopAuth.isLoggedIn());
+                // Also check Next.js auth (Google OAuth / Next.js login)
+                if (!isLoggedIn) {
+                    try { isLoggedIn = !!(localStorage.getItem('access_token') && localStorage.getItem('user')); } catch(e) {}
+                }
                 ordersLink.setAttribute('href', isLoggedIn ? '/profile' : '/login');
                 if (ordersLinkMobile) {
                     ordersLinkMobile.setAttribute('href', isLoggedIn ? '/profile' : '/login');

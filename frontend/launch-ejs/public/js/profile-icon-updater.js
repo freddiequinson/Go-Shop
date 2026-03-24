@@ -28,8 +28,27 @@
     }
 
     function updateProfileIcons() {
-        const isLoggedIn = window.GoShopAuth.isLoggedIn();
-        const user = isLoggedIn ? window.GoShopAuth.getProfile() : null;
+        let isLoggedIn = window.GoShopAuth.isLoggedIn();
+        let user = isLoggedIn ? window.GoShopAuth.getProfile() : null;
+
+        // Also check Next.js auth (access_token + user in localStorage)
+        // This bridges Google OAuth / Next.js login with the launch page
+        if (!isLoggedIn) {
+            try {
+                var token = localStorage.getItem('access_token');
+                var nextUser = localStorage.getItem('user');
+                if (token && nextUser) {
+                    var parsed = JSON.parse(nextUser);
+                    isLoggedIn = true;
+                    user = {
+                        fullname: parsed.full_name || parsed.username || 'User',
+                        username: parsed.username || '',
+                        email: parsed.email || '',
+                        role: parsed.user_type === 'ADMIN' ? 'admin' : 'user'
+                    };
+                }
+            } catch (e) { /* ignore parse errors */ }
+        }
 
         // Find all profile icons (both desktop and mobile)
         const profileLinks = document.querySelectorAll('a[aria-label^="Profile"]');
@@ -139,7 +158,7 @@
     function setupAuthStateListener() {
         // Listen for storage changes (when user logs in/out from another tab)
         window.addEventListener('storage', function (e) {
-            if (e.key === 'goshop_current_user') {
+            if (e.key === 'goshop_current_user' || e.key === 'access_token' || e.key === 'user') {
                 updateProfileIcons();
             }
         });
@@ -159,6 +178,11 @@
 
     // Setup listeners
     setupAuthStateListener();
+
+    // Periodically re-check auth state (catches same-window localStorage changes from parent frame)
+    setInterval(function () {
+        try { updateProfileIcons(); } catch (e) { /* noop */ }
+    }, 2000);
 
     function updateMobileSignInButtons(isLoggedIn, user, isAdmin) {
         // Find all mobile sign-in buttons
