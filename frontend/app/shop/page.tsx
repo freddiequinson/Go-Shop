@@ -839,11 +839,11 @@ export default function ShopPage() {
               </select>
             </div>
             {/* Desktop: Mega-menu with hover sub-categories */}
-            <div className="hidden md:block relative">
-              <div className="flex flex-wrap justify-center gap-2 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-xl shadow-sm p-2.5">
+            <div className="hidden md:block relative z-20">
+              <div className="flex flex-wrap justify-center items-center gap-3 bg-white/60 backdrop-blur-sm border border-[#303A4D]/10 rounded-xl shadow-sm p-3">
                 <button
                   onClick={() => handleCategorySelect("All")}
-                  className={`px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 ${
+                  className={`px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 whitespace-nowrap ${
                     selectedCategory === "All"
                       ? 'bg-[#303A4D] text-white shadow-md'
                       : 'text-[#303A4D] hover:bg-[#FED141]/30'
@@ -854,13 +854,13 @@ export default function ShopPage() {
                 {hierarchicalCategories.map((parent: any) => (
                   <div
                     key={parent.id}
-                    className="relative"
+                    className="relative group/menu"
                     onMouseEnter={() => setHoveredParent(parent.id)}
                     onMouseLeave={() => setHoveredParent(null)}
                   >
                     <button
                       onClick={() => handleCategorySelect(parent.name)}
-                      className={`px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 flex items-center gap-1 ${
+                      className={`px-5 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
                         selectedCategory === parent.name || (selectedParentId === parent.id)
                           ? 'bg-[#303A4D] text-white shadow-md'
                           : 'text-[#303A4D] hover:bg-[#FED141]/30'
@@ -873,7 +873,7 @@ export default function ShopPage() {
                     </button>
                     {/* Mega-menu dropdown */}
                     {hoveredParent === parent.id && parent.children?.length > 0 && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[220px] z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                         <button
                           onClick={() => handleCategorySelect(parent.name)}
                           className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${
@@ -925,7 +925,7 @@ export default function ShopPage() {
           )}
 
           {/* Products Grid */}
-          <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
+          <div className={`relative z-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 transition-opacity duration-300 ${isChangingCategory ? 'opacity-50' : 'opacity-100'}`}>
             {filteredProducts.map((product, index) => (
               <div key={product.id} className="group">
                 <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100">
