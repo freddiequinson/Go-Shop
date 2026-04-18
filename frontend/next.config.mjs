@@ -48,6 +48,10 @@ const nextConfig = {
   },
   // Enable standalone output for Docker
   output: 'standalone',
+  // SECURITY: disable Next.js 16 experimental MCP server (RCE vector)
+  experimental: {
+    mcpServer: false,
+  },
   // Expose environment variables to the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

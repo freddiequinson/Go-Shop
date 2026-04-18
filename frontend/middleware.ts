@@ -17,6 +17,18 @@ export function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 403 })
   }
 
+  // SECURITY: block Next.js 16 experimental MCP server endpoints (RCE vector)
+  // Attackers probe /.well-known/mcp, /_next/mcp, and send x-nextjs-mcp-* headers
+  if (
+    pathname.startsWith('/.well-known/mcp') ||
+    pathname.startsWith('/_next/mcp') ||
+    pathname.includes('/mcp/') ||
+    request.headers.get('x-nextjs-mcp') ||
+    request.headers.get('x-mcp-session')
+  ) {
+    return new NextResponse(null, { status: 404 })
+  }
+
   // Apply security headers to all responses
   const response = NextResponse.next()
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
