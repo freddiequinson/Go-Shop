@@ -74,3 +74,12 @@ htmlcov/
 *.bak
 *.backup
 *.old
+.md
+
+# Local DB backups (sensitive, large)
+backups/
+
+# Local incident evidence may contain revoked credentials or customer data.
+Investigate Production Site Down.md
+DROPLET_DEPLOY.md
+paystack_audit_*/

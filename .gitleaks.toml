@@ -1,0 +1,25 @@
+title = "Go-Shop secret detection"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Binary assets that cannot contain executable configuration"
+paths = [
+  '''(?i)\.(?:avif|eot|gif|ico|jpe?g|mp4|png|ttf|webm|webp|woff2?)$''',
+]
+
+[[rules]]
+id = "credentialed-database-uri"
+description = "Database URI containing an embedded credential"
+regex = '''(?i)\b(?:postgres|postgresql|mysql|mariadb|mongodb(?:\+srv)?|redis|rediss)://[^\s:/@]+:[^\s/@]+@[^\s]+'''
+tags = ["database", "credential"]
+
+[rules.allowlist]
+description = "Documented non-production placeholders"
+regexes = [
+  '''(?i)://goshop_user:REPLACE_WITH_MANAGED_DATABASE_PASSWORD@''',
+  '''(?i)://test_user:test_password@''',
+  '''(?i)://user:password@''',
+  '''(?i)://goshop_user:\$\{DB_PASSWORD:-goshop_password_2024\}@''',
+]
