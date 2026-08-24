@@ -11,6 +11,20 @@ New-Item -ItemType Directory -Path $temporary | Out-Null
 $tree = Join-Path $temporary "tree"
 New-Item -ItemType Directory -Path $tree | Out-Null
 
+function Invoke-DockerQuiet {
+    param([string[]]$Arguments)
+
+    $previousPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "SilentlyContinue"
+        & docker @Arguments 2>$null | Out-Null
+        return $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
+}
+
 function Invoke-Gitleaks {
     param(
         [string]$Name,
@@ -31,15 +45,15 @@ function Invoke-Gitleaks {
         "--report-path=/report/$Name.json"
     )
 
-    & docker @dockerArguments 2>$null | Out-Null
-    $status = $LASTEXITCODE
+    $status = Invoke-DockerQuiet -Arguments $dockerArguments
     if ($status -notin 0, 1) {
         throw "Gitleaks $Name scan failed with status $status."
     }
 
     $findings = @()
     if (Test-Path -LiteralPath $report) {
-        $findings = @(Get-Content -LiteralPath $report -Raw | ConvertFrom-Json)
+        $parsed = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
+        $findings = @($parsed | ForEach-Object { $_ })
     }
 
     Write-Host "$Name findings: $($findings.Count)"
@@ -59,7 +73,10 @@ try {
     }
 
     $canary = Join-Path $temporary "canary.txt"
-    $canaryValue = "postgresql://canary-user:" + "canary-password@db.invalid/app"
+    $canaryValue = @(
+        "postgresql://canary-user:" + "canary-password@db.invalid/app",
+        "PAYSTACK_SECRET_KEY=sk_" + "live_canary_value_that_is_not_real"
+    )
     Set-Content -LiteralPath $canary -Value $canaryValue
     $canaryArguments = @(
         "run", "--rm",
@@ -69,9 +86,9 @@ try {
         "detect", "--no-git", "--source=/scan/canary.txt",
         "--config=/gitleaks.toml", "--redact", "--no-banner"
     )
-    & docker @canaryArguments *> $null
-    if ($LASTEXITCODE -ne 1) {
-        throw "Secret scanner canary failed with status $LASTEXITCODE."
+    $canaryStatus = Invoke-DockerQuiet -Arguments $canaryArguments
+    if ($canaryStatus -ne 1) {
+        throw "Secret scanner canary failed with status $canaryStatus."
     }
     Remove-Item -LiteralPath $canary
 

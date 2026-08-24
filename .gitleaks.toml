@@ -23,3 +23,15 @@ regexes = [
   '''(?i)://user:password@''',
   '''(?i)://goshop_user:\$\{DB_PASSWORD:-goshop_password_2024\}@''',
 ]
+
+[[rules]]
+id = "sensitive-environment-assignment"
+description = "Sensitive Go-Shop environment variable with a concrete value"
+regex = '''(?i)\b(?:(?:PAYSTACK_SECRET_KEY\s*=\s*["']?sk_(?:live|test)_[A-Za-z0-9]{20,})|(?:GOOGLE_CLIENT_SECRET\s*=\s*["']?GOCSPX-[A-Za-z0-9_-]{20,})|(?:FACEBOOK_CLIENT_SECRET\s*=\s*["']?[0-9a-f]{32,})|(?:HUBTEL_CLIENT_SECRET\s*=\s*["']?[A-Za-z0-9]{8,64})|(?:SMTP_PASSWORD\s*=\s*["']?[a-z]{16})|(?:(?:SECRET_KEY|JWT_SECRET_KEY)\s*=\s*["']?[A-Za-z0-9+/]{42,}={0,2})|(?:GROQ_API_KEY\s*=\s*["']?gsk_[A-Za-z0-9]{20,}))'''
+tags = ["environment", "credential"]
+
+[rules.allowlist]
+description = "Documentation placeholders are not credentials"
+regexes = [
+  '''(?i)(?:replace|placeholder|example|dummy|your)[A-Za-z0-9_./+=-]*''',
+]
