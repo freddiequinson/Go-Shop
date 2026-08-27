@@ -19,17 +19,18 @@ class AIAssistant:
     
     def __init__(self):
         """Initialize Groq client with context"""
+        self.client = None
+        self.model = settings.GROQ_MODEL
+        self.max_tokens = settings.GROQ_MAX_TOKENS
+        self.temperature = settings.GROQ_TEMPERATURE
+
         if not settings.GROQ_API_KEY:
-            logger.error("GROQ_API_KEY not set in environment variables")
-            raise ValueError("GROQ_API_KEY not set in environment variables")
+            logger.warning("Groq AI Assistant is disabled because no API key is configured")
+            return
         
         try:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
-            self.model = settings.GROQ_MODEL
-            self.max_tokens = settings.GROQ_MAX_TOKENS
-            self.temperature = settings.GROQ_TEMPERATURE
-            logger.info(f"Groq AI Assistant initialized successfully with model: {self.model}")
-            logger.info(f"API Key (first 10 chars): {settings.GROQ_API_KEY[:10]}...")
+            logger.info("Groq AI Assistant initialized with model %s", self.model)
         except Exception as e:
             logger.error(f"Failed to initialize Groq client: {e}", exc_info=True)
             raise

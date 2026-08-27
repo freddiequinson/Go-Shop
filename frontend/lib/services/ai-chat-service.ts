@@ -11,6 +11,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   timestamp?: Date
+  shoppingList?: ShoppingList
 }
 
 export interface ShoppingListItem {

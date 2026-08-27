@@ -152,6 +152,8 @@ async def initialize_payment(
             status="pending"
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Payment initialization error: {type(e).__name__}")
         raise HTTPException(
@@ -265,8 +267,13 @@ async def paystack_webhook(
         # Get request body
         body = await request.body()
         
-        # Verify webhook signature (if secret is configured)
+        # Authenticate the raw payload before parsing or mutating payment state.
         signature = request.headers.get("x-paystack-signature")
+        if not signature or not paystack_service.validate_webhook_signature(body, signature):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid webhook signature",
+            )
         
         logger.info("Webhook received from Paystack")
         
@@ -330,6 +337,8 @@ async def paystack_webhook(
         # Return 200 OK to Paystack
         return {"status": "success"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Webhook error: {type(e).__name__}")
         # Still return 200 to prevent Paystack from retrying

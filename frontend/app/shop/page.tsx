@@ -1096,7 +1096,9 @@ export default function ShopPage() {
           product={selectedProduct}
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(quantity, purchaseType) =>
+            handleAddToCart(selectedProduct, quantity, purchaseType)
+          }
         />
       )}
 

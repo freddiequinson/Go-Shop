@@ -448,7 +448,9 @@ export default function ProductPage() {
           product={product}
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(quantity, purchaseType) =>
+            handleAddToCart(product, quantity, purchaseType)
+          }
         />
       )}
 

@@ -1,0 +1,61 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the managed DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:?Set PAYSTACK_SECRET_KEY}
+      PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY:?Set PAYSTACK_PUBLIC_KEY}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:?Set BACKEND_CORS_ORIGINS}
+      HUBTEL_CLIENT_ID: ${HUBTEL_CLIENT_ID:-}
+      HUBTEL_CLIENT_SECRET: ${HUBTEL_CLIENT_SECRET:-}
+      HUBTEL_SENDER_ID: ${HUBTEL_SENDER_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL:-}
+      EMAILS_FROM_NAME: ${EMAILS_FROM_NAME:-GoShop Ghana}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      FACEBOOK_CLIENT_ID: ${FACEBOOK_CLIENT_ID:-}
+      FACEBOOK_CLIENT_SECRET: ${FACEBOOK_CLIENT_SECRET:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      SPACES_ACCESS_KEY: ${SPACES_ACCESS_KEY:-}
+      SPACES_SECRET_KEY: ${SPACES_SECRET_KEY:-}
+      SPACES_NAME: ${SPACES_NAME:-goshop-images}
+      SPACES_REGION: ${SPACES_REGION:-lon1}
+      SPACES_CDN_ENDPOINT: ${SPACES_CDN_ENDPOINT:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set NEXT_PUBLIC_API_URL}
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set NEXT_PUBLIC_API_URL}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

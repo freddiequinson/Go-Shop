@@ -274,7 +274,7 @@ export interface ProductListResponse {
 // ============= CART TYPES =============
 
 export interface AddToCartRequest {
-  product_id: number
+  product_id: string
   quantity: number
 }
 
@@ -282,17 +282,26 @@ export interface UpdateCartItemRequest {
   quantity: number
 }
 
+export interface CartProductDetails {
+  id: string
+  name: string
+  price_per_unit_cedis: number
+  unit_type: string
+  image_url?: string
+  primary_image_url?: string
+}
+
 export interface CartItemResponse {
-  id: number
-  product_id: number
+  id: string
+  product_id: string
   quantity: number
-  product: ProductResponse
+  product: CartProductDetails
   subtotal: number
 }
 
 export interface CartResponse {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   items: CartItemResponse[]
   total_items: number
   total_amount: number

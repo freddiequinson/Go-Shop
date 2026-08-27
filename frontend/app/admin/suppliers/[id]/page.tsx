@@ -94,7 +94,6 @@ export default function SupplierDetailPage() {
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [offers, setOffers] = useState<SupplyOffer[]>([])
-  const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -105,7 +104,6 @@ export default function SupplierDetailPage() {
     fetchSupplierDetails()
     fetchAllProducts()
     fetchSupplierOffers()
-    fetchCategories()
   }, [params.id])
 
   const fetchSupplierDetails = async () => {
@@ -178,18 +176,6 @@ export default function SupplierDetailPage() {
       }
     } catch (error) {
       console.error("Failed to fetch offers:", error)
-    }
-  }
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1'}/products/categories/")
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
-      }
-    } catch (error) {
-      console.error("Failed to fetch categories:", error)
     }
   }
 
@@ -424,7 +410,11 @@ export default function SupplierDetailPage() {
                   <div className="col-span-2">
                     <p className="text-sm text-[#303A4D]/60 mb-2">Specialization</p>
                     <div className="flex flex-wrap gap-2">
-                      {formatSpecialization(supplier.specialization, categories)}
+                      {supplier.specialization.map((category, index) => (
+                        <Badge key={`${category}-${index}`} className={getCategoryColor(category)}>
+                          {formatSpecialization([category])[0]}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -656,11 +646,7 @@ export default function SupplierDetailPage() {
         <CreateSupplyRequestModal
           isOpen={showRequestModal}
           onClose={() => setShowRequestModal(false)}
-          prefilledData={{
-            supplier_id: supplier.id,
-            supplier_name: supplier.name,
-            request_type: 'direct'
-          }}
+          supplierId={supplier.id}
         />
       )}
     </div>

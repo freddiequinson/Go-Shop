@@ -13,7 +13,7 @@ type Product = {
   price_per_quantity?: number | string
   unit_type?: string
   unit: string
-  vendor: string
+  vendor?: string
   image: string
 }
 
@@ -21,7 +21,7 @@ type AddToCartModalProps = {
   product: Product
   isOpen: boolean
   onClose: () => void
-  onAddToCart: (product: Product, quantity: number, purchaseType: "weight" | "quantity") => void
+  onAddToCart: (quantity: number, purchaseType: "weight" | "quantity") => void
 }
 
 export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToCartModalProps) {
@@ -50,7 +50,7 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
   if (!isOpen) return null
 
   const handleAdd = () => {
-    onAddToCart(product, quantity, purchaseType)
+    onAddToCart(quantity, purchaseType)
     onClose()
     setQuantity(1)
   }

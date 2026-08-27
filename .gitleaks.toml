@@ -7,6 +7,10 @@ useDefault = true
 description = "Binary assets that cannot contain executable configuration"
 paths = [
   '''(?i)\.(?:avif|eot|gif|ico|jpe?g|mp4|png|ttf|webm|webp|woff2?)$''',
+  '''(?:^|/)\.git/''',
+  '''(?:^|/)\.next/''',
+  '''(?:^|/)\.pytest_cache/''',
+  '''(?:^|/)node_modules/''',
 ]
 
 [[rules]]
@@ -20,6 +24,7 @@ description = "Documented non-production placeholders"
 regexes = [
   '''(?i)://goshop_user:REPLACE_WITH_MANAGED_DATABASE_PASSWORD@''',
   '''(?i)://test_user:test_password@''',
+  '''(?i)://audit:audit@127\.0\.0\.1:5432/audit''',
   '''(?i)://user:password@''',
   '''(?i)://goshop_user:\$\{DB_PASSWORD:-goshop_password_2024\}@''',
 ]

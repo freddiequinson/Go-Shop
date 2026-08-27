@@ -4,10 +4,11 @@ API v1 router
 
 from fastapi import APIRouter
 from datetime import datetime
+from app.core.config import settings
 
 from app.api.api_v1.endpoints import (
     auth, users, products, cart, orders, payments,
-    bubbles, fund_transfers, messages, reviews, oauth, giftcards, suppliers, warehouse, riders, admin, test, audit_logs, user_addresses, guest_orders, delivery_dates, delivery_settings, coupons, order_payments, admin_orders, admin_cleanup, test_audit, warehouse_locations, goods_received, perishables, pick_lists, supply_requests, supply_offers, price_comparison, supplier_products, order_delivery, rider_auth, rider_portal, smart_restock, ai_chat, user_analytics, feedback, images, migrate, migrate_async, community, packages
+    bubbles, fund_transfers, messages, reviews, oauth, giftcards, suppliers, warehouse, riders, admin, audit_logs, user_addresses, guest_orders, delivery_dates, delivery_settings, coupons, order_payments, admin_orders, admin_cleanup, warehouse_locations, goods_received, perishables, pick_lists, supply_requests, supply_offers, price_comparison, supplier_products, order_delivery, rider_auth, rider_portal, smart_restock, ai_chat, user_analytics, feedback, images, community, packages
 )
 from app.api.api_v1.endpoints import orders_fixed as orders
 
@@ -56,8 +57,6 @@ api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
 api_router.include_router(delivery_dates.router, prefix="/delivery-dates", tags=["delivery-dates"])
 api_router.include_router(delivery_settings.router, prefix="/delivery-settings", tags=["delivery-settings"])
 api_router.include_router(coupons.router, prefix="/coupons", tags=["coupons"])
-api_router.include_router(test.router, prefix="/test", tags=["testing"])
-api_router.include_router(test_audit.router, prefix="/test-audit", tags=["testing"])
 api_router.include_router(audit_logs.router, prefix="/audit-logs", tags=["audit-logs"])
 
 # Supplier Portal & Procurement
@@ -77,9 +76,13 @@ api_router.include_router(user_analytics.router, prefix="/admin/user-analytics",
 # Feedback
 api_router.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
 
-# Migration (temporary - remove after migration complete)
-api_router.include_router(migrate.router, prefix="/migrate", tags=["migration"])
-api_router.include_router(migrate_async.router, prefix="/migrate-async", tags=["migration"])
+if settings.DEBUG:
+    from app.api.api_v1.endpoints import migrate, migrate_async, test, test_audit
+
+    api_router.include_router(test.router, prefix="/test", tags=["testing"])
+    api_router.include_router(test_audit.router, prefix="/test-audit", tags=["testing"])
+    api_router.include_router(migrate.router, prefix="/migrate", tags=["migration"])
+    api_router.include_router(migrate_async.router, prefix="/migrate-async", tags=["migration"])
 
 # Community signup
 api_router.include_router(community.router, prefix="/community", tags=["community"])

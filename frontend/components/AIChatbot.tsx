@@ -171,6 +171,7 @@ export default function AIChatbot({ showOnPages = ['/', '/shop'], onOpenChange, 
         role: 'assistant',
         content: response.message,
         timestamp: new Date(),
+        shoppingList: response.shopping_list,
       }
 
       setMessages((prev) => [...prev, assistantMessage])

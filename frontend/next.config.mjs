@@ -13,9 +13,6 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: false, // Disable to prevent double mounting
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async headers() {
     return [
       {
@@ -23,11 +20,6 @@ const nextConfig = {
         headers: securityHeaders,
       },
     ]
-  },
-  async redirects() {
-    return isProd
-      ? [{ source: '/test-notifications', destination: '/', permanent: false }]
-      : []
   },
   images: {
     unoptimized: true, // Required for DigitalOcean standalone deployment
