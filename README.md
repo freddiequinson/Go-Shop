@@ -4,6 +4,11 @@ Go-Shop is a full-stack grocery commerce system for Ghanaian retail operations. 
 customer storefront with ordering, Paystack payment initiation and verification, wallet flows,
 supplier operations, warehouse workflows, delivery coordination, and administration.
 
+![Go-Shop cart interface](frontend/public/goshopscreenshot.png)
+
+Explore the [current storefront preview](https://ems-woad-kappa.vercel.app/) or the
+[earlier static preview](https://omariomari2.github.io/Go-Shop/).
+
 This repository is a sanitized release mirror. It preserves the authorized Git history and its
 contributor attribution while removing deploy credentials from the published history. Production
 availability is not claimed by this repository.
